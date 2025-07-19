@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@fullcalendar/core": "^6.1.18",
+    "@fullcalendar/daygrid": "^6.1.18",
+    "@fullcalendar/timegrid": "^6.1.18",
+    "express": "^5.1.0",
+    "sqlite3": "^5.1.7"
+  }
+}

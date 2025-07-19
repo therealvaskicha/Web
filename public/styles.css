@@ -1,0 +1,257 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Lora', sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+header {
+    background: #e7e4bb;
+    padding: 1rem 2;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    font-weight: 400;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 400;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: #6b7280;
+}
+
+/* Hero Section */
+#hero {
+    background: url('Images/text.jfif') no-repeat center center/cover;
+    color: #fff;
+    text-align: center;
+    padding: 330px 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-size: 20px;
+    font-family: 'Lora', serif;
+}
+
+#hero h2 {
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-bottom: 1rem;
+}
+
+#hero p {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #6b7280;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+.btn:hover {
+    background: #4b5563;
+}
+
+/* Sections */
+section {
+    padding: 60px 20px;
+}
+
+section h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+}
+
+/* About Section */
+#about {
+    background: #f9f9f9;
+    padding: 60px 0;
+    text-align: center;
+}
+
+/* Gallery */
+#gallery {
+    padding: 40px 0;
+}
+#gallery h2 {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.gallery-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor:pointer;
+}
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit:cover;
+    transition: transform 1s ease-in-out;
+}
+.gallery-item:hover img {
+    transform: scale(1.2);
+}
+.gallery-item .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.gallery-item:hover .overlay {
+    opacity: 0.2;
+}
+.gallery-item .overlay span {
+    font-size: 20px;
+}
+
+/* Modal for Gallery */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-content {
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 8px;
+}
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: #fff;
+    font-size: 40px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+.modal-close:hover {
+    color: #f0a500;
+}
+#modal-caption {
+    color: #fff;
+    font-size: 20px;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Location Section */
+#location {
+    padding: 60px 0;
+    text-align: center;
+}
+
+/* Calendar */
+#calendar { 
+    max-width: 900px; 
+    margin: 20px auto; 
+}
+
+/* Contact Form */
+#contact form {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+    background: #f9f9f9;
+}
+
+#contact input, #contact textarea {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+#contact input:focus, #contact textarea:focus {
+    border-color: #6b7280;
+    outline: none;
+}
+
+#contact textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Footer */
+footer {
+    background: #f4f4f4;
+    text-align: center;
+    padding: 1rem 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .gallery-container {
+        grid-template-columns: 1fr;
+    }
+    #booking-form, #contact form {
+        padding: 10px;
+    }
+    #booking-form input, #booking-form select, #contact input, #contact textarea {
+        font-size: 0.9rem;
+    }
+}
