@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Approve Bookings</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { font-family: 'Lora', sans-serif; max-width: 900px; margin: 20px auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        button { margin: 5px; padding: 8px 16px; background: #6b7280; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #4b5563; }
+    </style>
+</head>
+<body>
+    <h1>Pending Bookings</h1>
+    <table id="pending-bookings">
+        <tr><th>ID</th><th>Date</th><th>Time</th><th>Client</th><th>Action</th></tr>
+    </table>
+    <script>
+        async function loadPending() {
+            const response = await fetch('/api/pending');
+            const bookings = await response.json();
+            const table = document.getElementById('pending-bookings');
+            bookings.forEach(booking => {
+                const row = table.insertRow();
+                row.innerHTML = `
+                    <td>${booking.id}</td>
+                    <td>${booking.date}</td>
+                    <td>${booking.time}</td>
+                    <td>${booking.client_name}</td>
+                    <td>
+                        <button onclick="updateBooking(${booking.id}, 'approved')">Approve</button>
+                        <button onclick="updateBooking(${booking.id}, 'rejected')">Reject</button>
+                    </td>
+                `;
+            });
+        }
+
+        async function updateBooking(id, status) {
+            const response = await fetch('/api/approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status })
+            });
+            const result = await response.json();
+            alert(result.message || result.error);
+            window.location.reload(); // Refresh to update calendar
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPending);
+    </script>
+</body>
+</html>
