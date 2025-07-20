@@ -21,6 +21,7 @@ body {
     .logo {
         height: 80px; /* Adjust height as needed */
         width: auto;
+        cursor: pointer;
     }
 
     header {
@@ -51,7 +52,7 @@ body {
 
     nav a {
         font-size:24px;
-        font-family: 'Lora', sans-serif;
+        font-family: "Lora", sans-serif;
         text-decoration: none;
         color: #e7e4bb;
         font-weight: 500;
@@ -261,8 +262,7 @@ body {
     font-size: 16px;
     padding: 40px 0;
     max-width: 768px; 
-    margin: 15px auto; /* Reduced margin */
-
+    margin: 15px auto; 
 }
 
 /* Location Section */
