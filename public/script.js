@@ -35,106 +35,154 @@ document.getElementById('contact-form').addEventListener('submit', async functio
     }
 });
 
-// Initialize FullCalendar
-document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl = document.getElementById('calendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'timeGridWeek',
-        validRange: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6] }, // Weekdays only
-        slotMinTime: '08:00:00',
-        slotMaxTime: '17:00:00',
-        events: async function (fetchInfo, successCallback) {
-            const response = await fetch('/api/slots');
-            const slots = await response.json();
-            const events = slots.map(slot => {
-                const dayIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(slot.date);
-                const date = new Date(fetchInfo.start);
-                date.setDate(date.getDate() + ((dayIndex - date.getDay() + 7) % 7));
-                return {
-                    title: 'Свободен',
-                    start: `${date.toISOString().split('T')[0]}T${slot.time}:00`,
-                    allDay: false
-                };
-            });
-            successCallback(events);
-        },
-        eventClick: function (info) {
-            document.getElementById('date').value = info.event.start.toLocaleDateString('en-US', { weekday: 'long' });
-            document.getElementById('time').value = info.event.start.toTimeString().split(' ')[0].slice(0, 5);
-        }
-    });
-    calendar.render();
-});
-
-// Function to request a booking
-const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; // Excluded Sunday
-async function requestBooking() {
-    const name = document.getElementById('client-name').value.trim();
-    const date = document.getElementById('date').value;
-    const time = document.getElementById('time').value;
-    if (!name) {
-        alert('Моля, въведете вашето име.');
-        return;
-    }
-    const response = await fetch('/api/book', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, time, client_name: name })
-    });
-    const result = await response.json();
-    alert(result.message || result.error);
-    if (response.ok) {
-        document.getElementById('client-name').value = ''; // Clear form
-    }
-}
-
-// Approve booking (for owner)
-app.get('/admin.html', (req, res) => {
-    // Add authentication check (e.g., session or token)
-    res.sendFile(path.join(__dirname, 'public/admin.html'));
-});
-
-app.use('/admin.html', (req, res, next) => {
-    // Check for auth token or session
-    next();
-});
-
-if (response.ok) {
-    document.getElementById('client-name').value = '';
-    calendar.refetchEvents(); // Refresh calendar
-}
-
-// Gallery Modal Functionality
+// Gallery Modal Functionality (Working as confirmed)
 document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('gallery-modal');
     const modalImg = document.getElementById('modal-image');
     const modalCaption = document.getElementById('modal-caption');
     const closeBtn = document.querySelector('.modal-close');
 
-    // Add click event listeners to gallery images
-    document.querySelectorAll('.gallery-item img').forEach(img => {
-        img.addEventListener('click', function () {
-            modal.style.display = 'flex'; // Show modal
-            modalImg.src = this.src; // Set modal image to clicked image
-            modalCaption.textContent = this.alt; // Set caption to image alt text
+    if (modal && modalImg && modalCaption && closeBtn) {
+        document.querySelectorAll('.gallery-item img').forEach(img => {
+            img.addEventListener('click', function () {
+                modal.style.display = 'flex';
+                modalImg.src = this.src;
+                modalCaption.textContent = this.dataset.caption || this.alt;
+            });
         });
-    });
 
-    // Close modal when clicking the close button
-    closeBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-
-    document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.style.display === 'flex') {
-        modal.style.display = 'none';
-    }
-    });
-
-    // Close modal when clicking outside the image
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
+        closeBtn.addEventListener('click', () => {
             modal.style.display = 'none';
-        }
-    });
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    // Initialize FullCalendar
+    const calendarEl = document.getElementById('calendar');
+    if (calendarEl) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Start of today, July 20, 2025
+        const currentTime = new Date(); // Current time, 04:29 PM
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            slotMinTime: '08:00:00',
+            slotMaxTime: '17:00:00',
+            firstDay: 1, // Start week on Monday
+            locale: 'bg', // Bulgarian locale
+            buttonText: {
+                today: 'Днес'
+            },
+            slotLabelFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false // Remove AM/PM
+            },
+            allDaySlot: false, // Remove all-day line
+            selectable: true, // Enable selection
+            select: function (info) {
+                const slotDate = new Date(info.start);
+                const slotTime = info.start.getTime();
+                if (slotDate < today || (slotDate.getDate() === today.getDate() && slotTime < currentTime.getTime())) {
+                    return; // Prevent selection for past times
+                }
+                const date = slotDate.toLocaleDateString('bg-BG', { weekday: 'long' });
+                const time = info.start.toTimeString().split(' ')[0].slice(0, 5);
+                document.getElementById('selected-date').value = date;
+                document.getElementById('selected-time').value = time;
+                document.getElementById('booking-form').style.display = 'block';
+                document.getElementById('client-name').focus();
+                console.log('Selected slot:', date, time); // Debug
+            },
+            dayCellContent: function (arg) {
+                return arg.dayNumberText; // Show day numbers only
+            },
+            eventDidMount: function (info) {
+                if (info.event.title === 'Зает') {
+                    info.el.style.backgroundColor = '#ff4444';
+                    info.el.style.borderColor = '#ff4444';
+                }
+            },
+            events: async function (fetchInfo, successCallback) {
+                try {
+                    const response = await fetch('/api/slots');
+                    if (!response.ok) throw new Error('API error');
+                    const slots = await response.json();
+                    const events = slots.map(slot => {
+                        const dayIndex = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(slot.date);
+                        const date = new Date(fetchInfo.start);
+                        date.setDate(date.getDate() + ((dayIndex - date.getDay() + 7) % 7 || 7));
+                        return {
+                            title:  'Свободен',
+                            start: `${date.toISOString().split('T')[0]}T${slot.time}:00`,
+                            allDay: false
+                        };
+                    });
+                    successCallback(events);
+                } catch (error) {
+                    console.error('Error fetching slots:', error);
+                    successCallback([]);
+                }
+            }
+        });
+        calendar.render();
+        console.log('Calendar initialized'); // Debug initialization
+    } else {
+        console.error('Calendar element not found');
+    }
 });
+
+// Booking confirmation functions
+function confirmBooking() {
+    const name = document.getElementById('client-name').value.trim();
+    const phone = document.getElementById('client-phone').value.trim();
+    const date = document.getElementById('selected-date').value;
+    const time = document.getElementById('selected-time').value;
+    if (!name || !phone || !date || !time) {
+        alert('Моля, попълнете всички полета.');
+        return;
+    }
+    const btn = document.getElementById('confirm-btn');
+    btn.disabled = true;
+    btn.textContent = 'Изпращане...';
+    fetch('/api/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date, time, client_name: name, client_phone: phone })
+    })
+    .then(response => response.json())
+    .then(result => {
+        alert(result.message || result.error);
+        if (response.ok) {
+            cancelBooking();
+            if (calendar) calendar.refetchEvents();
+        }
+    })
+    .catch(error => {
+        alert('Грешка при записване. Опитайте отново.');
+        console.error('Booking error:', error);
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = 'Потвърди';
+    });
+}
+
+function cancelBooking() {
+    document.getElementById('booking-form').style.display = 'none';
+    document.getElementById('client-name').value = '';
+    document.getElementById('client-phone').value = '';
+    document.getElementById('selected-date').value = '';
+    document.getElementById('selected-time').value = '';
+}

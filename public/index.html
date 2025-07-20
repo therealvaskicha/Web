@@ -13,9 +13,9 @@
 </head>
 <body>
     <!-- Header with Navigation -->
-    <header>
+<header>
         <div class="container">
-            <h1>Добре дошли</h1>
+        <img src="Images/icon.jpg" alt="Pilates Reformer Studio by Dilona Logo" class="logo">
             <nav>
                 <ul>
                     <li><a href="#hero">Начало</a></li>
@@ -27,131 +27,113 @@
                 </ul>
             </nav>
         </div>
-    </header>
+</header>   
 
-    <!-- Hero Section -->
-    <section id="hero">
-        <div class="container">
-            <p>Трансформирайте тялото и ума си с нашите тренировки по пилатес.</p>
+<!-- Hero Section -->
+<!-- Video Background -->
+<section id="hero">
+    <div class="hero-video-wrapper">
+        <video autoplay muted loop class="hero-video">
+            <source src="Images/Text.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="hero-content">
             <a href="#calendar" class="btn">Запиши си час</a>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- About Section -->
-    <section id="about">
-        <div class="container">
-            <h2>За нас</h2>
-            <p>Предлагаме Ви персонализирани уроци за подобряване на силата, гъвкавостта и баланса.</p>
-            <p> добави още текст тук . . .</p>
-        </div>
-    </section>
+<section id="about">
+    <div class="container">
+        <h2>За нас</h2>
+        <p>Предлагаме Ви персонализирани уроци за подобряване на силата, гъвкавостта и баланса.</p>
+        <p> добави още текст тук . . .</p>
+    </div>
+</section>
 
     <!-- Gallery Section -->
-    <section id="gallery">
-        <div class="container">
-            <h2>Галерия</h2>
-            <div class="gallery-container">
-                <div class="gallery-item">
-                    <img src="Images/interior1.jfif" alt="Студио Интериор 1">
-                    <div class="overlay">
-                        <span></span>
-                    </div>
-                </div>
-                <div class="gallery-item">
-                    <img src="Images/interior2.jfif" alt="Студио Интериор 2">
-                    <div class="overlay">
-                        <span></span>
-                    </div>
-                </div>
-                <div class="gallery-item">
-                    <img src="Images/interior3.jfif" alt="Пилатес Урок">
-                    <div class="overlay">
-                        <span></span>
-                    </div>
-                </div>
-                <div class="gallery-item">
-                    <img src="Images/interior4.jfif" alt="Оборудване">
-                    <div class="overlay">
-                        <span></span>
-                    </div>
-                </div>
+<!-- Gallery Section -->
+<section id="gallery">
+    <div class="container">
+        <h2>Галерия</h2>
+        <div class="gallery-container">
+            <div class="gallery-item">
+                <img src="Images/interior1.jfif">
+            </div>
+            <div class="gallery-item">
+                <img src="Images/interior2.jfif">
+            </div>
+            <div class="gallery-item">
+                <img src="Images/interior3.jfif">
+            </div>
+            <div class="gallery-item">
+                <img src="Images/interior4.jfif">
             </div>
         </div>
-    </section>
-
-    <section id="location">
-                    <div class="container">
-                        <h2>Местоположение</h2>
-                        <p>Посетете ни на ул. „Пенчо Минев“ 5, кв. Васил Левски, гр. Стара Загора</p>
-                        <div class="map">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11779.898378203749!2d25.608185815892895!3d42.428275653205866!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a869487cd16a93%3A0xb5fa36d670492de4!2sPilates%20Reformer%20Studio%20by%20Dilona!5e0!3m2!1sbg!2sbg!4v1752916037733!5m2!1sbg!2sbg" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                            <!-- <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2932.123456789!2d23.32186031550951!3d42.69770817916595!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDLCsDQxJzUyLjciTiAyM8KwMTknMTguNyJF!5e0!3m2!1sen!2sbg!4v1634567890123!5m2!1sen!2sbg" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe> -->
-                        </div>
-                    </div>
-    </section>
-
-    <!-- Calendar Section -->
-    <section id="calendar">
-    <div id="calendar" class="container">
-    <div id="booking-form"></div>
-        <h2>График и резервации</h2>
-        <input type="text" id="client-name" placeholder="Вашето име" required>
-        <p>Изберете ден и час за вашата тренировка:</p>
-        <div class="booking-controls">
-            <label for="date">Изберете ден:</label>
-        <select id="date">
-            <option value="Monday">Понеделник</option>
-            <option value="Tuesday">Вторник</option>
-            <option value="Wednesday">Сряда</option>
-            <option value="Thursday">Четвъртък</option>
-            <option value="Friday">Петък</option>
-            <option value="Saturday">Събота</option>
-            <option value="Sunday">Неделя</option>
-        </select>
-        <label for="time">Изберете час:</label>
-        <select id="time">
-            <option value="8:00">8:00</option>
-            <option value="9:00">9:00</option>
-            <option value="10:00">10:00</option>
-            <option value="11:00">11:00</option>
-            <option value="12:00">12:00</option>
-            <option value="13:00">13:00</option>
-            <option value="14:00">14:00</option>
-            <option value="15:00">15:00</option>
-            <option value="16:00">16:00</option>
-        </select>
-        <button onclick="requestBooking()">Request Booking</button>
     </div>
+</section>
 
-    </section>
+<!-- Modal for Gallery Images -->
+<div id="gallery-modal" class="modal">
+    <span class="modal-close">&times;</span>
+    <img class="modal-content" id="modal-image">
+    <div id="modal-caption"></div>
+</div>
 
-    <!-- Contact Form Section -->
-    <section id="contact">
-        <div class="container">
-            <h2>Свържете се с нас за повече информация</h2>
-            <form id="contact-form">
-                <input type="text" name="name" placeholder="Вашето име" required>
-                <input type="email" name="email" placeholder="Вашият e-mail" required>
-                <textarea name="message" placeholder="Вашето съобщение" required></textarea>
-                <button type="submit" class="btn">Изпрати</button>
-            </form>
+<!-- Location -->
+
+<section id="location">
+    <div class="container">
+        <h2>Местоположение</h2>
+            <p>Посетете ни на ул. „Пенчо Минев“ 5, кв. Васил Левски, гр. Стара Загора</p>
+        <div class="map">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11779.898378203749!2d25.608185815892895!3d42.428275653205866!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a869487cd16a93%3A0xb5fa36d670492de4!2sPilates%20Reformer%20Studio%20by%20Dilona!5e0!3m2!1sbg!2sbg!4v1752916037733!5m2!1sbg!2sbg" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
-    </section>
-
-    <!-- Modal for Gallery Images -->
-    <div id="gallery-modal" class="modal">
-        <span class="modal-close">&times;</span>
-        <img class="modal-content" id="modal-image">
-        <div id="modal-caption"></div>
     </div>
+</section>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 Pilates Reformed Studio by Dilona. All rights reserved.</p>
+<!-- Calendar Section -->
+<section id="calendar">
+    <div class="container">
+        <h2>График</h2>
+        <div id="calendar"></div>
+        <div id="booking-form" style="display: none;">
+            <input type="text" id="client-name" placeholder="Вашето име" required>
+            <input type="text" id="client-phone" placeholder="Вашият телефон" required>
+            <p>Потвърдете заявката си:</p>
+            <div class="booking-controls">
+                <button onclick="confirmBooking()" id="confirm-btn">Потвърди</button>
+                <button onclick="cancelBooking()" id="cancel-btn">Отказ</button>
+            </div>
         </div>
-    </footer>
+    </div>
+</section>
 
+<!-- Footer -->
+<footer>
+<!-- Contact Form Section -->
+<section id="contact">
+    <div class="container">
+        <h2>Свържете се с нас за повече информация</h2>
+        <form id="contact-form">
+            <input type="text" name="name" placeholder="Вашето име" required>
+            <input type="email" name="email" placeholder="Вашият e-mail" required>
+            <textarea name="message" placeholder="Вашето съобщение" required></textarea>
+            <button type="submit" class="btn">Изпрати</button>
+        </form>
+    </div>
+</section>
+
+    <div class="container">
+        <h2>Социални мрежи</h2>
+        <div class="social-links">
+            <a href="https://www.facebook.com/61576205944425" target="_blank">Facebook</a>
+            <a href="https://www.instagram.com/pilates.reformer.bydilona/" target="_blank">Instagram</a>
+        <p>&copy; 2025 Pilates Reformed Studio by Dilona. All rights reserved.</p>
+    </div>
+</footer>
+    <!-- Scripts -->
     <script src="script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.15/index.global.min.js"></script>

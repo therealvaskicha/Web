@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin - Approve Bookings</title>
+    <title>Админ - Заявки за резервация</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         body { font-family: 'Lora', sans-serif; max-width: 900px; margin: 20px auto; }
@@ -12,9 +12,9 @@
     </style>
 </head>
 <body>
-    <h1>Pending Bookings</h1>
+    <h1>Заявки за резервация</h1>
     <table id="pending-bookings">
-        <tr><th>ID</th><th>Date</th><th>Time</th><th>Client</th><th>Action</th></tr>
+        <tr><th>ID</th><th>Дата</th><th>Час</th><th>Клиент</th><th>Телефон</th><th>Действие</th></tr>
     </table>
     <script>
         async function loadPending() {
@@ -28,6 +28,7 @@
                     <td>${booking.date}</td>
                     <td>${booking.time}</td>
                     <td>${booking.client_name}</td>
+                    <td>${booking.client_phone || 'N/A'}</td>
                     <td>
                         <button onclick="updateBooking(${booking.id}, 'approved')">Approve</button>
                         <button onclick="updateBooking(${booking.id}, 'rejected')">Reject</button>
