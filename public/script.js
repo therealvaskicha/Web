@@ -110,8 +110,8 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             eventDidMount: function (info) {
                 if (info.event.title === 'Зает') {
-                    info.el.style.backgroundColor = '#ff4444';
-                    info.el.style.borderColor = '#ff4444';
+                    info.el.style.backgroundColor = '#ff44444b';
+                    info.el.style.borderColor = '#ff44444b';
                 }
             },
             events: async function (fetchInfo, successCallback) {
@@ -186,3 +186,26 @@ function cancelBooking() {
     document.getElementById('selected-date').value = '';
     document.getElementById('selected-time').value = '';
 }
+
+// Example booking handlers
+function confirmBooking() {
+    alert('Заявката е изпратена!');
+    document.getElementById('booking-form').style.display = 'none';
+}
+function cancelBooking() {
+    document.getElementById('booking-form').style.display = 'none';
+}
+
+
+// Scroll to top button functionality
+const scrollBtn = document.getElementById('scrollTopBtn');
+window.addEventListener('scroll', function() {
+    if (window.scrollY > 300) {
+        scrollBtn.classList.add('show');
+    } else {
+        scrollBtn.classList.remove('show');
+    }
+});
+scrollBtn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
