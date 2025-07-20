@@ -13,17 +13,24 @@
 </head>
 <body>
 
+<!-- Remove this script if you want to keep the scroll position on page reload 
+<script>
+  window.onbeforeunload = function () {
+    window.scrollTo(0, 0);
+  };
+</script> 
+-->
 
 <header>
         <div class="container">
-        <img src="Images/icon.jpg" alt="Pilates Reformer Studio by Dilona Logo" class="logo">
+        <img src="Images/icon.jpg" alt="Pilates Reformer Studio by Dilona Logo" class="logo" onclick="location.reload()" >
             <nav>
                 <ul>
                     <li><a href="#about">За нас</a></li>
                     <li><a href="#gallery">Галерия</a></li>
                     <li><a href="#prices">Цени</a></li>
-                    <li><a href="#calendar">График</a></li>
-                    <li><a href="#contact">Контакти</a></li>
+                    <li><a href="#schedule">График</a></li>
+                    <li><a href="#contact">Контакт</a></li>
                 </ul>
             </nav>
         </div>
@@ -45,7 +52,7 @@
 
 <section id="about">
     <div class="container">
-        <h2>За студиото</h2>
+        <h2>За нас</h2>
         <p>Здравейте!</p>
         <p>Аз съм Дилона и с най-голямо удоволствие ви приветствам в моето реформър пилатес студио.</p>
         <p>Персонализирани уроци за подобряване на силата, гъвкавостта и баланса.</p>
@@ -77,7 +84,6 @@
     </div>
 
 
-
 <div id="gallery-modal" class="modal">
     <span class="modal-close">&times;</span>
         <img class="modal-content" id="modal-image">
@@ -85,9 +91,35 @@
 </div>
 </section>
 
+<section id="prices">
+    <div class="container">
+        <h2>Цени</h2>
+        <div class="price-list">
+            <div class="price-item">
+                <h3>Еднократна тренировка</h3>
+                <p>30 лв.</p>
+            </div>
+            <div class="price-item">
+                <h3>Абонамент за 4 тренировки</h3>
+                <p>100 лв.</p>
+            </div>
+            <div class="price-item">
+                <h3>Абонамент за 8 тренировки</h3>
+                <p>180 лв.</p>
+            </div>
+            <div class="price-item">
+                <h3>Годишен абонамент</h3>
+                <p>900 лв.</p>
+            </div>
+        </div>
+        <p>За повече информация и резервации, моля свържете се с нас.</p>
+    </div>
+</section>
 
-<section id="calendar">
-    <h2>График</h2>
+<section id="schedule">
+    <div class="container">
+        <h2>График</h2>
+        <div id="calendar"></div>
             <div id="booking-form" style="display: none;">
                <input type="text" id="client-name" placeholder="Вашето име" required>
                <input type="text" id="client-phone" placeholder="Вашият телефон" required>
@@ -98,7 +130,8 @@
                    <button onclick="confirmBooking()" id="confirm-btn">Потвърди</button>
                    <button onclick="cancelBooking()" id="cancel-btn">Отказ</button>
                </div>
-
+            </div>
+    </div> 
 </section>
 
 <button id="scrollTopBtn" title="scrollTopBtn">Нагоре</button>
