@@ -12,16 +12,16 @@
     <link rel="icon" href="Images/icon.jpg" type="image/jpeg">
 </head>
 <body>
-    <!-- Header with Navigation -->
+
+
 <header>
         <div class="container">
         <img src="Images/icon.jpg" alt="Pilates Reformer Studio by Dilona Logo" class="logo">
             <nav>
                 <ul>
-                    <li><a href="#hero">Начало</a></li>
                     <li><a href="#about">За нас</a></li>
                     <li><a href="#gallery">Галерия</a></li>
-                    <li><a href="#location">Локация</a></li>
+                    <li><a href="#prices">Цени</a></li>
                     <li><a href="#calendar">График</a></li>
                     <li><a href="#contact">Контакти</a></li>
                 </ul>
@@ -29,8 +29,7 @@
         </div>
 </header>   
 
-<!-- Hero Section -->
-<!-- Video Background -->
+
 <section id="hero">
     <div class="hero-video-wrapper">
         <video autoplay muted loop class="hero-video">
@@ -43,17 +42,21 @@
     </div>
 </section>
 
-    <!-- About Section -->
+
 <section id="about">
     <div class="container">
-        <h2>За нас</h2>
-        <p>Предлагаме Ви персонализирани уроци за подобряване на силата, гъвкавостта и баланса.</p>
-        <p> добави още текст тук . . .</p>
+        <h2>За студиото</h2>
+        <p>Здравейте!</p>
+        <p>Аз съм Дилона и с най-голямо удоволствие ви приветствам в моето реформър пилатес студио.</p>
+        <p>Персонализирани уроци за подобряване на силата, гъвкавостта и баланса.</p>
+        <p> . . . още текст . . .</p>
+        <div class="about-image">
+            <img src="Images/loni.jfif">
+        </div>
     </div>
 </section>
 
-    <!-- Gallery Section -->
-<!-- Gallery Section -->
+
 <section id="gallery">
     <div class="container">
         <h2>Галерия</h2>
@@ -72,71 +75,70 @@
             </div>
         </div>
     </div>
-</section>
 
-<!-- Modal for Gallery Images -->
+
+
 <div id="gallery-modal" class="modal">
     <span class="modal-close">&times;</span>
-    <img class="modal-content" id="modal-image">
+        <img class="modal-content" id="modal-image">
     <div id="modal-caption"></div>
 </div>
-
-<!-- Location -->
-
-<section id="location">
-    <div class="container">
-        <h2>Местоположение</h2>
-            <p>Посетете ни на ул. „Пенчо Минев“ 5, кв. Васил Левски, гр. Стара Загора</p>
-        <div class="map">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11779.898378203749!2d25.608185815892895!3d42.428275653205866!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a869487cd16a93%3A0xb5fa36d670492de4!2sPilates%20Reformer%20Studio%20by%20Dilona!5e0!3m2!1sbg!2sbg!4v1752916037733!5m2!1sbg!2sbg" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-        </div>
-    </div>
 </section>
 
-<!-- Calendar Section -->
+
 <section id="calendar">
-    <div class="container">
-        <h2>График</h2>
-        <div id="calendar"></div>
-        <div id="booking-form" style="display: none;">
-            <input type="text" id="client-name" placeholder="Вашето име" required>
-            <input type="text" id="client-phone" placeholder="Вашият телефон" required>
-            <p>Потвърдете заявката си:</p>
-            <div class="booking-controls">
-                <button onclick="confirmBooking()" id="confirm-btn">Потвърди</button>
-                <button onclick="cancelBooking()" id="cancel-btn">Отказ</button>
-            </div>
-        </div>
-    </div>
+    <h2>График</h2>
+            <div id="booking-form" style="display: none;">
+               <input type="text" id="client-name" placeholder="Вашето име" required>
+               <input type="text" id="client-phone" placeholder="Вашият телефон" required>
+               <input type="text" id="selected-date" placeholder="Избрана дата" readonly>
+               <input type="text" id="selected-time" placeholder="Избран час" readonly>
+               <p>Потвърдете заявката си:</p>
+               <div class="booking-controls">
+                   <button onclick="confirmBooking()" id="confirm-btn">Потвърди</button>
+                   <button onclick="cancelBooking()" id="cancel-btn">Отказ</button>
+               </div>
+
 </section>
 
-<!-- Footer -->
+<button id="scrollTopBtn" title="scrollTopBtn">Нагоре</button>
+
 <footer>
-<!-- Contact Form Section -->
-<section id="contact">
-    <div class="container">
-        <h2>Свържете се с нас за повече информация</h2>
+  <div class="footer-flex">
+    <section id="location">
+      <div class="container">
+        <p>Посетете ни на ул. „Пенчо Минев“ 5, кв. Васил Левски, гр. Стара Загора</p>
+        <div class="map">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11779.898378203749!2d25.608185815892895!3d42.428275653205866!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a869487cd16a93%3A0xb5fa36d670492de4!2sPilates%20Reformer%20Studio%20by%20Dilona!5e0!3m2!1sbg!2sbg!4v1752916037733!5m2!1sbg!2sbg" width="500" height="360" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+    </section>
+    <section id="contact">
+      <div class="container">
+        <h1>Свържи се с Дилона</h1>
         <form id="contact-form">
-            <input type="text" name="name" placeholder="Вашето име" required>
-            <input type="email" name="email" placeholder="Вашият e-mail" required>
-            <textarea name="message" placeholder="Вашето съобщение" required></textarea>
-            <button type="submit" class="btn">Изпрати</button>
+          <input type="text" name="name" placeholder="Вашето име" required>
+          <input type="email" name="email" placeholder="E-mail" required>
+          <textarea name="message" placeholder="Вашето съобщение" required></textarea>
+          <button type="submit" class="btn">Изпрати</button>
         </form>
-    </div>
-</section>
+      </div>
+    </section>
+  </div>
 
     <div class="container">
         <h2>Социални мрежи</h2>
         <div class="social-links">
             <a href="https://www.facebook.com/61576205944425" target="_blank">Facebook</a>
             <a href="https://www.instagram.com/pilates.reformer.bydilona/" target="_blank">Instagram</a>
-        <p>&copy; 2025 Pilates Reformed Studio by Dilona. All rights reserved.</p>
+        <p>&copy; 2025 Pilates Reformer Studio by Dilona. All rights reserved.</p>
     </div>
 </footer>
-    <!-- Scripts -->
+
     <script src="script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.15/index.global.min.js"></script>
+
 </body>
 </html>
