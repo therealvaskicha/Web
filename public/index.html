@@ -101,16 +101,16 @@
           <span class="price-card-title">FaceTime</span>
         </div>
         <div class="price-card-price">
-          <span>0 лв.</span>
-          <small>/ онлайн консултация</small>
+          <span>Безплатно</span>
+          <small>онлайн консултация</small>
         </div>
         <ul class="price-card-features">
-          <li>Безплатна консултация с Дилона &#128222; (с възможност за видео връзка)</li>
+          <li>Консултирай се с Дилона &#128222; (с възможност за видео връзка)</li>
           <li>Отговори на въпроси и съвети &#9989;</li>
           <li>Определяне на цели и нужди &#127919;</li>
           <li>Създаване на персонализиран план за тренировка</li>
         </ul>
-        <button class="price-card-btn" type="button">Избери</button>
+        <button class="price-card-btn choose-btn" type="button" id="openForm">Избери</button>
       </div>
       <div class="price-card">
         <div class="price-card-header">
@@ -125,7 +125,7 @@
           <li>Гъвкав график &#128197;</li>
           <li>Възможност за групова тренировки &#128111; (по желание)</li>
         </ul>
-        <button class="price-card-btn choose-btn" data-type="Solo" type="button">Избери</button>
+        <button class="price-card-btn choose-btn" data-type="Solo" type="button" id="openForm">Избери</button>
       </div>
       <div class="price-card">
         <div class="price-card-header">
@@ -140,7 +140,7 @@
           <li>Персонализирана Reformer тренировка по пилатес &#11088;</li>
           <li>Гъвкав график &#128197;</li>
         </ul>
-        <button class="price-card-btn choose-btn" data-type="Duo" type="button">Избери</button>
+        <button class="price-card-btn choose-btn" data-type="Duo" type="button" id="openForm">Избери</button>
       </div>
     </div>
       <h3>Абонаментни карти</h3>
@@ -160,11 +160,11 @@
           <li>Приоритетен график &#128197;</li>
           <li>Възможност за групови тренировки &#128111;</li>
         </ul>
-        <button class="price-card-btn">Избери</button>
+        <button class="price-card-btn" id="openForm" data-type="Re4Me">Избери</button>
       </div>
       <div class="price-card">
         <div class="price-card-header">
-          <span class="price-card-title">Абонамент 8</span>
+          <span class="price-card-title">Reform 8</span>
         </div>
         <div class="price-card-price">
           <span class="old-price">240 лв.</span>
@@ -176,7 +176,7 @@
           <li>Приоритетен график &#128197;</li>
           <li>Възможност за групови тренировки &#128111;</li>
         </ul>
-        <button class="price-card-btn">Избери</button>
+        <button class="price-card-btn" id="openForm" data-type="Reform8">Избери</button>
       </div>
       <div class="price-card">
         <div class="price-card-header">
@@ -194,30 +194,72 @@
           <li>Поодарък за рожден ден &#127873;</li>
           <li>Безплатна консултация с Дилона &#128161;</li>
         </ul>
-        <button class="price-card-btn">Избери</button>
+        <button class="price-card-btn" id="openForm" data-type="Reform365">Избери</button>
       </div>
     </div>
-    <p style="text-align:center; margin-top:20px;">*Цените на пакетите с тренировки се изчисляват на база единични тренировки и приложеното намаление към тях.</p>
-    <p style="text-align:center; margin-top:20px;">**Неограничените тренировки се извършват с предварително планиран график. При промени в графика Дилона ще се свърж   е с вас.</p>
-    <p style="text-align:center; margin-top:20px;">За повече информация, моля <a href="#contact">свържете се с нас.</a></p>
+    <p style="text-align:center; margin-top:10px;">*Цените на пакетите с тренировки се изчисляват на база единични тренировки и приложеното намаление към тях.</p>
+    <p style="text-align:center; margin-top:10px;">**Неограничените тренировки се извършват с предварително планиран график. При промени в графика Дилона ще се свърж   е с вас.</p>
+    <p style="text-align:center; margin-top:10px;">За повече информация, моля <a href="#contact">свържете се с нас.</a></p>
   </div>
 </section>
 
 <section id="schedule">
-  <h2>График</h2>
-    <div id="calendar"></div> 
-      <div id="booking-controls" style="display:none; text-align:center; margin-top:20px;">
-        <label>Дата:
-        <select id="date-select"></select>
-        </label>
-        <label>Час:
-        <select id="time-select"></select>
-        </label>
-        <button id="confirm-btn" type="button">Потвърди</button>
+  <div class="container">
+    <h2>График</h2>
+    <div class="schedule-columns">
+      <div class="schedule-column1">
+      <div id="calendar"></div>
       </div>
+      <div class="schedule-column2"> 
+        <form action="/" method="GET" id="serviceForm">
+        
+        <p style="padding-bottom: 20px; padding-top: 10px;">Тук трябва да има списък с избран продукт от горното меню с възможност за премахване (х)</p>
+        <p>Моля, попълнете формата, за да изпратите вашата заявка.</p>
+        <id="booking-controls">
+          <h1>Избрана услуга: </h1>
+          <select id="booking-type" name="bookingType" required>
+            <option value="Solo">Solo</option>
+            <option value="Duo">Duo</option>
+            <option value="Re4 Me">Re4 Me</option>
+            <option value="Reform 8">Reform 8</option>
+            <option value="Reform365">Reform365</option>
+          </select>
+        <label for="name" ><b>Вашето име:</b></label>
+        <input type="text" placeholder="Въведи име" name="name" id="name" required>
+      
+        <label for="phone"><b>Телефон за връзка:</b></label>
+        <input type="text" placeholder="Въведи мобилен телефон" name="phoneNr" id="phoneNr" required>
+      
+        <button type="submit" class="btn" id="submitForm">Потвърди</button>
+        <button type="button" class="btn" id="closeForm">Отказ</button>
+      </form>
+      </div>
+    </div>
+  </div> 
+
+<!-- Service form -->
+<div id="error" class="popup">
+  <div class="popup-content">
+    <p>Моля, попълнете всички полета!</p>
+      <form action="/" method="GET" id="serviceForm">
+        <h1>Избрана услуга: </h1>
+        <p>Моля, попълнете формата, за да потвърдите вашата заявка.</p>
+        <label for="name"><b>Вашето име:</b></label>
+        <input type="text" placeholder="Въведи име" name="name" id="name" required>
+      
+        <label for="phone"><b>Вашият телефон за връзка:</b></label>
+        <input type="text" placeholder="Въведи мобилен телефон" name="phoneNr" id="phoneNr" required>
+      
+        <button type="submit" class="btn" id="submitForm">Потвърди</button>
+        <button type="button" class="btn" id="closeForm">Отказ</button>
+      </form>
+  </div>  
+</div>
 </section>
 
 <button id="scrollTopBtn" title="scrollTopBtn">Нагоре</button>
+
+
 
 <footer>
   <div class="footer-flex">
@@ -247,7 +289,6 @@
         <div class="social-links">
             <a href="https://www.facebook.com/61576205944425" target="_blank">Facebook</a>
             <a href="https://www.instagram.com/pilates.reformer.bydilona/" target="_blank">Instagram</a>
-        <p>&copy; 2025 Pilates Reformer Studio by Dilona. All rights reserved.</p>
     </div>
 </footer>
 
@@ -257,4 +298,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.15/index.global.min.js"></script>
 
 </body>
+  <div class="bottom-bar">
+    <p>&copy; 2025 Pilates Reformer Studio by Dilona. All rights reserved.</p>
+  </div>
 </html>

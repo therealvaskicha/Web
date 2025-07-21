@@ -80,6 +80,52 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+    
+
+// Popup form functionality
+
+const openFormBtn = document.getElementById('openForm');
+const closeFormBtn = document.getElementById('closeForm');
+// Ensure buttons exist before adding event listeners
+if (openFormBtn && closeFormBtn) {
+    openFormBtn.addEventListener('click', function () {
+        document.querySelector('.popup').style.display = 'flex';
+    });
+    closeFormBtn.addEventListener('click', function () {
+        document.querySelector('.popup').style.display = 'none';
+    });
+}
+
+// const serviceForm = document.getElementById('serviceForm');
+// const formName = document.getElementById('name');
+// const formPhoneNr = document.getElementById('phoneNr');
+
+// let messages =[];
+// if (formName.value === '' || formName.value == null) {
+//     messages.push('Необходимо е име за връзка');
+// }
+// if (formPhoneNr.value === '' || formPhoneNr.value == null) {
+//     messages.push('Необходим е телефон за връзка');
+// }
+// if (formPhoneNr.value.length < 10) {
+//     messages.push('Телефонът трябва да е поне 10 цифри');
+// }
+// if (!/^\d+$/.test(formPhoneNr.value)) {
+//     messages.push('Телефонът трябва да съдържа само цифри');
+// }
+// if (!/^[a-zA-Zа-яА-ЯёЁ\s]+$/.test(formName.value)) {
+//     messages.push('Името трябва да съдържа само букви');
+// }
+// if (formName.value.length < 2) {
+//     messages.push('Името трябва да е поне 2 букви');
+// }
+// if (formName.value.length > 50) {
+//     messages.push('Името не трябва да е по-дълго от 50 букви');
+// }
+// if (formPhoneNr.value.length > 15) {
+//     messages.push('Телефонът не трябва да е по-дълъг от 15 цифри');
+// }
+
 
 // Initialize FullCalendar
 const calendarEl = document.getElementById('calendar');
@@ -159,13 +205,6 @@ if (calendarEl) {
       e.preventDefault();
       const choice = this.getAttribute('data-type');
       localStorage.setItem('bookingType', choice);
-
-      // Show booking controls and populate dropdowns
-      const bookingControls = document.getElementById('booking-controls');
-      if (bookingControls) {
-        bookingControls.style.display = 'block';
-        populateBookingDropdowns();
-      }
 
       // Scroll to calendar section
       const calendar = document.getElementById('calendar');
