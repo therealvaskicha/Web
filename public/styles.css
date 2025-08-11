@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    max-width: 100%;
 }
 
 body {
@@ -67,7 +68,7 @@ body {
 #hero {
     position: relative;
     width: 100%;
-    height: 90vh;
+    height: 81rem;
     overflow: hidden;
 }
 
@@ -368,52 +369,6 @@ body {
 }
 
 /* Schedule Section */
-.schedule-columns {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2rem;
-    justify-content: left;
-    margin: 2.5rem 0rem;
-}
-
-.schedule-column1{
-    background: #fff;
-    border: 0.063rem solid #e7e4bb;
-    border-radius: 1rem;
-    box-shadow: 0rem 0.25rem 1.5rem rgba(0,0,0,0.07);
-    padding: 2rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    transition: box-shadow 0.2s;
-    cursor:default;
-}
-
-.schedule-column2{
-    background: #fff;
-    border: 063rem solid #e7e4bb;
-    border-radius: 16px;
-    box-shadow: 0rem 0.25rem 1.5rem rgba(0,0,0,0.07);
-    padding: 2rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    transition: box-shadow 0.2s;
-    cursor:default;
-}
-
-/* Popup form */
-.popup {
-    display:none;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    top: 0;
-    left: 0;
-    background: #fff;
-}
 
 /* Calendar */
 #calendar {
@@ -443,7 +398,7 @@ body {
     }
 
     #contact input, #contact textarea {
-        padding: rem;
+        padding: 1rem;
         border: 0.063rem solid #ddd;
         border-radius: 0.625rem;
         font-size: 1rem;
@@ -469,8 +424,6 @@ body {
         font-size: 1rem;
         transition: background-color 0.3s ease;
     }
-
-/* ... (existing CSS remains unchanged until footer) ... */
 
 /* Footer Social Links */
 .social-links {
@@ -533,6 +486,15 @@ body {
 }
 
 /* Footer */
+
+iframe {
+    width: 25rem;
+    height: 20rem;
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0rem 0.25rem 1.5rem rgba(0,0,0,0.07);
+}
+
 footer {
     align-items: flex-start;
     background: #f4f4f4;
@@ -687,14 +649,14 @@ top: 0rem;
             align-items: center;
         }
 
-        #schedule-columns {
+        /* #schedule-columns {
             flex-direction: column;
             align-items: center;
         }
 
         #schedule-column1, #schedule-column2 {
             max-width: 100%;
-        }
+        } */
 
         .gallery-container {
             grid-template-columns: 1fr;
@@ -720,17 +682,6 @@ top: 0rem;
         .price-cards {
         flex-direction: column;
         align-items: center;
-        }
-        .schedule-columns {
-        flex-direction: column;
-        align-items: center;
-        }
-        .schedule-column1 {
-        max-width:26.25rem;
-        }
-
-        .schedule-column2 {
-        max-width:15rem;
         }
 
         .price-card {

@@ -39,7 +39,6 @@
 
 
 <section id="hero">
-    <div class="hero-video-wrapper">
         <video autoplay muted loop class="hero-video">
             <source src="Images/Text.mp4" type="video/mp4">
             Your browser does not support the video tag.
@@ -47,7 +46,6 @@
         <div class="hero-content">
             <a href="#calendar" class="btn">Запиши си час</a>
         </div>
-    </div>
 </section>
 
 
@@ -200,27 +198,28 @@
         <button class="price-card-btn" id="openForm" data-type="Reform365">Избери</button>
       </div>
     </div>
-    <p style="text-align:center; margin-top:10px;">*Цените на пакетите с тренировки се изчисляват на база единични тренировки и приложеното намаление към тях.</p>
-    <p style="text-align:center; margin-top:10px;">**Неограничените тренировки се извършват с предварително планиран график. При промени в графика Дилона ще се свърж   е с вас.</p>
-    <p style="text-align:center; margin-top:10px;">За повече информация, моля <a href="#contact">свържете се с нас.</a></p>
+    <p>*Цените на пакетите с тренировки се изчисляват на база единични тренировки и приложеното намаление към тях.</p>
+    <p>**Неограничените тренировки се извършват с предварително планиран график. При промени в графика Дилона ще се свърж   е с вас.</p>
+    <p>За повече информация, моля <a href="#contact">свържете се с нас.</a></p>
   </div>
 </section>
 
 <section id="schedule">
   <div class="container">
     <h2>График</h2>
-    <div class="schedule-columns">
-      <div class="schedule-column1">
-      <div id="calendar"></div>
-      </div>
-      <div class="schedule-column2"> 
+    <!-- <div class="schedule-columns">
+      <div class="schedule-column1"> -->
+          <div id="calendar"></div>
+  </div>
+      <!-- <div class="schedule-column2">  -->
+  <div class="container">
+    <h2>Заяви услуга</h2>
         <form action="/" method="GET" id="serviceForm">
           <!-- В полето за въвеждане (вдясно) трябва да има списък с избран продукт от горното меню с възможност 
            за премахване (х). Също така нека направим полето малко по-добре изглеждащо. Искам избраната услуга 
            по подразбиране да е празно (в момента излиза Alo Alo, което е първото от опциите в select).  -->
         <p>Моля, попълнете формата, за да изпратите заявка за избраната от Вас тренировка или абонамент.</p>
         <id="booking-controls">
-          <h2>Заяви услуга</h2>
           <h3>Задължителни полета:</h3>
           <label; for="booking-type"><b>Избрана услуга:</b></label>
           <br>
@@ -257,7 +256,8 @@
         <button type="button" class="btn" id="closeForm">Отказ</button>
       </form>
       </div>
-    </div>
+      <!-- </div> -->
+    <!-- </div> -->
   </div> 
 </section>
 
@@ -271,7 +271,7 @@
         <p>Посетете ни на ул. „Пенчо Минев“ 5, кв. Васил Левски, гр. Стара Загора</p>
         <button id="copyAddressBtn" class="btn clipboard-btn">Копирай адреса</button>
         <div class="map">
-          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11779.898378203749!2d25.608185815892895!3d42.428275653205866!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a869487cd16a93%3A0xb5fa36d670492de4!2sPilates%20Reformer%20Studio%20by%20Dilona!5e0!3m2!1sbg!2sbg!4v1752916037733!5m2!1sbg!2sbg" width="500" height="360" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11779.898378203749!2d25.608185815892895!3d42.428275653205866!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a869487cd16a93%3A0xb5fa36d670492de4!2sPilates%20Reformer%20Studio%20by%20Dilona!5e0!3m2!1sbg!2sbg!4v1752916037733!5m2!1sbg!2sbg" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
       </div>
     </section>
