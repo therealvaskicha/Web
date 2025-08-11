@@ -82,6 +82,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
 
+    // Clipboard functionality
+    const copyAddressBtn = document.getElementById('copyAddressBtn');
+    if (copyAddressBtn) {
+        copyAddressBtn.addEventListener('click', function () {
+            const address = 'ул. „Пенчо Минев“ 5, гр. Стара Загора';
+            navigator.clipboard.writeText(address)
+                .then(() => {
+                    alert('Адресът е копиран в клипборда!');
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    alert('Грешка при копиране на адреса.');
+                });
+        });
+    }
+
 // Popup form functionality
 
 const openFormBtn = document.getElementById('openForm');
