@@ -188,10 +188,10 @@ body {
         width: 100%;
         height: 100%;
         object-fit:cover;
-        transition: transform 1s ease-in-out;
+        transition: transform 0.3s ease-in-out;
     }
     .gallery-item:hover img {
-        transform: scale(1.2);
+        transform: scale(1.03);
     }
     .gallery-item .overlay {
         position: absolute;
@@ -480,12 +480,90 @@ body {
         transition: background-color 0.3s ease;
     }
 
+/* ... (existing CSS remains unchanged until footer) ... */
+
+/* Footer Social Links */
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 500;
+    transition: color 0.3s ease, transform 0.2s ease;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background-color: #e7e4bb;
+    opacity: 75%;
+}
+
+.social-link i {
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.social-link:hover {
+    color: #fff;
+    background-color: #f0a500;
+    opacity: 90%;
+    transform: translateY(-2px);
+}
+
+.social-link:hover i {
+    color: #fff;
+}
+
+/* Clipboard Button */
+.clipboard-btn {
+    display: inline-block;
+    padding: 5px 10px;
+    background: #6b7280;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-family: 'Lora', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    margin: 10px 0;
+    transition: background-color 0.3s ease;
+}
+
+.clipboard-btn:hover {
+    background-color: #4b5563;
+}
+
 /* Footer */
 footer {
     background: #f4f4f4;
     text-align: center;
     padding: 1rem 0;
     position: sticky;
+}
+
+footer h2 {
+    font-family: 'Lora', sans-serif;
+    line-height: 1.6;
+    font-size: 2rem;
+}
+
+footer .container {
+    padding: 20px 20px 10px;
+}
+
+footer p {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #666;
 }
 
 .footer-flex {
@@ -567,6 +645,54 @@ top: 0;
 
 /* Responsive Design */
     @media (max-width: 768px) {
+        #hero {
+            height: 60vh; /* Adjust height for smaller screens */
+        }
+
+        #hero h2 {
+            font-size: 1.8rem;
+        }
+
+        #hero p {
+            font-size: 1.2rem;
+        }
+
+        #hero .btn {
+            padding: 10px 20px;
+            font-size: 1rem;
+        }
+
+        #gallery h2 {
+            font-size: 28px;
+        }
+
+        #gallery .gallery-container {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        #about {
+            font-size: 20px;
+        }
+
+        #prices h2 {
+            font-size: 1.8rem;
+        }
+
+        #prices .price-cards {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #schedule-columns {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #schedule-column1, #schedule-column2 {
+            width: 90%;
+            max-width: 100%;
+        }
+
         .gallery-container {
             grid-template-columns: 1fr;
         }

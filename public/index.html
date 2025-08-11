@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.15/main.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.15/main.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="icon" href="Images/icon.jpg" type="image/jpeg">
 </head>
 <body>
@@ -98,7 +99,7 @@
     <div class="price-cards">
       <div class="price-card">
         <div class="price-card-header">
-          <span class="price-card-title">FaceTime</span>
+          <span class="price-card-title">Alo Alo</span>
         </div>
         <div class="price-card-price">
           <span>Безплатно</span>
@@ -123,24 +124,26 @@
         <ul class="price-card-features">
           <li>Персонализирана Reformer тренировка по пилатес &#11088;</li>
           <li>Гъвкав график &#128197;</li>
-          <li>Възможност за групова тренировки &#128111; (по желание)</li>
+          <li>Тренировка в група &#128111;</li>
         </ul>
         <button class="price-card-btn choose-btn" data-type="Solo" type="button" id="openForm">Избери</button>
       </div>
       <div class="price-card">
         <div class="price-card-header">
-          <span class="price-card-title">Duo</span>
+          <span class="price-card-title">Private</span>
         </div>
         <div class="price-card-price">
         <span class="old-price">60 лв.</span>
-          <span>50 лв.</span>
+          <span>45 лв.</span>
           <small>/ 1 тренировка</small>
         </div>
         <ul class="price-card-features">
           <li>Персонализирана Reformer тренировка по пилатес &#11088;</li>
           <li>Гъвкав график &#128197;</li>
+          <li>Тренировка извън група</li>
+          <li>Доведи приятел &#128111;</li>
         </ul>
-        <button class="price-card-btn choose-btn" data-type="Duo" type="button" id="openForm">Избери</button>
+        <button class="price-card-btn choose-btn" data-type="Private" type="button" id="openForm">Избери</button>
       </div>
     </div>
       <h3>Абонаментни карти</h3>
@@ -212,23 +215,43 @@
       </div>
       <div class="schedule-column2"> 
         <form action="/" method="GET" id="serviceForm">
-        
-        <p style="padding-bottom: 20px; padding-top: 10px;">Тук трябва да има списък с избран продукт от горното меню с възможност за премахване (х)</p>
-        <p>Моля, попълнете формата, за да изпратите вашата заявка.</p>
+          <!-- В полето за въвеждане (вдясно) трябва да има списък с избран продукт от горното меню с възможност 
+           за премахване (х). Също така нека направим полето малко по-добре изглеждащо. Искам избраната услуга 
+           по подразбиране да е празно (в момента излиза Alo Alo, което е първото от опциите в select).  -->
+        <p>Моля, попълнете формата, за да изпратите заявка за избраната от Вас тренировка или абонамент.</p>
         <id="booking-controls">
-          <h1>Избрана услуга: </h1>
+          <h2>Заяви услуга</h2>
+          <h3>Задължителни полета:</h3>
+          <label; for="booking-type"><b>Избрана услуга:</b></label>
+          <br>
           <select id="booking-type" name="bookingType" required>
             <option value="Solo">Solo</option>
-            <option value="Duo">Duo</option>
+            <option value="Private">Private</option>
             <option value="Re4 Me">Re4 Me</option>
             <option value="Reform 8">Reform 8</option>
             <option value="Reform365">Reform365</option>
           </select>
+          <br>
         <label for="name" ><b>Вашето име:</b></label>
+        <br>
         <input type="text" placeholder="Въведи име" name="name" id="name" required>
-      
+          <br>
         <label for="phone"><b>Телефон за връзка:</b></label>
+        <br>
         <input type="text" placeholder="Въведи мобилен телефон" name="phoneNr" id="phoneNr" required>
+          <br>
+        <h3>Полета по избор:</h3>
+        <label for="date"><b>Дата на тренировка:</b></label>
+        <br>
+        <input type="date" name="date" id="date" required>
+          <br>
+        <label for="time"><b>Час на тренировка:</b></label>
+        <br>
+        <input type="time" name="time" id="time" required>
+        <br>
+        <label for="email"><b>E-mail:</b></label>
+        <br>
+        <input type="text" placeholder="E-mail" name="emailOpt" id="emailOpt">
       
         <button type="submit" class="btn" id="submitForm">Потвърди</button>
         <button type="button" class="btn" id="closeForm">Отказ</button>
@@ -236,36 +259,17 @@
       </div>
     </div>
   </div> 
-
-<!-- Service form -->
-<div id="error" class="popup">
-  <div class="popup-content">
-    <p>Моля, попълнете всички полета!</p>
-      <form action="/" method="GET" id="serviceForm">
-        <h1>Избрана услуга: </h1>
-        <p>Моля, попълнете формата, за да потвърдите вашата заявка.</p>
-        <label for="name"><b>Вашето име:</b></label>
-        <input type="text" placeholder="Въведи име" name="name" id="name" required>
-      
-        <label for="phone"><b>Вашият телефон за връзка:</b></label>
-        <input type="text" placeholder="Въведи мобилен телефон" name="phoneNr" id="phoneNr" required>
-      
-        <button type="submit" class="btn" id="submitForm">Потвърди</button>
-        <button type="button" class="btn" id="closeForm">Отказ</button>
-      </form>
-  </div>  
-</div>
 </section>
 
 <button id="scrollTopBtn" title="scrollTopBtn">Нагоре</button>
 
-
-
 <footer>
+  <h2>За контакти</h2>
   <div class="footer-flex">
     <section id="location">
       <div class="container">
         <p>Посетете ни на ул. „Пенчо Минев“ 5, кв. Васил Левски, гр. Стара Загора</p>
+        <button id="copyAddressBtn" class="btn clipboard-btn">Копирай адреса</button>
         <div class="map">
           <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11779.898378203749!2d25.608185815892895!3d42.428275653205866!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a869487cd16a93%3A0xb5fa36d670492de4!2sPilates%20Reformer%20Studio%20by%20Dilona!5e0!3m2!1sbg!2sbg!4v1752916037733!5m2!1sbg!2sbg" width="500" height="360" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
@@ -284,11 +288,12 @@
     </section>
   </div>
 
-    <div class="container">
-        <h2>Социални мрежи</h2>
+  <div class="container">
+    <h2>Социални мрежи</h2>
         <div class="social-links">
-            <a href="https://www.facebook.com/61576205944425" target="_blank">Facebook</a>
-            <a href="https://www.instagram.com/pilates.reformer.bydilona/" target="_blank">Instagram</a>
+            <a href="https://www.facebook.com/61576205944425" target="_blank" class="social-link"><i class="fab fa-facebook-f"></i> Facebook</a>
+            <a href="https://www.instagram.com/pilates.reformer.bydilona/" target="_blank" class="social-link"><i class="fab fa-instagram"></i> Instagram</a>
+        </div>
     </div>
 </footer>
 
