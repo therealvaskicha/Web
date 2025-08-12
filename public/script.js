@@ -1,3 +1,17 @@
+const mobileMenuIcon = document.querySelector('.mobile-menu-icon');
+const navMenu= document.querySelector('.nav-menu');
+
+mobileMenuIcon.addEventListener('click', function() {
+    mobileMenuIcon.classList.toggle('active');
+    navMenu.classList.toggle('active');
+})
+
+document.querySelectorAll(".nav-link").forEach(link => {
+    link.addEventListener("click", function() {
+        mobileMenuIcon.classList.remove('active');
+        navMenu.classList.remove('active');
+    });
+});
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
