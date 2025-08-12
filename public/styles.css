@@ -29,7 +29,6 @@ body {
 
     header {
         background: #232524;
-        padding: 1rem 2;
         position: sticky;
         top: 0;
         z-index: 100;
@@ -37,19 +36,24 @@ body {
 
     header .container {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        justify-content:flex-start;
         flex-wrap: wrap;
     }
 
-    nav ul {
-        list-style: none;
+    .navbar {
         display: flex;
-        gap: 1.125rem;
-        flex-wrap: wrap; /* Wrap navigation items */
+        align-items: center;
+        justify-content: space-between;
+        padding:0rem 1.5rem;
+        flex-wrap:wrap;
     }
 
-    nav a {
+    .nav-menu {
+        display: flex;
+        gap: 1.125rem;
+    }
+
+    .nav-link {
         font-size:1.125rem;
         font-family: "Lora", sans-serif;
         text-decoration: none;
@@ -58,12 +62,26 @@ body {
         transition: color 0.3s ease;
     }
 
-    nav a:hover {
+    .nav-link:hover {
         color: #e7e4bb;
         text-shadow: #d3e7bb 0rem 0rem 0.625rem;
         transition: 0.3s ease-in-out;
     }
 
+    .mobile-menu-icon {
+        display: none; /* Hide by default */
+    }
+
+    .bar {
+        display: block;
+        width: 1.5rem;
+        height: 0.25rem;
+        margin: 0.20rem auto;
+        -webkit-transition: all 0.3s ease-in-out;
+        transition: all 0.3s ease-in-out;
+        background-color: #e7e4bb;
+    }
+    
 /* Hero Section */
 #hero {
     position: relative;
@@ -73,6 +91,9 @@ body {
 }
 
 .hero-video {
+    border:#d3e7bb;
+    border-width: 0.5rem;
+    border-bottom-style:solid;
     position: absolute;
     top: 0;
     left: 0;
@@ -549,6 +570,7 @@ footer p {
 
 .bottom-bar {
 font-family: "Lora", sans-serif;
+font-size: 0.785rem;
 bottom:0rem;
 width: 100%;
 color: #e7e4bb;
@@ -556,7 +578,7 @@ text-align: center;
 z-index: 1000; /* Ensures bar stays on top of other elements */
 background: #232524;
 text-align: center;
-padding: 0rem;
+padding: 0.125rem;
 position: sticky;
 top: 0rem;
 }
@@ -599,9 +621,66 @@ top: 0rem;
 }
 
 /* Responsive Design */
-    @media (max-width: 30rem) {
+/* Mobile phones */
+    @media (max-width: 480px) {
+        header .container {
+            height: 3rem;
+        }
+        .logo {
+            padding-left: 0.625rem;
+            height: 3rem;
+            width: 3rem;
+        }
+        .nav-menu {
+            flex-direction: column;
+            gap: 0;
+            position:fixed;
+            top: 3rem; /* Below the header */
+            width: 100%; /* Full width for mobile */
+            right: -100%; /* Hide off-screen */
+            text-align: left;
+            transition: 0.3s;
+            background: #232524;
+            text-shadow: #d3e7bb 0rem 0rem 0.625rem;
+            padding-left: 0.625rem;
+            list-style:none;
+        }
+
+        .nav-link {
+            font-size: 0.75rem;
+            color: #e7e4bb;
+        }
+
+        .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .nav-menu.active{
+            right: -75%; /* Show menu when active */ 
+        }
+
+        .mobile-menu-icon {
+            align-items: left;
+            display: block; /* Show mobile menu icon */
+        }
+
+        .mobile-menu-icon.active .bar:nth-child(2)  {
+            opacity: 0; /* Hide the middle bar */
+            transition: 0.15s;
+        }
+
+        .mobile-menu-icon.active .bar:nth-child(1) {
+            transform: translateY(8px) rotate(45deg); /* Rotate top bar */
+            transition: 0.15s;
+        }
+
+        .mobile-menu-icon.active .bar:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg); /* Rotate bottom bar */
+            transition: 0.15s;
+        }
+        
         #hero {
-            height: 3.75rem; /* Adjust height for smaller screens */
+            height: 25rem; /* Adjust height for smaller screens */
         }
 
         #hero h2 {
@@ -649,14 +728,110 @@ top: 0rem;
             align-items: center;
         }
 
-        /* #schedule-columns {
+        .gallery-container {
+            grid-template-columns: 1fr;
+        }
+
+        #contact form {
+            padding: 0.625rem;
+        }
+
+       #contact input, #contact textarea {
+            font-size: 0.9rem;
+        }
+
+        .footer-flex {
+        flex-direction: column;
+        gap: 1.25rem;
+        }
+
+        .footer-flex > section {
+            min-width: unset;
+        }
+        
+        .price-cards {
+        flex-direction: column;
+        align-items: center;
+        }
+
+        .price-card {
+        width: 90%;
+        max-width: 21.875rem;
+        }
+    }
+
+    /* Tablets */
+    @media (min-width: 481px) and (max-width: 768px) {
+        header .container {
             flex-direction: column;
             align-items: center;
         }
 
-        #schedule-column1, #schedule-column2 {
+        .nav-menu {
+            flex-direction: column;
+            align-items: left;
+            gap: 0.625rem;
+            display: none; /* Hide by default */
+            position:fixed;
+            top: 4.20rem; /* Below the header */
+            left: -100%; /* Hide off-screen */
+            background-color: #e7e4bb;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .nav-item {
+            margin: 0.5rem 0;
+        }
+
+        #hero {
+            height: 25rem; /* Adjust height for smaller screens */
+        }
+
+        #hero h2 {
+            font-size: 1.8rem;
+        }
+
+        #hero p {
+            font-size: 1.2rem;
+        }
+
+        #hero .btn {
+            padding: 0.625rem 1.25rem;
+            font-size: 1rem;
+        }
+
+        .container {
+            padding: 0rem 0.625rem;
+        }
+
+        #gallery h2 {
+            font-size: 1.75rem;
+        }
+
+        #gallery .gallery-container {
+            grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+        }
+
+        #about {
+            font-size: 1.25rem;
+        }
+
+        .about-image img {
+            width: 100%;
+            height: auto;
             max-width: 100%;
-        } */
+        }
+
+        #prices h2 {
+            font-size: 1.8rem;
+        }
+
+        
+        #prices .price-cards {
+            flex-direction: column;
+            align-items: center;
+        }
 
         .gallery-container {
             grid-template-columns: 1fr;
