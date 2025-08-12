@@ -625,7 +625,9 @@ top: 0rem;
     @media (max-width: 480px) {
         header .container {
             height: 3rem;
+            justify-content:space-between;
         }
+
         .logo {
             padding-left: 0.625rem;
             height: 3rem;
@@ -656,7 +658,7 @@ top: 0rem;
         }
 
         .nav-menu.active{
-            right: -75%; /* Show menu when active */ 
+            right: -80%; /* Show menu when active */ 
         }
 
         .mobile-menu-icon {
@@ -758,6 +760,35 @@ top: 0rem;
         width: 90%;
         max-width: 21.875rem;
         }
+        #scrollTopBtn {
+        position: fixed;
+        bottom: 2.188rem;
+        right: 1rem;
+        z-index: 999;
+        background: #333;
+        color: #fff;
+        border: none;
+        border-radius: 1.5rem;
+        width: 6rem;
+        height: 2.5rem;
+        font-size: 1rem;
+        font-family: 'Lora', sans-serif;
+        cursor: pointer;
+        box-shadow: 0rem 0.125rem 0.5rem rgba(0,0,0,0.2);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+        #scrollTopBtn.show {
+            background: #333;
+            color: #fff;
+            opacity: 90%;
+            transition: 0.1s ease-in-out; 
+            pointer-events: auto;
+    }
     }
 
     /* Tablets */
@@ -863,4 +894,34 @@ top: 0rem;
         width: 90%;
         max-width: 21.875rem;
         }
+
+        #scrollTopBtn {
+        position: fixed;
+        bottom: 2.188rem;
+        right: 1.875rem;
+        z-index: 999;
+        background: #333;
+        color: #fff;
+        border: none;
+        border-radius: 1.5rem;
+        width: 8rem;
+        height: 2.5rem;
+        font-size: 1.2rem;
+        font-family: 'Lora', sans-serif;
+        cursor: pointer;
+        box-shadow: 0rem 0.125rem 0.5rem rgba(0,0,0,0.2);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+        #scrollTopBtn.show {
+            background: #333;
+            color: #fff;
+            opacity: 90%;
+            transition: 0.1s ease-in-out; 
+            pointer-events: auto;
+    }
     }
