@@ -1,3 +1,4 @@
+// Hamburger menu functionality
 const mobileMenuIcon = document.querySelector('.mobile-menu-icon');
 const navMenu= document.querySelector('.nav-menu');
 
