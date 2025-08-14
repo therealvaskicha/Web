@@ -23,7 +23,10 @@
 
 
 <header>
-        <div class="container">
+  <div class="mobile-container">
+    <img src="Images/logo_big.jpg" alt="Pilates Reformer Studio by Dilona Logo" class="logo-mobile" onclick="location.reload()" ></img>
+  </div>      
+  <div class="container">
         <img src="Images/icon.jpg" alt="Pilates Reformer Studio by Dilona Logo" class="logo" onclick="location.reload()" ></img>
             <nav class="navbar">
                 <ul class="nav-menu">
@@ -31,7 +34,7 @@
                     <li class="nav-item"><a class="nav-link hover-underline" href="#gallery">Галерия</a></li>
                     <li class="nav-item"><a class="nav-link hover-underline" href="#prices">Цени</a></li>
                     <li class="nav-item"><a class="nav-link hover-underline" href="#schedule">График</a></li>
-                    <li class="nav-item"><a class="nav-link hover-underline" href="#contact">Контакт</a></li>
+                    <li class="nav-item"><a class="nav-link hover-underline" href="#contact">Контакти</a></li>
                 </ul>
                 <div class="mobile-menu-icon">
                     <span class="bar"></span>
@@ -151,7 +154,7 @@
         <button class="price-card-btn choose-btn" data-type="Private" type="button" id="openForm">Избери</button>
       </div>
     </div>
-      <h3>Абонаментни карти</h3>
+      <h3 id="subscription">Абонаментни карти</h3>
     <div class="price-cards">
       <div class="price-card popular">
         <div class="price-card-header">
@@ -214,12 +217,11 @@
 <section id="schedule">
   <div class="container">
     <h2>График</h2>
-    <!-- <div class="schedule-columns">
-      <div class="schedule-column1"> -->
           <div id="calendar"></div>
   </div>
-      <!-- <div class="schedule-column2">  -->
-  <div class="container">
+
+
+    <div class="requestServices">
     <h2>Заяви услуга</h2>
         <form action="/" method="GET" id="serviceForm">
           <!-- В полето за въвеждане (вдясно) трябва да има списък с избран продукт от горното меню с възможност 
@@ -263,9 +265,8 @@
         <button type="button" class="btn" id="closeForm">Отказ</button>
       </form>
       </div>
-      <!-- </div> -->
-    <!-- </div> -->
-  </div> 
+    </div>
+
 </section>
 
 <div>

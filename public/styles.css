@@ -25,16 +25,21 @@ body {
         cursor: pointer;
     }
 
-    header {
-        background: #232524;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        padding-top:0.125rem;
-        padding-bottom:0.125rem;
+    .logo-mobile {
+        display: none; /* Hide by default */
     }
 
-    .logo header {
+    header {
+        background: #232524;
+        overflow:hidden;
+        position: sticky;
+        top: 0;
+        padding-top:0.125rem;
+        padding-bottom:0.125rem;
+        z-index: 5; /* Ensure content is above other elements */
+    }
+
+    .logo .logo-mobile header {
         height:9vh;
     }
 
@@ -333,6 +338,10 @@ body {
     }
 
 /* Price Cards */
+#subscription {
+    scroll-margin-top: 6rem;
+}
+
 .price-cards {
   display: flex;
   flex-wrap: wrap;
@@ -456,6 +465,11 @@ body {
     padding: 1.25rem 0.938rem;
     max-width: 100%;
     margin: 0.938rem auto; 
+}
+
+/* Request Service Section */
+.requestServices {
+    display:none;
 }
 
 /* Location Section */
@@ -668,7 +682,7 @@ top: 0rem;
     background: #333;
     color: #fff;
     opacity: 90%;
-    transition: 0.1s ease-in-out; 
+    transition: 0.3s ease-in-out; 
     pointer-events: auto;
 }
 
@@ -698,39 +712,64 @@ top: 0rem;
         overflow:scroll;
         }
 
-        header {
-            height: 3.125rem; /* Adjusted for mobile */
-        }
-        
-        header .container {
-            height: 3rem;
-            justify-content:space-between;
+        section {
+            padding:0;
         }
 
-        .logo {
-            padding-left: 0.625rem;
-            height: 3rem;
-            width: 3rem;
+        header {
+            height: 8.2rem; /* Adjusted for mobile */
         }
+        
+        /* header .container {
+            height: 3rem;
+            justify-content:space-between;
+        } */
+
+        .logo {
+            display:none;
+            /* padding-left: 0.625rem;
+            height: 3rem;
+            width: 3rem; */
+        }
+
+        .logo-mobile {
+            display: inline-flex; /* Show on mobile */
+            position:relative;
+            cursor:pointer;
+            max-width:100%;
+            height:auto;
+            width: 8rem;
+        }
+
+        .mobile-container
+        {
+            align-items: center;
+            display: flex;
+            justify-content: center;
+        }
+        
         .nav-menu {
-            flex-direction: column;
-            gap: 0;
-            position:fixed;
-            top: 3rem; /* Below the header */
+            justify-content: space-between;
+            position:fixed; 
             width: 100%; /* Full width for mobile */
-            right: -100%; /* Hide off-screen */
-            text-align: left;
-            transition: 0.3s;
+            top: 12%; /* Hide menu by default */
+            text-align: center;
             background: #232524f5;
             text-shadow: #d3e7bb 0rem 0rem 0.625rem;
             padding-left: 0.75rem;
+            padding-right: 0.75rem;
             padding-bottom: 0.25rem;
             list-style:none;
-            border-bottom-left-radius: 0.75rem;
+            left:0;
+            visibility:hidden;
+            display:flex;
+            opacity: 0;
+            transition: opacity 0.15s ease-in-out;
+            transition: 0.3s;
         }
 
         .nav-link {
-            font-size: 1.25rem;
+            font-size: 1rem;
             color: #e7e4bb;
         }
 
@@ -739,12 +778,16 @@ top: 0rem;
         }
 
         .nav-menu.active{
-            right: -70%; /* Show menu when active */ 
+            top: 14%; /* Show menu when active */ 
+            opacity:1;
+            visibility:visible;
+            transition: opacity 0.15s ease-in-out;
+            transition: 0.3s;
         }
 
         .mobile-menu-icon {
             align-items: left;
-            display: block; /* Show mobile menu icon */
+            display: inline-block; /* Show mobile menu icon */
         }
 
         .mobile-menu-icon.active .bar:nth-child(2)  {
@@ -782,7 +825,8 @@ top: 0rem;
         }
 
         .hero-video {
-            border-bottom-width: 3.125rem;;
+            border-bottom-width: 3.125rem;
+            top:auto;
         }
 
         #hero h2 {
@@ -795,6 +839,9 @@ top: 0rem;
 
         .container {
             padding: 0rem 0.625rem;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
         }
 
         #gallery h2 {
