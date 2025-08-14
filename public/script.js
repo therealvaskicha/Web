@@ -1,6 +1,6 @@
 // Hamburger menu functionality
 const mobileMenuIcon = document.querySelector('.mobile-menu-icon');
-const navMenu= document.querySelector('.nav-menu');
+const navMenu= document.querySelector('.mobile-only .nav-menu');
 
 mobileMenuIcon.addEventListener('click', function() {
     mobileMenuIcon.classList.toggle('active');
