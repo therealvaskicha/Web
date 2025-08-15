@@ -238,9 +238,9 @@ if (calendarEl) {
       localStorage.setItem('bookingType', choice);
 
       // Scroll to calendar section
-      const calendar = document.getElementById('calendar');
-      if (calendar) {
-        calendar.scrollIntoView({ behavior: 'smooth' });
+      const schedule = document.getElementById('schedule');
+      if (schedule) {
+        schedule.scrollIntoView({ behavior: 'smooth' });
       }
     });
   });
