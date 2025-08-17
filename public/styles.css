@@ -202,10 +202,11 @@ body {
         scroll-margin-top: 4.375rem;
     }
 
-    section h2 {
+    h2 {
         text-align: center;
         margin-bottom: 2rem;
         font-size: 2rem;
+        text-shadow: 0.1rem 0.1rem 0.1rem #e7e4bb;
     }
 
     section h3 {
@@ -213,6 +214,7 @@ body {
         font-size: 2rem;
         color:#e7e4bb;
         margin-bottom: 0.75rem;
+        text-shadow: 0.065rem 0.065rem 0.065rem black;
     }
 
     .spacing-between-sections-down {
@@ -929,6 +931,7 @@ top: 0rem;
 
         #prices h3 {
             font-size: 1.75rem;
+            margin-top:0.75rem;
             margin-bottom: 0.75rem;
         }
 
