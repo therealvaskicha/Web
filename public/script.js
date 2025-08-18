@@ -233,8 +233,12 @@ if (calendarEl) {
         },
         eventDidMount: function (info) {
             if (info.event.title === 'Зает') {
-                info.el.style.backgroundColor = '#ff44444b';
-                info.el.style.borderColor = '#ff44444b';
+                info.el.style.backgroundColor = '#ff4646ff';
+                info.el.style.borderColor = '#ff4646ff';
+            }
+            else {
+                info.el.style.backgroundColor = '#00571dff';
+                info.el.style.borderColor = '#00571dff';
             }
         },
         events: async function (fetchInfo, successCallback) {
@@ -246,7 +250,7 @@ if (calendarEl) {
                     return {
                         title: 'Свободен',
                         start: `${slot.date}T${slot.time}:00`,
-                        allDay: false
+                        allDay: false,
                     };
                 });
                 successCallback(events);
