@@ -102,18 +102,45 @@ document.addEventListener('DOMContentLoaded', function () {
     const modalImg = document.getElementById('modal-image');
     const modalCaption = document.getElementById('modal-caption');
     const closeBtn = document.querySelector('.modal-close');
+    const prevBtn = document.querySelector('.modal-nav.prev-btn');
+    const nextBtn = document.querySelector('.modal-nav.next-btn');
 
-    if (modal && modalImg && modalCaption && closeBtn) {
-        document.querySelectorAll('.gallery-item img').forEach(img => {
-            img.addEventListener('click', function () {
-                modal.style.display = 'flex';
-                modalImg.src = this.src;
-                modalCaption.textContent = this.dataset.caption || this.alt;
-            });
+    if (modal && modalImg && modalCaption && closeBtn && prevBtn && nextBtn) {
+        const galleryImages = document.querySelectorAll('.gallery-item img');
+        let currentIndex = 0;
+
+        function openModal(index) {
+            currentIndex = index;
+            const img = galleryImages[currentIndex];
+            modal.style.display = 'flex';
+            modalImg.src = img.src;
+            modalCaption.textContent = img.dataset.caption || img.alt;
+            updateNavButtons();
+        }
+
+        function updateNavButtons() {
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === galleryImages.length - 1;
+        }
+
+        galleryImages.forEach((img, index) => {
+            img.addEventListener('click', () => openModal(index));
         });
 
         closeBtn.addEventListener('click', () => {
             modal.style.display = 'none';
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                openModal(currentIndex - 1);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < galleryImages.length - 1) {
+                openModal(currentIndex + 1);
+            }
         });
 
         modal.addEventListener('click', (e) => {
@@ -125,6 +152,10 @@ document.addEventListener('DOMContentLoaded', function () {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modal.style.display === 'flex') {
                 modal.style.display = 'none';
+            } else if (e.key === 'ArrowLeft' && modal.style.display === 'flex') {
+                if (currentIndex > 0) openModal(currentIndex - 1);
+            } else if (e.key === 'ArrowRight' && modal.style.display === 'flex') {
+                if (currentIndex < galleryImages.length - 1) openModal(currentIndex + 1);
             }
         });
     }
