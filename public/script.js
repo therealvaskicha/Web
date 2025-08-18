@@ -1,18 +1,51 @@
 // Hamburger menu functionality
 const mobileMenuIcon = document.querySelector('.mobile-menu-icon');
-const navMenu= document.querySelector('.mobile-only .nav-menu');
+const navMenu = document.querySelector('.mobile-only .nav-menu');
+const header = document.querySelector('header');
 
-mobileMenuIcon.addEventListener('click', function() {
-    mobileMenuIcon.classList.toggle('active');
-    navMenu.classList.toggle('active');
-})
+if (mobileMenuIcon && navMenu && header) {
+    mobileMenuIcon.addEventListener('click', function () {
+        const isActive = navMenu.classList.toggle('active');
+        mobileMenuIcon.classList.toggle('active');
 
-document.querySelectorAll(".nav-link").forEach(link => {
-    link.addEventListener("click", function() {
-        mobileMenuIcon.classList.remove('active');
-        navMenu.classList.remove('active');
+        if (isActive) {
+            // Position menu below header and adjust for scroll
+            const headerHeight = header.offsetHeight; // Get dynamic header height
+            navMenu.style.top = `${headerHeight}px`;
+            navMenu.style.opacity = '1';
+            navMenu.style.visibility = 'visible';
+        } else {
+            // Fade out and hide after transition
+            navMenu.style.opacity = '0';
+            setTimeout(() => {
+                navMenu.style.visibility = 'hidden';
+            }, 300); // Match CSS transition duration
+        }
     });
-});
+
+    // Close menu when a nav link is clicked
+    document.querySelectorAll(".nav-link").forEach(link => {
+        link.addEventListener("click", function () {
+            if (navMenu.classList.contains('active')) {
+                navMenu.classList.remove('active');
+                mobileMenuIcon.classList.remove('active');
+                navMenu.style.opacity = '0';
+                setTimeout(() => {
+                    navMenu.style.visibility = 'hidden';
+                }, 300); // Match CSS transition duration
+            }
+        });
+    });
+
+    // Adjust menu position on scroll
+    window.addEventListener('scroll', () => {
+        if (navMenu.classList.contains('active')) {
+            const headerHeight = header.offsetHeight;
+            navMenu.style.top = `${headerHeight}px`; // Keep it below header
+        }
+    });
+}
+
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {

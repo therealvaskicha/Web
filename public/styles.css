@@ -802,7 +802,7 @@ top: 0rem;
         }
         
         .nav-menu {
-            justify-content: space-between;
+            justify-content: space-evenly;
             position:fixed; 
             width: 100%; 
             text-align: center;
@@ -810,15 +810,15 @@ top: 0rem;
             text-shadow: #d3e7bb7e 0rem 0rem 0.625rem;
             padding-left: 0.75rem;
             padding-right: 0.75rem;
-            padding-bottom: 0.25rem;
             list-style:none;
             left:0;
+            top:8.2rem;
             visibility:hidden;
             display:flex;
             opacity: 0;
             transition: opacity 0.1s ease-in-out;
-            transition: 0.1s;
             gap:0.75rem;
+            z-index:10;
         }
 
         .nav-link {
@@ -831,10 +831,10 @@ top: 0rem;
         }
 
         .nav-menu.active{
-            transform: translateY(1.8rem);
+            /* transform: translateY(1.8rem); */
             opacity:1;
             visibility:visible;
-            transition: 0.3s;
+            transition: opacity 0.3s ease-in-out;
         }
 
         .mobile-menu-icon {
