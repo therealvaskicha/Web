@@ -206,15 +206,13 @@ body {
         text-align: center;
         margin-bottom: 2rem;
         font-size: 2rem;
-        text-shadow: 0.1rem 0.1rem 0.1rem #e7e4bb;
     }
 
     section h3 {
         text-align: center;
         font-size: 2rem;
-        color:#e7e4bb;
+        color:#1d1c12;
         margin-bottom: 0.75rem;
-        text-shadow: 0.065rem 0.065rem 0.065rem black;
     }
 
     .spacing-between-sections-down {
