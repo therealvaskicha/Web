@@ -15,11 +15,11 @@
 <body>
 
 <!-- Remove this script if you want to keep the scroll position on page reload -->
-<script>
+<!-- <script>
   window.onbeforeunload = function () {
     window.scrollTo(0, 0);
   };
-</script> 
+</script>  -->
 
 
 <header>  
@@ -32,7 +32,7 @@
           <li class="nav-item"><a class="nav-link hover-underline" href="#gallery">Галерия</a></li>
           <li class="nav-item"><a class="nav-link hover-underline" href="#prices">Цени</a></li>
           <li class="nav-item"><a class="nav-link hover-underline" href="#schedule">График</a></li>
-          <li class="nav-item"><a class="nav-link hover-underline" href="#contact">Контакти</a></li>
+          <li class="nav-item"><a class="nav-link hover-underline" href="#location">Контакти</a></li>
         </ul>
       </nav>
     </div>
@@ -61,7 +61,7 @@
             <li class="nav-item"><a class="nav-link hover-underline" href="#gallery">Галерия</a></li>
             <li class="nav-item"><a class="nav-link hover-underline" href="#prices">Цени</a></li>
             <li class="nav-item"><a class="nav-link hover-underline" href="#schedule">График</a></li>
-            <li class="nav-item"><a class="nav-link hover-underline" href="#contact">Контакти</a></li>
+            <li class="nav-item"><a class="nav-link hover-underline" href="#contact-title">Контакти</a></li>
           </ul>
       </nav>
     </div>
@@ -118,12 +118,14 @@
         </div>
     </div>
 
-
 <div id="gallery-modal" class="modal">
     <span class="modal-close">&times;</span>
-        <img class="modal-content" id="modal-image">
+    <button class="modal-nav prev-btn">&lt; </button>
+    <img class="modal-content" id="modal-image">
+    <button class="modal-nav next-btn"> &gt;</button>
     <div id="modal-caption"></div>
 </div>
+
 </section>
 
 <div class="spacing-between-sections-up"></div>
@@ -168,7 +170,7 @@
         <button class="price-card-btn choose-btn" data-type="Private" type="button" id="openForm">Избери</button>
       </div>
     </div>
-      <h3 id="subscription">Абонаментни карти</h3>
+      <h3>Абонаментни карти</h3>
     <div class="price-cards">
       <div class="price-card popular">
         <div class="price-card-header">
@@ -205,7 +207,7 @@
       </div>
     </div>
     <p>*Цените на пакетите с тренировки се изчисляват на база единични тренировки и приложеното намаление към тях.</p>
-    <p>**Неограничените тренировки се извършват с предварително планиран график. При промени в графика Дилона ще се свърж   е с вас.</p>
+    <p>**Tренировките се осъществяват с предварително планиран график. При промени в графика Дилона ще ви уведоми.</p>
     <p>За повече информация, моля <a href="#contact">свържете се с нас.</a></p>
   </div>
 </section>
@@ -236,7 +238,6 @@
             <option value="Private">Private</option>
             <option value="Re4 Me">Re4 Me</option>
             <option value="Reform 8">Reform 8</option>
-            <option value="Reform365">Reform365</option>
           </select>
           <br>
         <label for="name" ><b>Вашето име:</b></label>
@@ -275,11 +276,19 @@
 <div class="spacing-between-sections-up"></div>
 
 <footer>
-  <h2>За контакти</h2>
+  <h2 id="contact-title">За контакти</h2>
   <div class="footer-flex">
     <section id="location">
       <div class="container">
-        <p>Посетете ни на ул. „Пенчо Минев“ 5, кв. Васил Левски, гр. Стара Загора</p>
+      <div class="contact-icons">
+        <a href="https://wa.me/359877953393" class="social-link" target="_blank">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+        <h4>
+          <a href="tel: +359877953393" class="phone-link">+359 877 953 393</a>
+        </h4>
+      </div>
+          <p>Посетете ни на ул. „Пенчо Минев“ 5, кв. Васил Левски, гр. Стара Загора</p>
         <button id="copyAddressBtn" class="btn clipboard-btn">Копирай адреса</button>
         <div class="map">
           <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11779.898378203749!2d25.608185815892895!3d42.428275653205866!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a869487cd16a93%3A0xb5fa36d670492de4!2sPilates%20Reformer%20Studio%20by%20Dilona!5e0!3m2!1sbg!2sbg!4v1752916037733!5m2!1sbg!2sbg" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -291,8 +300,8 @@
         <h1>За повече информация и въпроси</h1>
         <form id="contact-form">
           <input type="text" name="name" placeholder="Вашето име" required>
-          <input type="email" name="email" placeholder="E-mail" required>
-          <textarea name="message" placeholder="Вашето съобщение" required></textarea>
+          <input type="email" name="email" placeholder="Имейл" required>
+          <textarea name="message" placeholder="Съобщение" required></textarea>
           <button type="submit" class="btn">Изпрати</button>
         </form>
       </div>
