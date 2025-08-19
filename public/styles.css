@@ -515,20 +515,125 @@ h4 {
   color: #fff;
 }
 
-/* Schedule Section */
-
-/* Calendar */
-#calendar {
-    text-align:center;
-    font-size: 0.875rem;
-    padding: 1.25rem 0.938rem;
-    max-width: 100%;
-    margin: 0.938rem auto; 
+/* Minimalistic calendar styles */
+#user-calendar {
+    max-width: 60%;
+    margin: 1rem auto;
+    font-family: 'Lora', sans-serif;
+}
+.calendar-week-row {
+    display: flex;
+    gap: 1rem;
+}
+.calendar-day-col {
+    flex: 1;
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.05);
+    padding: 0.5rem;
+    min-width: 120px;
+}
+.calendar-day-header {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+.calendar-slots-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.slot {
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    margin: 0.1rem 0;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+.slot.available {
+    background: #d6f5d6;
+    color: #222;
+}
+.slot.taken {
+    background: #ffd699;
+    color: #222;
+    cursor: not-allowed;
+}
+.holiday {
+    background: #d3d3d3 !important;
+}
+.holiday-label {
+    color: #444;
+    text-align: center;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+.calendar-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+.calendar-nav button {
+    background: #e7e4bb;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.25rem 1rem;
+    cursor: pointer;
+    font-size: 1rem;
+}
+.calendar-nav button:hover {
+    background: #f0a500;
+    color: #fff;
 }
 
-/* Request Service Section */
+/* Booking form styles */
 .requestServices {
-    display:none;
+    display: none;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 0.25rem 1rem rgba(0,0,0,0.07);
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 500px;
+}
+.requestServices.active {
+    display: block;
+}
+.requestServices label {
+    display: block;
+    margin-top: 1rem;
+    font-weight: bold;
+}
+.requestServices input,
+.requestServices select {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.25rem;
+    border-radius: 0.25rem;
+    border: 1px solid #e7e4bb;
+    font-size: 1rem;
+}
+.requestServices button {
+    margin: 1rem 0.5rem 0 0;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.25rem;
+    border: none;
+    background: #e7e4bb;
+    color: #333;
+    font-size: 1rem;
+    cursor: pointer;
+}
+.requestServices button:hover {
+    background: #f0a500;
+    color: #fff;
+}
+.requestServices .disclaimer {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #555;
 }
 
 /* Location Section */
@@ -858,7 +963,6 @@ top: 0rem;
             width: 100%; 
             text-align: center;
             background: #232524;
-            text-shadow: #d3e7bb7e 0rem 0rem 0.625rem;
             padding-left: 0.75rem;
             padding-right: 0.75rem;
             list-style:none;
@@ -882,7 +986,6 @@ top: 0rem;
         }
 
         .nav-menu.active{
-            /* transform: translateY(1.8rem); */
             opacity:1;
             visibility:visible;
             transition: opacity 0.3s ease-in-out;
@@ -1033,6 +1136,23 @@ top: 0rem;
 
         .gallery-container {
             grid-template-columns: 1fr;
+        }
+
+        .calendar-week-row {
+            gap: 0.5rem;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(5rem, 1fr));
+            justify-items: center;
+            align-items: start;
+            justify-content: center;
+        }
+        .calendar-day-col {
+            min-width: unset;
+            margin-bottom: 1rem;
+        }
+        .requestServices {
+            padding: 1rem;
+            max-width: 100%;
         }
 
         #contact form {

@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pilates Reformer Studio by Dilona</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/main.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.15/main.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.15/main.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="icon" href="Images/icon.jpg" type="image/jpeg">
@@ -216,57 +213,49 @@
 <div class="spacing-between-sections-down"></div>
 
 <section id="schedule">
-  <div class="container">
-    <h2>График</h2>
-          <div id="calendar"></div>
+  <h2>График</h2>
+  <div id="user-calendar"></div>
+  <div class="calendar-nav">
+    <button id="prev-week">Назад</button>
+    <button id="today-week">Днес</button>
+    <button id="next-week">Напред</button>
   </div>
-
-
-    <div class="requestServices">
+  <div class="requestServices" id="requestServices">
     <h2>Заяви услуга</h2>
-        <form action="/" method="GET" id="serviceForm">
-          <!-- В полето за въвеждане (вдясно) трябва да има списък с избран продукт от горното меню с възможност 
-           за премахване (х). Също така нека направим полето малко по-добре изглеждащо. Искам избраната услуга 
-           по подразбиране да е празно (в момента излиза Alo Alo, което е първото от опциите в select).  -->
-        <p>Моля, попълнете формата, за да изпратите заявка за избраната от Вас тренировка или абонамент.</p>
-        <id="booking-controls">
-          <h3>Задължителни полета:</h3>
-          <label; for="booking-type"><b>Избрана услуга:</b></label>
-          <br>
-          <select id="booking-type" name="bookingType" required>
-            <option value="Solo">Solo</option>
-            <option value="Private">Private</option>
-            <option value="Re4 Me">Re4 Me</option>
-            <option value="Reform 8">Reform 8</option>
-          </select>
-          <br>
-        <label for="name" ><b>Вашето име:</b></label>
-        <br>
-        <input type="text" placeholder="Въведи име" name="name" id="name" required>
-          <br>
-        <label for="phone"><b>Телефон за връзка:</b></label>
-        <br>
-        <input type="text" placeholder="Въведи мобилен телефон" name="phoneNr" id="phoneNr" required>
-          <br>
-        <h3>Полета по избор:</h3>
-        <label for="date"><b>Дата на тренировка:</b></label>
-        <br>
-        <input type="date" name="date" id="date" required>
-          <br>
-        <label for="time"><b>Час на тренировка:</b></label>
-        <br>
-        <input type="time" name="time" id="time" required>
-        <br>
-        <label for="email"><b>E-mail:</b></label>
-        <br>
-        <input type="text" placeholder="E-mail" name="emailOpt" id="emailOpt">
-      
-        <button type="submit" class="btn" id="submitForm">Потвърди</button>
-        <button type="button" class="btn" id="closeForm">Отказ</button>
+    <div class="container">
+      <form id="booking-form">
+        <label for="booking-type">Вид услуга*</label>
+        <select id="booking-type" name="booking_type" required>
+          <option value="">Изберете...</option>
+          <option value="Solo">Solo</option>
+          <option value="Private">Private</option>
+          <option value="Re4Me">Re4Me</option>
+          <option value="Reform 8">Reform 8</option>
+        </select>
+        <label for="client-name">Име и фамилия*</label>
+        <input type="text" id="client-name" name="client_name" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
+        <label for="client-phone">Телефон*</label>
+        <input type="text" id="client-phone" name="client_phone" maxlength="20" pattern="\d+" required>
+        <label for="booking-date-hour">Дата и час*</label>
+        <input type="text" id="booking-date-hour" name="booking_date_hour" readonly>
+        <label for="client-email">E-mail*</label>
+        <input type="email" id="client-email" name="client_email" maxlength="50" required>
+        <label>
+          <input type="checkbox" id="subscribe-email" name="subscribe_email">
+          Абониране за имейл известия
+        </label>
+        <small>Ако желаете да получавате имейл известия от нашето студио относно намаления, оферти или събития.</small>
+        <div>
+          <button type="submit" id="confirm-booking">Потвърди</button>
+          <button type="button" id="cancel-booking">Отказ</button>
+        </div>
+        <div class="disclaimer">
+          <p>Политика за анулиране:<br>
+          Можете да отмените или промените часа си до 1 час преди да се състои. Ако искате да анулирате своят час, моля обадете се на телефона в секция Контакти.</p>
+        </div>
       </form>
-      </div>
     </div>
-
+  </div>
 </section>
 
 <div>
@@ -318,9 +307,9 @@
 </footer>
 
     <script src="script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/index.global.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.15/index.global.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.15/index.global.min.js"></script> -->
 
 </body>
   <div class="bottom-bar">

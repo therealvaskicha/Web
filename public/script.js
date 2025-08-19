@@ -177,205 +177,131 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-// Popup form functionality
+    // Calendar config
+    const calendarEl = document.getElementById('user-calendar');
+    const requestServices = document.getElementById('requestServices');
+    const bookingForm = document.getElementById('booking-form');
+    let selectedDate = null;
+    let selectedTime = null;
 
-const openFormBtn = document.getElementById('openForm');
-const closeFormBtn = document.getElementById('closeForm');
-// Ensure buttons exist before adding event listeners
-if (openFormBtn && closeFormBtn) {
-    openFormBtn.addEventListener('click', function () {
-        document.querySelector('.popup').style.display = 'flex';
-    });
-    closeFormBtn.addEventListener('click', function () {
-        document.querySelector('.popup').style.display = 'none';
-    });
-}
-
-// const serviceForm = document.getElementById('serviceForm');
-// const formName = document.getElementById('name');
-// const formPhoneNr = document.getElementById('phoneNr');
-
-// let messages =[];
-// if (formName.value === '' || formName.value == null) {
-//     messages.push('Необходимо е име за връзка');
-// }
-// if (formPhoneNr.value === '' || formPhoneNr.value == null) {
-//     messages.push('Необходим е телефон за връзка');
-// }
-// if (formPhoneNr.value.length < 10) {
-//     messages.push('Телефонът трябва да е поне 10 цифри');
-// }
-// if (!/^\d+$/.test(formPhoneNr.value)) {
-//     messages.push('Телефонът трябва да съдържа само цифри');
-// }
-// if (!/^[a-zA-Zа-яА-ЯёЁ\s]+$/.test(formName.value)) {
-//     messages.push('Името трябва да съдържа само букви');
-// }
-// if (formName.value.length < 2) {
-//     messages.push('Името трябва да е поне 2 букви');
-// }
-// if (formName.value.length > 50) {
-//     messages.push('Името не трябва да е по-дълго от 50 букви');
-// }
-// if (formPhoneNr.value.length > 15) {
-//     messages.push('Телефонът не трябва да е по-дълъг от 15 цифри');
-// }
-
-
-// Initialize FullCalendar
-const calendarEl = document.getElementById('calendar');
-if (calendarEl) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of today, July 21, 2025
-    const currentTime = new Date(); // Current time, 01:11 PM EEST
-
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'timeGridWeek',
-        slotMinTime: '08:00:00',
-        slotMaxTime: '17:00:00',
-        firstDay: 1, // Start week on Monday
-        locale: 'bg', // Bulgarian locale
-        buttonText: {
-            today: 'Днес'
-        },
-        slotLabelFormat: {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false // Remove AM/PM
-        },
-        allDaySlot: false, // Remove all-day line
-        selectable: true, // Enable selection
-        select: function (info) {
-            const slotDate = new Date(info.start);
-            const slotTime = info.start.getTime();
-            if (slotDate < today || (slotDate.getDate() === today.getDate() && slotTime < currentTime.getTime())) {
-                return; // Prevent selection for past times
-            }
-            const date = slotDate.toLocaleDateString('bg-BG', { weekday: 'long' });
-            const time = info.start.toTimeString().split(' ')[0].slice(0, 5);
-            document.getElementById('selected-date').value = date;
-            document.getElementById('selected-time').value = time;
-            document.getElementById('booking-form').style.display = 'block';
-            document.getElementById('client-name').focus();
-            console.log('Selected slot:', date, time); // Debug
-        },
-        dayCellContent: function (arg) {
-            return arg.dayNumberText; // Show day numbers only
-        },
-        eventDidMount: function (info) {
-            if (info.event.title === 'Зает') {
-                info.el.style.backgroundColor = '#ff4646ff';
-                info.el.style.borderColor = '#ff4646ff';
-            }
-            else {
-                info.el.style.backgroundColor = '#00571dff';
-                info.el.style.borderColor = '#00571dff';
-            }
-        },
-        events: async function (fetchInfo, successCallback) {
-            try {
-                const response = await fetch('/api/slots');
-                if (!response.ok) throw new Error('API error');
-                const slots = await response.json();
-                const events = slots.map(slot => {
-                    return {
-                        title: 'Свободен',
-                        start: `${slot.date}T${slot.time}:00`,
-                        allDay: false,
-                    };
-                });
-                successCallback(events);
-            } catch (error) {
-                console.error('Error fetching slots:', error);
-                successCallback([]);
-            }
+    if (calendarEl) {
+        const times = [];
+        for (let h = 8; h <= 20; h++) {
+            times.push((h < 10 ? '0' : '') + h + ':00');
         }
-    });
-    calendar.render();
-    console.log('Calendar initialized'); // Debug initialization
-}
- else {
-    console.error('Calendar element not found');
-}
 
-// Booking type selection
-  document.querySelectorAll('.choose-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      const choice = this.getAttribute('data-type');
-      localStorage.setItem('bookingType', choice);
+        function renderWeek(startDate) {
+            calendarEl.innerHTML = '';
+            const weekRow = document.createElement('div');
+            weekRow.className = 'calendar-week-row';
+            for (let d = 0; d < 7; d++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + d);
+                const dateStr = date.toISOString().split('T')[0];
+                const dayName = ['пн','вт','ср','чт','пт','сб','нд'][date.getDay() === 0 ? 6 : date.getDay() - 1];
+                const dayCol = document.createElement('div');
+                dayCol.className = 'calendar-day-col';
+                dayCol.innerHTML = `<div class="calendar-day-header">${dayName} ${dateStr.slice(8,10)}.${dateStr.slice(5,7)}</div>`;
+                const slotsCol = document.createElement('div');
+                slotsCol.className = 'calendar-slots-col';
+                dayCol.appendChild(slotsCol);
+                weekRow.appendChild(dayCol);
+            }
+            calendarEl.appendChild(weekRow);
 
-      // Scroll to calendar section
-      const schedule = document.getElementById('schedule');
-      if (schedule) {
-        schedule.scrollIntoView({ behavior: 'smooth' });
-      }
-    });
-  });
-
-  // Populate date and time dropdowns
-  function populateBookingDropdowns() {
-    const dateSelect = document.getElementById('date-select');
-    const timeSelect = document.getElementById('time-select');
-    if (!dateSelect || !timeSelect) return;
-
-    // Example data, replace with your real available slots
-    const availableDates = ['2025-07-21', '2025-07-22', '2025-07-23'];
-    const availableTimes = {
-      '2025-07-21': ['10:00', '11:00', '12:00'],
-      '2025-07-22': ['13:00', '14:00'],
-      '2025-07-23': ['15:00', '16:00']
-    };
-
-    dateSelect.innerHTML = '';
-    availableDates.forEach(date => {
-      const opt = document.createElement('option');
-      opt.value = date;
-      opt.textContent = date;
-      dateSelect.appendChild(opt);
-    });
-
-    dateSelect.onchange = function() {
-      const times = availableTimes[this.value] || [];
-      timeSelect.innerHTML = '';
-      times.forEach(time => {
-        const opt = document.createElement('option');
-        opt.value = time;
-        opt.textContent = time;
-        timeSelect.appendChild(opt);
-      });
-    };
-
-    // Trigger initial population
-    dateSelect.dispatchEvent(new Event('change'));
-  }
-
-  // Confirm button logic
-const confirmBtn = document.getElementById('confirm-btn');
-if (confirmBtn) {
-    confirmBtn.addEventListener('click', async function() {
-        const type = localStorage.getItem('bookingType');
-        const date = document.getElementById('date-select').value;
-        const time = document.getElementById('time-select').value;
-        const client_name = prompt('Вашето име:');
-        const client_phone = prompt('Вашият телефон за връзка:');
-        if (!client_name || !client_phone) {
-            alert('Име и телефон са необходими за обратна връзка.');
-            return;
+            // Fetch bookings and holidays
+            Promise.all([
+                fetch('/api/bookings').then(r => r.json()),
+                fetch('/api/holidays').then(r => r.json())
+            ]).then(([bookings, holidays]) => {
+                for (let d = 0; d < 7; d++) {
+                    const date = new Date(startDate);
+                    date.setDate(startDate.getDate() + d);
+                    const dateStr = date.toISOString().split('T')[0];
+                    const dayCol = weekRow.children[d];
+                    const slotsCol = dayCol.querySelector('.calendar-slots-col');
+                    if (holidays.includes(dateStr)) {
+                        dayCol.classList.add('holiday');
+                        slotsCol.innerHTML = '<div class="holiday-label">Почивен ден</div>';
+                        continue;
+                    }
+                    times.forEach(time => {
+                        const taken = bookings.some(b => b.date === dateStr && b.time === time);
+                        const slotBtn = document.createElement('button');
+                        slotBtn.className = taken ? 'slot taken' : 'slot available';
+                        slotBtn.textContent = time;
+                        slotBtn.disabled = taken;
+                        slotBtn.onclick = () => {
+                            selectedDate = dateStr;
+                            selectedTime = time;
+                            document.getElementById('booking-date-hour').value = `${dateStr} ${time}`;
+                            requestServices.classList.add('active');
+                            requestServices.scrollIntoView({ behavior: 'smooth' });
+                        };
+                        slotsCol.appendChild(slotBtn);
+                    });
+                }
+            });
         }
-        const booking = { type, date, time, client_name, client_phone };
 
-        const response = await fetch('/api/book', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(booking)
-        });
-        const result = await response.json();
-        if (response.ok && result.message) {
-            alert('Заявката е изпратена за одобрение!');
-        } else {
-            alert(result.error || 'Възникна грешка при подаване на заявката!');
+        // Week navigation
+        let weekStart = new Date();
+        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+        function showWeek(offset) {
+            weekStart.setDate(weekStart.getDate() + offset * 7);
+            renderWeek(weekStart);
         }
-    });
-}
+        renderWeek(weekStart);
+
+        // Add navigation buttons
+        document.getElementById('prev-week').onclick = () => showWeek(-1);
+        document.getElementById('next-week').onclick = () => showWeek(1);
+        document.getElementById('today-week').onclick = () => {
+            weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+            renderWeek(weekStart);
+        };
+    }
+
+    // Booking form logic
+    if (bookingForm) {
+        document.getElementById('cancel-booking').onclick = () => {
+            requestServices.classList.remove('active');
+            bookingForm.reset();
+        };
+        bookingForm.onsubmit = async function (e) {
+            e.preventDefault();
+            const booking_type = document.getElementById('booking-type').value;
+            const client_name = document.getElementById('client-name').value;
+            const client_phone = document.getElementById('client-phone').value;
+            const client_email = document.getElementById('client-email').value;
+            const subscribe_email = document.getElementById('subscribe-email').checked;
+            if (!selectedDate || !selectedTime) {
+                alert('Моля, изберете дата и час от календара.');
+                return;
+            }
+            const res = await fetch('/api/book', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    booking_type, date: selectedDate, time: selectedTime,
+                    client_name, client_phone, client_email, subscribe_email
+                })
+            });
+            const result = await res.json();
+            if (result.error) {
+                alert(result.error);
+            } else {
+                alert('Заявката е изпратена за одобрение!');
+                requestServices.classList.remove('active');
+                bookingForm.reset();
+                selectedDate = null;
+                selectedTime = null;
+                document.getElementById('booking-date-hour').value = '';
+                // Optionally, refresh calendar
+                if (calendarEl) calendarEl.innerHTML = '';
+                renderWeek(weekStart);
+            }
+        };
+    }
 });

@@ -4,17 +4,36 @@
     <title>Админ - Заявки за резервация</title>
     <link rel="stylesheet" href="admin.css">
 </head>
-
 <body>
     <h1>Заявки за резервация</h1>
     <table id="pending-bookings">
-        <tr><th>ID</th><th>Дата</th><th>Час</th><th>Клиент</th><th>Телефон</th><th>Действие</th></tr>
+        <tr>
+            <th>ID</th>
+            <th>Вид услуга</th>
+            <th>Дата</th>
+            <th>Час</th>
+            <th>Клиент</th>
+            <th>Телефон</th>
+            <th>E-mail</th>
+            <th>Абониране</th>
+            <th>Времеви печат</th>
+            <th>Действие</th>
+        </tr>
     </table>
 
-<footer>
-    <p>&copy; 2025 Vaseto Inc.</p>
-</footer>
+    <h1>Управление на почивни дни</h1>
+    <div class="calendar-nav">
+        <button id="prev-week">Назад</button>
+        <button id="today-week">Днес</button>
+        <button id="next-week">Напред</button>
+    </div>
+    <div id="admin-calendar">
+    </div>
 
-</body>
+    <footer>
+        <p>&copy; 2025 Vaseto Inc.</p>
+    </footer>
+
     <script src="admin.js"></script>
+</body>
 </html>
