@@ -28,3 +28,8 @@ button {
 button:hover { 
     background: #4b5563; 
 }
+
+#admin-calendar {
+    max-width: 900px;
+    margin: 20px auto;
+}

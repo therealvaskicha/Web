@@ -4,18 +4,33 @@ const db = new sqlite3.Database('./db.sqlite');
 db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS bookings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        booking_type TEXT,
         date TEXT,
         time TEXT,
-        client_name VARCHAR(100),
-        client_phone VARCHAR(15),
+        client_name TEXT,
+        client_phone TEXT,
+        client_email TEXT,
+        subscribe_email BOOLEAN,
+        timestamp TEXT,
         status TEXT
     )`, (err) => {
         if (err) {
-            console.error("Error creating table:", err.message);
+            console.error("Error creating bookings table:", err.message);
         } else {
             console.log("Bookings table created or already exists.");
         }
-    })
+    });
+
+    db.run(`CREATE TABLE IF NOT EXISTS holidays (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT UNIQUE
+    )`, (err) => {
+        if (err) {
+            console.error("Error creating holidays table:", err.message);
+        } else {
+            console.log("Holidays table created or already exists.");
+        }
+    });
 });
 
 module.exports = db;
