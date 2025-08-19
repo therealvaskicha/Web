@@ -12,11 +12,11 @@
 <body>
 
 <!-- Remove this script if you want to keep the scroll position on page reload -->
-<!-- <script>
+<script>
   window.onbeforeunload = function () {
     window.scrollTo(0, 0);
   };
-</script>  -->
+</script> 
 
 
 <header>  
@@ -72,7 +72,7 @@
       Your browser does not support the video tag.
     </video>
   <div class="hero-content">
-      <a href="#calendar" class="btn">Запиши си час</a>
+      <a href="#schedule" class="btn">Запиши си час</a>
   </div>
 </section>
 
@@ -214,48 +214,50 @@
 
 <section id="schedule">
   <h2>График</h2>
-  <div id="user-calendar"></div>
-  <div class="calendar-nav">
-    <button id="prev-week">Назад</button>
-    <button id="today-week">Днес</button>
-    <button id="next-week">Напред</button>
-  </div>
-  <div class="requestServices" id="requestServices">
-    <h2>Заяви услуга</h2>
-    <div class="container">
-      <form id="booking-form">
-        <label for="booking-type">Вид услуга*</label>
-        <select id="booking-type" name="booking_type" required>
-          <option value="">Изберете...</option>
-          <option value="Solo">Solo</option>
-          <option value="Private">Private</option>
-          <option value="Re4Me">Re4Me</option>
-          <option value="Reform 8">Reform 8</option>
-        </select>
-        <label for="client-name">Име и фамилия*</label>
-        <input type="text" id="client-name" name="client_name" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
-        <label for="client-phone">Телефон*</label>
-        <input type="text" id="client-phone" name="client_phone" maxlength="20" pattern="\d+" required>
-        <label for="booking-date-hour">Дата и час*</label>
-        <input type="text" id="booking-date-hour" name="booking_date_hour" readonly>
-        <label for="client-email">E-mail*</label>
-        <input type="email" id="client-email" name="client_email" maxlength="50" required>
-        <label>
-          <input type="checkbox" id="subscribe-email" name="subscribe_email">
-          Абониране за имейл известия
-        </label>
-        <small>Ако желаете да получавате имейл известия от нашето студио относно намаления, оферти или събития.</small>
-        <div>
-          <button type="submit" id="confirm-booking">Потвърди</button>
-          <button type="button" id="cancel-booking">Отказ</button>
-        </div>
-        <div class="disclaimer">
-          <p>Политика за анулиране:<br>
-          Можете да отмените или промените часа си до 1 час преди да се състои. Ако искате да анулирате своят час, моля обадете се на телефона в секция Контакти.</p>
-        </div>
-      </form>
+    <div class="calendar-wrap">
+      <div class="calendar-nav">
+        <button id="prev-week">Назад</button>
+        <button id="today-week">Днес</button>
+        <button id="next-week">Напред</button>
+      </div>
+      <div id="user-calendar"></div>
     </div>
-  </div>
+    <div class="requestServices" id="requestServices">
+      <h2>Заяви услуга</h2>
+      <div class="container">
+        <form id="booking-form">
+          <label for="booking-type">Вид услуга*</label>
+          <select id="booking-type" name="booking_type" required>
+            <option value="">Изберете...</option>
+            <option value="Solo">Solo</option>
+            <option value="Private">Private</option>
+            <option value="Re4Me">Re4Me</option>
+            <option value="Reform 8">Reform 8</option>
+          </select>
+          <label for="client-name">Име и фамилия*</label>
+          <input type="text" id="client-name" name="client_name" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
+          <label for="client-phone">Телефон*</label>
+          <input type="text" id="client-phone" name="client_phone" maxlength="20" pattern="\d+" required>
+          <label for="booking-date-hour">Дата и час*</label>
+          <input type="text" id="booking-date-hour" name="booking_date_hour" readonly>
+          <label for="client-email">E-mail*</label>
+          <input type="email" id="client-email" name="client_email" maxlength="50" required>
+          <label>
+            <input type="checkbox" id="subscribe-email" name="subscribe_email">
+            Абониране за имейл известия
+          </label>
+          <small>Ако желаете да получавате имейл известия от нашето студио относно намаления, оферти или събития.</small>
+          <div>
+            <button type="submit" id="confirm-booking">Потвърди</button>
+            <button type="button" id="cancel-booking">Отказ</button>
+          </div>
+          <div class="disclaimer">
+            <p>Политика за анулиране:<br>
+            Можете да отмените или промените часа си до 1 час преди да се състои. Ако искате да анулирате своят час, моля обадете се на телефона в секция Контакти.</p>
+          </div>
+        </form>
+      </div>
+    </div>
 </section>
 
 <div>

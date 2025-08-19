@@ -69,6 +69,14 @@ scrollBtn.addEventListener('click', function() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
+// Choose price card button functionality
+// const choosePriceCardBtn = document.getElementById('choose-btn');
+// const scheduleSection = document.getElementById('schedule');
+
+// choosePriceCardBtn.addEventListener('click', function() {
+//     choosePriceCardBtn.scrollTo({ scheduleSection, behavior: 'smooth' });
+// });
+
 // Form submission (using Formspree as an example)
 document.getElementById('contact-form').addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -198,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const date = new Date(startDate);
                 date.setDate(startDate.getDate() + d);
                 const dateStr = date.toISOString().split('T')[0];
-                const dayName = ['пн','вт','ср','чт','пт','сб','нд'][date.getDay() === 0 ? 6 : date.getDay() - 1];
+                const dayName = ['нд','пн','вт','ср','чт','пт','сб'][date.getDay() === 0 ? 6 : date.getDay() - 1];
                 const dayCol = document.createElement('div');
                 dayCol.className = 'calendar-day-col';
                 dayCol.innerHTML = `<div class="calendar-day-header">${dayName} ${dateStr.slice(8,10)}.${dateStr.slice(5,7)}</div>`;
@@ -246,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Week navigation
         let weekStart = new Date();
-        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 2));
         function showWeek(offset) {
             weekStart.setDate(weekStart.getDate() + offset * 7);
             renderWeek(weekStart);
@@ -258,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('next-week').onclick = () => showWeek(1);
         document.getElementById('today-week').onclick = () => {
             weekStart = new Date();
-            weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+            weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 2));
             renderWeek(weekStart);
         };
     }
