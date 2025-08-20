@@ -31,6 +31,8 @@ db.serialize(() => {
             console.log("Holidays table created or already exists.");
         }
     });
+
+    // db.run(`INSERT INTO holidays (date) VALUES ('2025-08-23')`)
 });
 
 module.exports = db;
