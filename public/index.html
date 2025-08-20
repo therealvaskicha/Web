@@ -12,11 +12,11 @@
 <body>
 
 <!-- Remove this script if you want to keep the scroll position on page reload -->
-<script>
+<!-- <script>
   window.onbeforeunload = function () {
     window.scrollTo(0, 0);
   };
-</script> 
+</script>  -->
 
 
 <header>  
@@ -147,7 +147,7 @@
             <span>30 лв.</span>
             <small>/ 1 тренировка</small>
         </div>
-        <button class="price-card-btn choose-btn" data-type="Solo" type="button" id="openForm">Избери</button>
+        <button class="price-card-btn" data-type="Solo" type="button">Избери</button>
       </div>
       <div class="price-card">
         <div class="price-card-header">
@@ -164,7 +164,7 @@
           <span>45 лв.</span>
           <small>/ 1 тренировка</small>
         </div>
-        <button class="price-card-btn choose-btn" data-type="Private" type="button" id="openForm">Избери</button>
+        <button class="price-card-btn" data-type="Private" type="button">Избери</button>
       </div>
     </div>
       <h3>Абонаментни карти</h3>
@@ -184,7 +184,7 @@
           <span>100 лв.*</span>
           <small>/ 4 тренировки</small>
         </div>
-        <button class="price-card-btn choose-btn" id="openForm" data-type="Re4Me">Избери</button>
+        <button class="price-card-btn" data-type="Re4Me" type="button">Избери</button>
       </div>
       <div class="price-card">
         <div class="price-card-header">
@@ -200,7 +200,7 @@
           <span>180 лв.</span>
           <small>/ 8 тренировки</small>
         </div>
-        <button class="price-card-btn choose-btn" id="openForm" data-type="Reform8">Избери</button>
+        <button class="price-card-btn" data-type="Reform8" type="button">Избери</button>
       </div>
     </div>
     <p>*Цените на пакетите с тренировки се изчисляват на база единични тренировки и приложеното намаление към тях.</p>
@@ -220,7 +220,8 @@
         <button id="today-week">Днес</button>
         <button id="next-week">Напред</button>
       </div>
-      <div id="user-calendar"></div>
+      <div id="user-calendar">
+      </div>
     </div>
     <div class="requestServices" id="requestServices">
       <h2>Заяви услуга</h2>
@@ -308,10 +309,7 @@
     </div>
 </footer>
 
-    <script src="script.js"></script>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/index.global.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.15/index.global.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.15/index.global.min.js"></script> -->
+<script src="script.js"></script>
 
 </body>
   <div class="bottom-bar">

@@ -70,12 +70,19 @@ scrollBtn.addEventListener('click', function() {
 });
 
 // Choose price card button functionality
-// const choosePriceCardBtn = document.getElementById('choose-btn');
-// const scheduleSection = document.getElementById('schedule');
+const priceBtns = document.getElementsByClassName('price-card-btn'); // Correct class name
+const scheduleSection = document.getElementById('schedule');
 
-// choosePriceCardBtn.addEventListener('click', function() {
-//     choosePriceCardBtn.scrollTo({ scheduleSection, behavior: 'smooth' });
-// });
+// Convert HTMLCollection to array and add event listener to each button
+Array.from(priceBtns).forEach(button => {
+    button.addEventListener('click', function() {
+        if (scheduleSection) {
+            scheduleSection.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            console.error('Element with ID "schedule" not found.');
+        }
+    });
+});
 
 // Form submission (using Formspree as an example)
 document.getElementById('contact-form').addEventListener('submit', async function (e) {
@@ -206,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const date = new Date(startDate);
                 date.setDate(startDate.getDate() + d);
                 const dateStr = date.toISOString().split('T')[0];
-                const dayName = ['нд','пн','вт','ср','чт','пт','сб'][date.getDay() === 0 ? 6 : date.getDay() - 1];
+                const dayName = ['нд','пн','вт','ср','чт','пт','сб'][date.getDay() === 0 ? 6 : date.getDay() - 0];
                 const dayCol = document.createElement('div');
                 dayCol.className = 'calendar-day-col';
                 dayCol.innerHTML = `<div class="calendar-day-header">${dayName} ${dateStr.slice(8,10)}.${dateStr.slice(5,7)}</div>`;
@@ -254,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Week navigation
         let weekStart = new Date();
-        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 2));
+        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
         function showWeek(offset) {
             weekStart.setDate(weekStart.getDate() + offset * 7);
             renderWeek(weekStart);
@@ -266,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('next-week').onclick = () => showWeek(1);
         document.getElementById('today-week').onclick = () => {
             weekStart = new Date();
-            weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 2));
+            weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
             renderWeek(weekStart);
         };
     }
