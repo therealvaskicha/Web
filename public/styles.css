@@ -36,20 +36,23 @@ section {
 h2 {
     text-align: center;
     margin-bottom: 1.25rem;
-    font-size: 2rem;
+    font-size: 1.75rem;
+    font-weight: normal;
 }
 
 h3 {
     text-align: center;
     color:#1d1c12;
     margin-bottom: 0.75rem;
-    font-size:1.5rem;
+    font-size:1.35rem;
+    font-weight: normal;
 }
 
 h4 {
     text-align: center;
     color:#1d1c12;
-    font-size:1rem;
+    font-size:1.25rem;
+    font-weight: normal;
 }
 
 /* Gradient between sections */
@@ -57,13 +60,13 @@ h4 {
 .spacing-between-sections-down {
     height:3rem;
     background-image: linear-gradient(to top, #f9f9f9, #e7debb);
-    -webkit-mask-image: linear-gradient(black, transparent);
+    -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 0.66), transparent);
 }
 
 .spacing-between-sections-up {
     height:3rem;
     background-image: linear-gradient(to top, #e7debb, #f9f9f9);
-    -webkit-mask-image: linear-gradient(transparent, black);
+    -webkit-mask-image: linear-gradient(transparent, rgba(0, 0, 0, 0.66));
 }
 
 /* Header */
@@ -126,7 +129,7 @@ h4 {
         height: 0.125rem;
         width:0;
         background: #e7e4bb;
-        transition: 0.3s;
+        transition: 0.15s;
     }
 
     .hover-underline:hover::before{
@@ -136,7 +139,7 @@ h4 {
 
     .nav-link:hover {
         color: #e7e4bbe7;
-        transition: 0.1s ease-in-out;
+        transition: 0.15s ease-in-out;
     } 
 
     .mobile-menu-icon {
@@ -243,7 +246,6 @@ h4 {
 
     .about-title{
         position:relative;
-        font-weight:900;
         line-height:1;
         z-index:2;
     }
@@ -777,6 +779,9 @@ footer {
 footer h2 {
     font-family: 'Lora', sans-serif;
     line-height: 1.6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 footer .container {
@@ -940,6 +945,13 @@ top: 0rem;
             align-items: center;
         }
 
+        .social-link {
+            width:2.5rem;
+            height:2.5rem;
+            justify-content: center;
+            padding:0;
+        }
+
         .logo {
             display:none;
         }
@@ -1037,7 +1049,7 @@ top: 0rem;
             top:auto;
             height:100%;
             border-bottom-style: solid;
-            border-bottom-width: 0.2rem;
+            border-bottom-width: 0.1rem;
             border-bottom-color: #333333;
         }
 
