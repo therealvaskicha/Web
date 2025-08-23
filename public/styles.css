@@ -517,6 +517,7 @@ h4 {
   color: #fff;
 }
 
+
 /* Minimalistic calendar styles */
 
 #user-calendar {
@@ -579,17 +580,22 @@ h4 {
     gap: 1rem;
     margin-bottom: 0.5rem;
 }
-.calendar-nav button {
+
+.week-nav-btn {
     background: #e7e4bb;
+    color: #333;
     border: none;
-    border-radius: 0.25rem;
-    padding: 0.25rem 1rem;
+    border-radius: 1.5rem;
+    padding: 0.625rem 2rem;
+    font-size: 1.1rem;
+    font-family: 'Lora', sans-serif;
+    font-weight: 600;
     cursor: pointer;
-    font-size: 1rem;
+    transition: background 0.2s, color 0.2s;
 }
-.calendar-nav button:hover {
-    background: #f0a500;
-    color: #fff;
+.week-nav-btn:hover {
+  background: #f0a500;
+  color: #fff;
 }
 
 /* Booking form styles */
