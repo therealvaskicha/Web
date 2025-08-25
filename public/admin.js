@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     loadPending();
+    loadBookings();
     initAdminCalendar();
+    loadHistory();
 
     async function loadPending() {
         const response = await fetch('/api/pending');
@@ -36,6 +38,49 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.onclick = async () => {
                 await updateBooking(btn.dataset.id, 'rejected');
             };
+        });
+    }
+
+    async function loadBookings() {
+        const response = await fetch('/api/bookings-approved');
+        const bookings = await response.json();
+        const table = document.getElementById('bookings-approved');
+        while (table.rows.length > 1) table.deleteRow(1);
+        bookings.forEach(booking => {
+            const row = table.insertRow();
+            row.innerHTML = `
+                <td>${booking.id}</td>
+                <td>${booking.booking_type}</td>
+                <td>${booking.date}</td>
+                <td>${booking.time}</td>
+                <td>${booking.client_name}</td>
+                <td>${booking.client_phone || 'N/A'}</td>
+                <td>${booking.client_email || 'N/A'}</td>
+                <td>${booking.subscribe_email ? 'Да' : 'Не'}</td>
+                <td>${booking.timestamp}</td>
+            `;
+        });
+    }
+
+        async function loadHistory() {
+        const response = await fetch('/api/bookings-history');
+        const bookings = await response.json();
+        const table = document.getElementById('bookings-history');
+        while (table.rows.length > 1) table.deleteRow(1);
+        bookings.forEach(booking => {
+            const row = table.insertRow();
+            row.innerHTML = `
+                <td>${booking.id}</td>
+                <td>${booking.booking_type}</td>
+                <td>${booking.date}</td>
+                <td>${booking.time}</td>
+                <td>${booking.client_name}</td>
+                <td>${booking.client_phone || 'N/A'}</td>
+                <td>${booking.client_email || 'N/A'}</td>
+                <td>${booking.subscribe_email ? 'Да' : 'Не'}</td>
+                <td>${booking.timestamp}</td>
+                <td>${booking.status}</td>
+            `;
         });
     }
 

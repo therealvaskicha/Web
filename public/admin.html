@@ -5,35 +5,74 @@
     <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-    <h1>Заявки за резервация</h1>
-    <table id="pending-bookings">
-        <tr>
-            <th>ID</th>
-            <th>Вид услуга</th>
-            <th>Дата</th>
-            <th>Час</th>
-            <th>Клиент</th>
-            <th>Телефон</th>
-            <th>E-mail</th>
-            <th>Абониране</th>
-            <th>Времеви печат</th>
-            <th>Действие</th>
-        </tr>
-    </table>
+<section class="booking-requests">
+    <h1>Чакащи заявки</h1>
+    <div class="pending-div">
+        <table id="pending-bookings">
+            <tr>
+                <th>ID</th>
+                <th>Вид услуга</th>
+                <th>Дата</th>
+                <th>Час</th>
+                <th>Имена</th>
+                <th>Телефон</th>
+                <th>E-mail</th>
+                <th>E-mail абонат</th>
+                <th>Времеви печат</th>
+                <th>Действие</th>
+            </tr>
+        </table>
+    </div>
+</section>
 
+<section class="holidays">
     <h1>Управление на почивни дни</h1>
     <div class="calendar-nav">
         <button id="prev-week">Назад</button>
         <button id="today-week">Днес</button>
         <button id="next-week">Напред</button>
     </div>
-    <div id="admin-calendar">
-    </div>
+</section>
 
-    <footer>
-        <p>&copy; 2025 Vaseto Inc.</p>
-    </footer>
+<section class="bookings-approved">
+    <h1>Одобрени заявки</h1>
+    <div class="approved-div">
+        <table id="bookings-approved">
+            <th>ID</th>
+            <th>Вид услуга</th>
+            <th>Дата</th>
+            <th>Час</th>
+            <th>Имена</th>
+            <th>Телефон</th>
+            <th>E-mail</th>
+            <th>E-mail абонат</th>
+            <th>Времеви печат</th>
+        </table>
+    </div>
+</section>
+
+<section class="bookings-history">
+    <h1>История на заявките</h1>
+    <div class="history-div">
+        <table id="bookings-history">
+            <th>ID</th>
+            <th>Вид услуга</th>
+            <th>Дата</th>
+            <th>Час</th>
+            <th>Имена</th>
+            <th>Телефон</th>
+            <th>E-mail</th>
+            <th>E-mail абонат</th>
+            <th>Времеви печат</th>
+            <th>Статус</th>
+        </table>
+    </div>
+</section>
 
     <script src="admin.js"></script>
 </body>
+
+  <div class="bottom-bar">
+    <p>&copy; 2025 Pilates Reformer Studio by Dilona. All rights reserved. Website by <a href="https://github.com/therealvaskicha/">VA</a></p>
+  </div>
 </html>

@@ -209,14 +209,19 @@ document.addEventListener('DOMContentLoaded', function () {
             calendarEl.innerHTML = '';
             const weekRow = document.createElement('div');
             weekRow.className = 'calendar-week-row';
+            const today = new Date();
             for (let d = 0; d < 7; d++) {
                 const date = new Date(startDate);
                 date.setDate(startDate.getDate() + d);
                 const dateStr = date.toISOString().split('T')[0];
-                const dayName = ['нд','пн','вт','ср','чт','пт','сб'][date.getDay() === 0 ? 6 : date.getDay() - 0];
+                const dayName = ['нд','пн','вт','ср','чт','пт','сб'][date.getDay() === 0 ? 0 : date.getDay() - 0];
                 const dayCol = document.createElement('div');
                 dayCol.className = 'calendar-day-col';
                 dayCol.innerHTML = `<div class="calendar-day-header">${dayName} ${dateStr.slice(8,10)}.${dateStr.slice(5,7)}</div>`;
+                console.log(`Checking date: ${dateStr}, Today: ${today.toISOString().split('T')[0]}`); // Debug log
+                if (date.toISOString().split('T')[0] === today.toISOString().split('T')[0]) {
+                dayCol.classList.add('today-highlight'); 
+                }
                 const slotsCol = document.createElement('div');
                 slotsCol.className = 'calendar-slots-col';
                 dayCol.appendChild(slotsCol);
@@ -226,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Fetch bookings and holidays
             Promise.all([
-                fetch('/api/bookings').then(r => r.json()),
+                fetch('/api/bookings-approved').then(r => r.json()),
                 fetch('/api/holidays').then(r => r.json())
             ]).then(([bookings, holidays]) => {
                 for (let d = 0; d < 7; d++) {
@@ -246,22 +251,41 @@ document.addEventListener('DOMContentLoaded', function () {
                         slotBtn.className = taken ? 'slot taken' : 'slot available';
                         slotBtn.textContent = time;
                         slotBtn.disabled = taken;
+                        // Disable past slots
+                        const slotDateTime = new Date(`${dateStr}T${time}`);
+                        const now = new Date(); // Current time: 11:38 AM EEST, 2025-08-25
+                        if (slotDateTime < now) {
+                        slotBtn.disabled = true; // Disable if in the past
+                        slotBtn.classList.add('past-slot'); // Optional class for styling
+                        }
+
+                        if (slotDateTime >= now) {
+                        slotBtn.disabled = false; // Enable open slots
+                        slotBtn.classList.add('open-slot'); // Optional class for styling
+                        }
+
                         slotBtn.onclick = () => {
+                            if(!slotBtn.disabled) {
                             selectedDate = dateStr;
                             selectedTime = time;
                             document.getElementById('booking-date-hour').value = `${dateStr} ${time}`;
                             requestServices.classList.add('active');
                             requestServices.scrollIntoView({ behavior: 'smooth' });
+                            }
                         };
                         slotsCol.appendChild(slotBtn);
-                    });
+                    })
+                    
+                    ;
                 }
             });
         }
 
         // Week navigation
         let weekStart = new Date();
-        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1)); // Set to Monday
+        console.log('Initial weekStart:', weekStart.toISOString().split('T')[0]); // Debug initial weekStart
+        // weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
         function showWeek(offset) {
             weekStart.setDate(weekStart.getDate() + offset * 7);
             renderWeek(weekStart);
@@ -273,7 +297,9 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('next-week').onclick = () => showWeek(1);
         document.getElementById('today-week').onclick = () => {
             weekStart = new Date();
-            weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+            // weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+            weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1)); // Reset to current Monday
+            console.log('Today reset weekStart:', weekStart.toISOString().split('T')[0]); // Debug reset
             renderWeek(weekStart);
         };
     }
