@@ -537,6 +537,11 @@ h4 {
     min-width: 5rem;
     max-width:6rem;
 }
+
+.calendar-day-col.today-highlight {
+    border: 0.125rem solid #f0a500; /* Highlight with a border matching your theme */
+}
+
 .calendar-day-header {
     font-weight: bold;
     text-align: center;
@@ -545,7 +550,6 @@ h4 {
 .calendar-slots-col {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
 }
 .slot {
     border: none;
@@ -556,6 +560,11 @@ h4 {
     font-size: 1rem;
     transition: background 0.2s;
 }
+
+.slot.open-slot:hover {
+    opacity:0.6;
+    transition:0.1s;
+}
 .slot.available {
     background: #d6f5d6;
     color: #222;
@@ -563,6 +572,12 @@ h4 {
 .slot.taken {
     background: #ffd699;
     color: #222;
+    cursor: not-allowed;
+}
+
+.slot.past-slot {
+    background: #e0e0e0; /* Grey out past slots */
+    color: #666;
     cursor: not-allowed;
 }
 .holiday {
@@ -626,6 +641,11 @@ h4 {
     border: 1px solid #e7e4bb;
     font-size: 1rem;
 }
+
+#subscribe-email {
+    width:5%;
+}
+
 .requestServices button {
     margin: 1rem 0.5rem 0 0;
     padding: 0.5rem 1.5rem;
@@ -847,6 +867,15 @@ text-align: center;
 padding: 0.125rem;
 position: sticky;
 top: 0rem;
+}
+
+.website-signature{
+    display:flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 /* Scroll to Top Button */

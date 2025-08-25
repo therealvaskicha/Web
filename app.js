@@ -36,8 +36,16 @@ app.post('/api/approve', (req, res) => {
 });
 
 // Get all approved bookings
-app.get('/api/bookings', (req, res) => {
-    db.all(`SELECT * FROM bookings WHERE status = 'approved'`, [], (err, rows) => {
+app.get('/api/bookings-approved', (req, res) => {
+    db.all(`SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, timestamp FROM bookings WHERE status = 'approved' ORDER BY id desc`, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// Get bookings history
+app.get('/api/bookings-history', (req, res) => {
+    db.all(`SELECT * FROM bookings ORDER BY id desc`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
