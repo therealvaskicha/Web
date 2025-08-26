@@ -17,7 +17,7 @@ app.listen(3000, () => console.log('Server at http://localhost:3000'));
 
 // Get all pending bookings
 app.get('/api/pending', (req, res) => {
-    db.all(`SELECT * FROM bookings WHERE status = 'pending'`, [], (err, rows) => {
+    db.all(`SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) as timestamp, status FROM bookings WHERE status = 'pending'`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -37,7 +37,7 @@ app.post('/api/approve', (req, res) => {
 
 // Get all approved bookings
 app.get('/api/bookings-approved', (req, res) => {
-    db.all(`SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, timestamp FROM bookings WHERE status = 'approved' ORDER BY id desc`, [], (err, rows) => {
+    db.all(`SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp FROM bookings WHERE status = 'approved' and date >= date('now') ORDER BY id desc`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -45,7 +45,7 @@ app.get('/api/bookings-approved', (req, res) => {
 
 // Get bookings history
 app.get('/api/bookings-history', (req, res) => {
-    db.all(`SELECT * FROM bookings ORDER BY id desc`, [], (err, rows) => {
+    db.all(`SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp, status FROM bookings ORDER BY id desc`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
