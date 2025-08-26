@@ -528,6 +528,7 @@ h4 {
     gap: 0.25rem;
     flex-direction: row;
     justify-content: center;
+    align-items:center;
 }
 .calendar-day-col {
     flex: 1;
@@ -546,6 +547,7 @@ h4 {
     font-weight: bold;
     text-align: center;
     margin-bottom: 0.5rem;
+    margin-top:0.5rem;
 }
 .calendar-slots-col {
     display: flex;
@@ -623,9 +625,13 @@ h4 {
     margin: 2rem auto;
     max-width: 500px;
     scroll-margin-top:6rem;
+    opacity:0;
+    transition: 0.3s;
 }
 .requestServices.active {
     display: block;
+    opacity:1;
+    transition: 0.3s;
 }
 .requestServices label {
     display: block;
@@ -688,7 +694,6 @@ h4 {
         flex-direction: column;
         gap: 0.625rem;
         padding: 0.938rem;
-        background: #f9f9f9;
     }
 
     #contact input, #contact textarea {
@@ -853,6 +858,12 @@ footer p {
     background: none;
     box-shadow: none;
     padding: 0rem;
+}
+
+#contact .container {
+    /* background: #f9f9f9; */
+    padding: 1rem;
+    background-color: #f9f9f9;
 }
 
 #location h2, #contact h2 {
@@ -1199,7 +1210,7 @@ top: 0rem;
             display: flex;
             grid-template-columns: repeat(7, minmax(0.5rem, 1fr));
             justify-items: center;
-            align-items: start;
+            align-items: center;
             justify-content: center;
         }
         .calendar-day-col {

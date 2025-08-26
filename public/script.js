@@ -120,13 +120,13 @@ document.getElementById('contact-form').addEventListener('submit', async functio
         });
         
         if (response.ok) {
-            alert('Message sent successfully!');
+            alert('Съобщението е изпратено успешно!');
             form.reset();
         } else {
-            alert('Error sending message. Please try again.');
+            alert('Грешка при изпращане на съобщението. Моля опитайте отново.');
         }
     } catch (error) {
-        alert('Error sending message. Please try again.');
+        alert('EГрешка при изпращане на съобщението. Моля опитайте отново.');
     }
 });
 
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const dayCol = document.createElement('div');
                 dayCol.className = 'calendar-day-col';
                 dayCol.innerHTML = `<div class="calendar-day-header">${dayName} ${dateStr.slice(8,10)}.${dateStr.slice(5,7)}</div>`;
-                console.log(`Checking date: ${dateStr}, Today: ${today.toISOString().split('T')[0]}`); // Debug log
+                // console.log(`Checking date: ${dateStr}, Today: ${today.toISOString().split('T')[0]}`); // Debug log
                 if (date.toISOString().split('T')[0] === today.toISOString().split('T')[0]) {
                 dayCol.classList.add('today-highlight'); 
                 }
@@ -289,6 +289,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             selectedTime = time;
                             document.getElementById('booking-date-hour').value = `${dateStr} ${time}`;
                             requestServices.classList.add('active');
+                            requestServices.style.opacity = '1';
                             requestServices.scrollIntoView({ behavior: 'smooth' });
                             }
                         };
@@ -303,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Week navigation
         let weekStart = new Date();
         weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1)); // Set to Monday
-        console.log('Initial weekStart:', weekStart.toISOString().split('T')[0]); // Debug initial weekStart
+        // console.log('Initial weekStart:', weekStart.toISOString().split('T')[0]); // Debug initial weekStart
         // weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
         function showWeek(offset) {
             weekStart.setDate(weekStart.getDate() + offset * 7);
@@ -318,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function () {
             weekStart = new Date();
             // weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
             weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1)); // Reset to current Monday
-            console.log('Today reset weekStart:', weekStart.toISOString().split('T')[0]); // Debug reset
+            // console.log('Today reset weekStart:', weekStart.toISOString().split('T')[0]); // Debug reset
             renderWeek(weekStart);
         };
     }
@@ -327,8 +328,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (bookingForm) {
         document.getElementById('cancel-booking').onclick = () => {
             scheduleSection.scrollIntoView({ behavior: 'smooth' });
-            requestServices.classList.remove('active');
-            bookingForm.reset();
+            requestServices.style.opacity='0';
+            setTimeout(() => {
+                requestServices.classList.remove('active');
+                bookingForm.reset();  
+            }, 300);
         };
         bookingForm.onsubmit = async function (e) {
             e.preventDefault();
