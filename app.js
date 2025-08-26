@@ -67,17 +67,17 @@ app.post('/api/book', (req, res) => {
     } = req.body;
     const timestamp = new Date().toISOString();
     if (!booking_type || !date || !time || !client_name || !client_phone || !client_email) {
-        return res.status(400).json({ error: 'Missing required fields' });
+        return res.status(400).json({ error: 'Липсват необходими полета.' });
     }
     db.get(`SELECT * FROM bookings WHERE date = ? AND time = ? AND status = 'approved'`, [date, time], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (row) return res.status(400).json({ error: 'Slot already booked' });
+        if (row) return res.status(400).json({ error: 'За съжаление този час е зает. Моля изберете свободен час.' });
         db.run(`INSERT INTO bookings (booking_type, date, time, client_name, client_phone, client_email, subscribe_email, timestamp, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
             [booking_type, date, time, client_name, client_phone, client_email, !!subscribe_email, timestamp],
             function (err) {
                 if (err) return res.status(500).json({ error: err.message });
-                res.json({ message: 'Booking request submitted', id: this.lastID });
+                res.json({ message: 'Заявката е изпратена за одобрение.', id: this.lastID });
             });
     });
 });
