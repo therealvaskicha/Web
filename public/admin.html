@@ -5,10 +5,45 @@
     <link rel="stylesheet" href="admin.css">
 </head>
 <body>
+
+<section class="holidays">
+    <div class="admin-controls">
+  <!-- <button id="deleteOldBookings" class="admin-btn danger">Изтрий стари заявки</button> -->
+        <button id="manageHolidays" class="admin-btn">Управлявай почивните дни</button>
+    </div>
+
+    <div id="holidayModal" class="modal">
+     <div class="modal-content">
+       <span class="close">&times;</span>
+       <h2>Управление на почивни дни</h2>
+       <div class="holiday-controls">
+         <button id="wholeDayOff" class="holiday-btn">Цял ден</button>
+         <button id="partialDayOff" class="holiday-btn">Частично</button>
+       </div>
+       <div id="adminCalendar" class="admin-calendar"></div>
+       <div id="timeSlotSelection" class="time-slot-selection" style="display: none;">
+         <h3>Избери часове</h3>
+         <div class="time-slots"></div>
+       </div>
+     </div>
+    </div>
+<!-- 
+    <h1>Управление на почивни дни</h1>
+    <div class="calendar-wrap">
+      <div class="calendar-nav">
+        <button class="week-nav-btn" id="prev-week" type="button">Назад</button>
+        <button class="week-nav-btn" id="today-week" type="button">Днес</button>
+        <button class="week-nav-btn" id="next-week" type="button">Напред</button>
+      </div>
+        <div id="admin-calendar">
+      </div>
+    </div> -->
+</section>
+
 <section class="booking-requests">
     <h1>Чакащи заявки</h1>
-    <div class="pending-div">
-        <table id="pending-bookings">
+    <div class="table-container">
+        <table id="pendingBookingsTable">
             <tr>
                 <th>ID</th>
                 <th>Вид услуга</th>
@@ -22,22 +57,14 @@
                 <th>Действие</th>
             </tr>
         </table>
+        <div class="pagination" id="pendingPagination"></div>
     </div>
 </section>
 
-<section class="holidays">
-    <h1>Управление на почивни дни</h1>
-    <div class="calendar-nav">
-        <button id="prev-week">Назад</button>
-        <button id="today-week">Днес</button>
-        <button id="next-week">Напред</button>
-    </div>
-</section>
-
-<section class="bookings-approved">
+<section class="booking-approved">
     <h1>Одобрени заявки</h1>
-    <div class="approved-div">
-        <table id="bookings-approved">
+    <div class="table-container">
+        <table id="approvedBookingsTable">
             <th>ID</th>
             <th>Вид услуга</th>
             <th>Дата</th>
@@ -48,13 +75,14 @@
             <th>E-mail абонат</th>
             <th>Времеви печат</th>
         </table>
+        <div class="pagination" id="approvedPagination"></div>
     </div>
 </section>
 
-<section class="bookings-history">
+<section class="booking-history">
     <h1>История на заявките</h1>
-    <div class="history-div">
-        <table id="bookings-history">
+    <div class="table-container">
+        <table id="bookingHistoryTable">
             <th>ID</th>
             <th>Вид услуга</th>
             <th>Дата</th>
@@ -66,6 +94,7 @@
             <th>Времеви печат</th>
             <th>Статус</th>
         </table>
+        <div class="pagination" id="historyPagination"></div>
     </div>
 </section>
 

@@ -73,6 +73,7 @@ scrollBtn.addEventListener('click', function() {
 const priceBtns = document.getElementsByClassName('price-card-btn'); // Correct class name
 const scheduleSection = document.getElementById('schedule');
 
+
 // Convert HTMLCollection to array and add event listener to each button
 Array.from(priceBtns).forEach(button => {
     button.addEventListener('click', function() {
@@ -82,6 +83,24 @@ Array.from(priceBtns).forEach(button => {
             console.error('Element with ID "schedule" not found.');
         }
     });
+});
+
+// Add event listener to price-card-btn elements
+document.querySelectorAll('.price-card-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const dataType = btn.dataset.type;
+    const bookingTypeSelect = document.getElementById('booking-type');
+    bookingTypeSelect.value = dataType;
+    // if (dataType === 'Re4Me' || dataType === 'Reform 8') {
+    //   const numBookingsInput = document.getElementById('num-bookings');
+    //   numBookingsInput.value = dataType === 'Re4Me' ? 4 : 8;
+    //   // Enable multiple selections in calendar
+    //   calendarEl.classList.add('multiple-selections');
+    // } else {
+    //   numBookingsInput.value = 1;
+    //   calendarEl.classList.remove('multiple-selections');
+    // }
+  });
 });
 
 // Form submission (using Formspree as an example)
@@ -307,6 +326,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Booking form logic
     if (bookingForm) {
         document.getElementById('cancel-booking').onclick = () => {
+            scheduleSection.scrollIntoView({ behavior: 'smooth' });
             requestServices.classList.remove('active');
             bookingForm.reset();
         };
@@ -339,9 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 selectedDate = null;
                 selectedTime = null;
                 document.getElementById('booking-date-hour').value = '';
-                // Optionally, refresh calendar
-                if (calendarEl) calendarEl.innerHTML = '';
-                renderWeek(weekStart);
+                location.reload();
             }
         };
     }

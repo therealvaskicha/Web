@@ -642,6 +642,13 @@ h4 {
     font-size: 1rem;
 }
 
+.booking-hint {
+  color: #666;
+  font-size: 0.9em;
+  margin-top: 5px;
+  display: block;
+}
+
 #subscribe-email {
     width:5%;
 }
