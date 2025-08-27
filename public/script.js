@@ -273,12 +273,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Disable past slots
                         const slotDateTime = new Date(`${dateStr}T${time}`);
                         const now = new Date(); // Current time: 11:38 AM EEST, 2025-08-25
-                        if (slotDateTime < now) {
+                        const fourHoursLater = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+                        if (slotDateTime < fourHoursLater) {
                         slotBtn.disabled = true; // Disable if in the past
                         slotBtn.classList.add('past-slot'); // Optional class for styling
                         }
 
-                        if (slotDateTime >= now) {
+                        if (slotDateTime >= fourHoursLater) {
                         slotBtn.disabled = false; // Enable open slots
                         slotBtn.classList.add('open-slot'); // Optional class for styling
                         }
