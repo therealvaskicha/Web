@@ -416,13 +416,18 @@ h4 {
   justify-content: center;
   margin: 1.25rem 0rem;
 }
+
+.price-cards .mobile-only {
+    display:none;
+}
+
 .price-card {
   background: #fff;
   border: 0.125rem solid #e7e4bb;
   border-radius: 1rem;
   box-shadow: 0rem 0.25rem 1.5rem rgba(0,0,0,0.07);
   padding: 2rem 1.5rem;
-  width: 18.75rem;
+  width: 16.75rem;
   max-width: 18.75rem;
   display: flex;
   flex-direction: column;
@@ -582,6 +587,8 @@ h4 {
     color: #666;
     cursor: not-allowed;
 }
+
+
 .holiday {
     background: #d3d3d3 !important;
 }
@@ -615,6 +622,11 @@ h4 {
   color: #fff;
 }
 
+.hint {
+    text-align:center;
+    font-size:1.125rem;
+}
+
 /* Booking form styles */
 .requestServices {
     display: none;
@@ -633,7 +645,8 @@ h4 {
     opacity:1;
     transition: 0.3s;
 }
-.requestServices label {
+
+label {
     display: block;
     margin-top: 1rem;
     font-weight: bold;
@@ -673,10 +686,20 @@ h4 {
     background: #f0a500;
     color: #fff;
 }
-.requestServices .disclaimer {
+.disclaimer {
     margin-top: 1rem;
     font-size: 0.9rem;
     color: #555;
+}
+
+.disclaimer h3{
+    text-align:start;
+    padding-top:1rem;
+}
+
+.disclaimer p {
+    font-size:1rem;
+    padding-bottom:0.125rem;
 }
 
 /* Location Section */
@@ -1160,11 +1183,21 @@ top: 0rem;
 
         .price-cards {
             display:grid;
-            grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
             align-items: start;
             justify-items: center;
             gap:0.5rem;
             margin: 0.625rem auto;
+        }
+
+        .price-cards .mobile-only {
+            display:grid;
+            grid-template-columns:min-content;
+            justify-items: center;
+        }
+
+        .price-cards .desktop-only{
+            display:none;
         }
 
         .price-card {
