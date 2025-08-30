@@ -214,6 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Calendar config
     const calendarEl = document.getElementById('user-calendar');
     const requestServices = document.getElementById('requestServices');
+    const calendarHint = document.getElementById('hint');
     const bookingForm = document.getElementById('booking-form');
     let selectedDate = null;
     let selectedTime = null;
@@ -291,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             document.getElementById('booking-date-hour').value = `${dateStr} ${time}`;
                             requestServices.classList.add('active');
                             requestServices.style.opacity = '1';
-                            requestServices.scrollIntoView({ behavior: 'smooth' });
+                            calendarHint.scrollIntoView({ behavior: 'smooth' });
                             }
                         };
                         slotsCol.appendChild(slotBtn);

@@ -482,32 +482,11 @@ h4 {
 }
 
 .price-card-price .old-price {
-  font-size: 1.8rem;
+  font-size: 1.35rem;
   color: #d3d3d3;
   text-decoration: line-through;
   font-weight: 400;
 }
-
-/* .price-card-price-bottom {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #333;
-  text-align: center;
-  margin-top:auto;
-  padding-bottom:1rem;
-  justify-content: space-evenly;
-  flex-wrap: wrap;
-}
-
-.price-card-price-bottom .old-price {
-  font-size: 1.8rem;
-  color: #d3d3d3;
-  text-decoration: line-through;
-  font-weight: 400;
-} */
 
 .price-card-price small {
   display: block;
@@ -515,13 +494,6 @@ h4 {
   color: #6b7280;
   font-weight: 400;
 }
-
-/* .price-card-price-bottom small {
-  display: block;
-  font-size: 1rem;
-  color: #6b7280;
-  font-weight: 400;
-} */
 
 
 .price-card-features {
@@ -658,6 +630,7 @@ h4 {
 .hint {
     text-align:center;
     font-size:1.125rem;
+    scroll-margin-top:5rem;
 }
 
 /* Booking form styles */
@@ -697,7 +670,7 @@ label {
 .booking-hint {
   color: #666;
   font-size: 0.9em;
-  margin-top: 5px;
+  margin-top: 0.5rem;
   display: block;
 }
 
@@ -735,6 +708,18 @@ label {
     /* padding-bottom:0.125rem; */
     line-height: 1.25rem;
 }
+
+.links {
+    position:relative;
+    font-family: "Lora", sans-serif;
+    text-decoration: none;
+    color: #aca97c;
+}
+
+.links:hover {
+    color: #6a694f;
+    transition: 0.15s ease-in-out;
+} 
 
 /* Location Section */
     #location {
@@ -1264,14 +1249,6 @@ top: 0rem;
             font-size: 1rem;
         }
 
-        /* .price-card-price-bottom {
-            font-size: 1.25rem;
-        }
-
-        .price-card-price-bottom .old-price {
-            font-size: 1rem;
-        } */
-
         .price-card-features li {
             font-size: 0.9rem;
         }
@@ -1312,6 +1289,10 @@ top: 0rem;
         .slot {
             padding: 0.25rem 0.25rem;
             font-size:0.85rem;
+        }
+
+        .hint {
+            scroll-margin-top:8rem;
         }
 
         #contact form {
