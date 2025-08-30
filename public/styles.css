@@ -451,6 +451,7 @@ h4 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-direction: column;
 }
 .price-card-title {
   font-size: 1.5rem;
@@ -466,16 +467,18 @@ h4 {
   margin-left: 0.5rem;
   text-align:center;
 }
+
 .price-card-price {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 2.2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #333;
   text-align: center;
   margin-top:auto;
   padding-bottom:1rem;
+  justify-content: center;
 }
 
 .price-card-price .old-price {
@@ -485,12 +488,42 @@ h4 {
   font-weight: 400;
 }
 
+/* .price-card-price-bottom {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  margin-top:auto;
+  padding-bottom:1rem;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+}
+
+.price-card-price-bottom .old-price {
+  font-size: 1.8rem;
+  color: #d3d3d3;
+  text-decoration: line-through;
+  font-weight: 400;
+} */
+
 .price-card-price small {
   display: block;
   font-size: 1rem;
   color: #6b7280;
   font-weight: 400;
 }
+
+/* .price-card-price-bottom small {
+  display: block;
+  font-size: 1rem;
+  color: #6b7280;
+  font-weight: 400;
+} */
+
+
 .price-card-features {
   list-style: disc;
   padding-left: 1.25rem;
@@ -699,7 +732,8 @@ label {
 
 .disclaimer p {
     font-size:1rem;
-    padding-bottom:0.125rem;
+    /* padding-bottom:0.125rem; */
+    line-height: 1.25rem;
 }
 
 /* Location Section */
@@ -1223,12 +1257,20 @@ top: 0rem;
         }
 
         .price-card-price {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
         }
 
         .price-card-price .old-price {
-            font-size: 1.2rem;
+            font-size: 1rem;
         }
+
+        /* .price-card-price-bottom {
+            font-size: 1.25rem;
+        }
+
+        .price-card-price-bottom .old-price {
+            font-size: 1rem;
+        } */
 
         .price-card-features li {
             font-size: 0.9rem;
