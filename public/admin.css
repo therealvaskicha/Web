@@ -84,6 +84,15 @@ button:hover {
 }
 
 /* Calendar styles */
+.calendar-grid {
+    display: flex;
+    justify-content: space-around;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
 /* Minimalistic calendar styles */
 
 #user-calendar {
@@ -192,7 +201,9 @@ button:hover {
 /* Bookings Dashboard Styles */
 .pendApprove{
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;;
+  justify-content: flex-start;
+  align-items: stretch;
 }
 
 /* Pagination styles */
