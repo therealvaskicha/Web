@@ -1,37 +1,198 @@
 body { 
     font-family: 'Lora', sans-serif; 
-    max-width: 900px; 
-    margin: 20px auto; 
+    max-width: 1600px;
+    margin: 20px auto;
+    background-color:#fef6ff;
+}
+
+.container {
+    font-family: 'Lora', sans-serif;
+    /* max-width: 75rem; */
+    /* margin: 0rem auto; */
+    padding: 0rem 0.938rem;
 }
 
 table { 
-    width: 100%; 
-    border-collapse: collapse; 
+  width: 100%; 
+  border-collapse: collapse; 
 }
 
 th, td { 
-    border: 1px solid #ddd; 
-    padding: 8px; 
-    text-align: left; 
+  border: 1px solid #ddd; 
+  padding: 0.125rem; 
+  text-align: left; 
+  font-size:0.80rem;
 }
 
+h1 {
+  font-size:1.25rem;
+  text-align:center;
+}
+
+/* Header */
+header {
+  background: #ebc3ff;
+  /* overflow:hidden; */
+  position: sticky;
+  top: 0;
+  padding-top:0.125rem;
+  padding-bottom:0.125rem;
+  z-index: 5; /* Ensure content is above other elements */
+}
+
+.admin-layout {
+  display:flex;
+  justify-content:center;
+}
+
+.logo {
+  height: 4rem;
+  width: 4rem;
+  cursor: pointer;
+}
+
+
 button { 
-    margin: 5px; 
-    padding: 8px 16px; 
-    background: #6b7280; 
-    color: #fff; 
-    border: none; 
-    border-radius: 5px; 
-    cursor: pointer; 
+    background: #e7e4bb;
+    color: #333;
+    border: none;
+    border-radius: 0.5rem;
+    /* padding: 0.625rem 2rem; */
+    font-size: 1.1rem;
+    font-family: 'Lora', sans-serif;
+    font-weight: 300;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
 }
 
 button:hover { 
-    background: #4b5563; 
+  background: #f0a500;
+  color: #fff;
 }
 
-#admin-calendar {
-    max-width: 900px;
-    margin: 20px auto;
+/* Sections */
+.admin-control {
+  border-style: solid;
+  border-width: 0.125rem;
+  border-color: #ebc3ff;
+}
+
+.bookings-history {
+  border-style: solid;
+  border-width: 0.125rem;
+  border-color: #ebc3ff;
+}
+
+/* Calendar styles */
+/* Minimalistic calendar styles */
+
+#user-calendar {
+    margin: 1rem auto;
+}
+.calendar-week-row {
+    display: flex;
+    gap: 0.25rem;
+    flex-direction: row;
+    justify-content: center;
+    align-items:center;
+}
+.calendar-day-col {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.05);
+    min-width: 5rem;
+    max-width:6rem;
+}
+
+.calendar-day-col.today-highlight {
+    border: 0.125rem solid #f0a500; /* Highlight with a border matching your theme */
+}
+
+.calendar-day-header {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    margin-top:0.5rem;
+}
+.calendar-slots-col {
+    display: flex;
+    flex-direction: column;
+}
+.slot {
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    margin: 0.1rem 0;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.slot.available:hover {
+    opacity:0.6;
+    transition:0.1s;
+}
+.slot.available {
+    background: #d6f5d6;
+    color: #222;
+}
+.slot.taken {
+    background: #ffd699;
+    color: #222;
+    cursor: pointer;
+}
+
+.slot.pending {
+    background: #ffbcfd;
+    color: #222;
+    cursor: pointer;
+}
+
+.slot.past {
+    background: #e0e0e0; /* Grey out past slots */
+    color: #666;
+    cursor: pointer;
+}
+
+
+.holiday {
+    background: #d3d3d3 !important;
+}
+.holiday-label {
+    color: #444;
+    text-align: center;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+.calendar-nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.week-nav-btn {
+    background: #e7e4bb;
+    color: #333;
+    border: none;
+    border-radius: 1.5rem;
+    padding: 0.625rem 2rem;
+    font-size: 1.1rem;
+    font-family: 'Lora', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+.week-nav-btn:hover {
+  background: #f0a500;
+  color: #fff;
+}
+
+/* Bookings Dashboard Styles */
+.pendApprove{
+  display: flex;
+  justify-content: space-between;
 }
 
 /* Pagination styles */
@@ -52,57 +213,4 @@ button:hover {
   background: #007bff;
   color: white;
   border-color: #007bff;
-}
-
-/* Holiday modal styles */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-}
-
-.modal-content {
-  background: white;
-  margin: 5% auto;
-  padding: 20px;
-  width: 80%;
-  max-width: 800px;
-  border-radius: 5px;
-}
-
-.holiday-controls {
-  margin-bottom: 20px;
-}
-
-.holiday-btn {
-  padding: 10px 20px;
-  margin-right: 10px;
-  cursor: pointer;
-}
-
-.time-slot-selection {
-  margin-top: 20px;
-}
-
-.time-slots {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.time-slot {
-  padding: 5px;
-  border: 1px solid #ddd;
-  cursor: pointer;
-  text-align: center;
-}
-
-.time-slot.selected {
-  background: #007bff;
-  color: white;
 }
