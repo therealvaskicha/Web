@@ -22,46 +22,45 @@
 
 <section class="admin-control">
   <div class="container">
-    <div class="pendApprove">
-      <div class="pendingBookings">
-        <h1>Чакащи заявки</h1>
-        <div class="table-container">
-          <table id="pendingBookingsTable">
-            <tr>
+    <div class="calendar-grid">
+      <div class="pendApprove">
+        <div class="pendingBookings">
+          <h1>Чакащи заявки</h1>
+          <div class="table-container">
+            <table id="pendingBookingsTable">
+              <tr>
+                <th>ID</th>
+                <th>Имена</th>
+                <th>Дата</th>
+                <th>Час</th>
+                <th>Вид услуга</th> 
+                <th>Телефон</th>
+                <th>E-mail</th>
+                <th>Заявена на</th>
+                <th>Действие</th>
+              </tr>
+            </table>
+            <div class="pagination" id="pendingPagination"></div>
+          </div>
+        </div>
+
+        <div class="approvedBookings">
+          <h1>Одобрени заявки</h1>
+          <div class="table-container">
+            <table id="approvedBookingsTable">
               <th>ID</th>
-              <th>Вид услуга</th>
+              <th>Имена</th>
               <th>Дата</th>
               <th>Час</th>
-              <th>Имена</th>
+              <th>Вид услуга</th> 
               <th>Телефон</th>
               <th>E-mail</th>
-              <th>E-mail абонат</th>
-              <th>Времеви печат</th>
-              <th>Действие</th>
-            </tr>
-          </table>
-          <div class="pagination" id="pendingPagination"></div>
+              <th>Заявена на</th>
+            </table>
+            <div class="pagination" id="approvedPagination"></div>
+          </div>
         </div>
       </div>
-
-      <div class="approvedBookings">
-        <h1>Одобрени заявки</h1>
-        <div class="table-container">
-          <table id="approvedBookingsTable">
-            <th>ID</th>
-            <th>Имена</th>
-            <th>Дата</th>
-            <th>Час</th>
-            <th>Вид услуга</th> 
-            <th>Телефон</th>
-            <th>E-mail</th>
-            <th>Заявена на</th>
-          </table>
-          <div class="pagination" id="approvedPagination"></div>
-        </div>
-      </div>
-    </div>
-    <div class="holidays-grid">
       <div class="manage-holidays">
         <h1>Календар</h1>
         <div class="calendar-wrap">
@@ -73,9 +72,16 @@
             <div id="admin-calendar">
           </div>
         </div>
-      </div>
-      <div class="active-holidays">
-        <h1>Предстоящи почивни дни</h1>
+        <div class="active-holidays">
+          <h1>Предстоящи почивни дни</h1>
+            <div class="table-container">
+              <table id="holidaysTable">
+                <th>Дата</th>
+                <th>Час</th>
+                <th>Действие</th>
+              </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>

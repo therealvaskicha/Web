@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadPending();
     loadBookings();
     loadHistory();
+    loadHolidays();
 
     // Holidays calendar setup
     const calendarEl = document.getElementById('admin-calendar');
@@ -129,13 +130,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = table.insertRow();
             row.innerHTML = `
                 <td>${booking.id}</td>
-                <td>${booking.booking_type}</td>
+                <td>${booking.client_name}</td>
                 <td>${booking.date}</td>
                 <td>${booking.time}</td>
-                <td>${booking.client_name}</td>
+                <td>${booking.booking_type}</td> 
                 <td>${booking.client_phone || 'N/A'}</td>
                 <td>${booking.client_email || 'N/A'}</td>
-                <td>${booking.subscribe_email ? 'Да' : 'Не'}</td>
                 <td>${booking.timestamp}</td>
                 <td>
                     <button class="approve-btn" data-id="${booking.id}">Одобри</button>
@@ -173,6 +173,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${booking.client_phone || 'N/A'}</td>
                 <td>${booking.client_email || 'N/A'}</td>
                 <td>${booking.timestamp}</td>
+            `;
+        });
+    }
+
+        async function loadHolidays() {
+        const response = await fetch('/api/holidays');
+        const holidays = await response.json();
+        const table = document.getElementById('holidaysTable');
+        while (table.rows.length > 1) table.deleteRow(1);
+        holidays.forEach(holiday => {
+            const row = table.insertRow();
+            row.innerHTML = `
+                <td>${holiday.date}</td>
+                <td>${holiday.time}</td>
+                <td>
+                    <button class="remove-btn" data-id="${holiday.id}">Премахни</button>
+                </td>
             `;
         });
     }
