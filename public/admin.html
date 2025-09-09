@@ -6,80 +6,83 @@
 </head>
 <body>
 
-<section class="holidays">
-    <div class="admin-controls">
-  <!-- <button id="deleteOldBookings" class="admin-btn danger">Изтрий стари заявки</button> -->
-        <button id="manageHolidays" class="admin-btn">Управлявай почивните дни</button>
+<header>
+  <div class="admin-layout">
+    <nav class="navbar">
+      <ul class="nav-menu">
+        <li class="nav-item"><a class="nav-link hover-underline" href="#clients">Клиенти (x)</a></li>
+        <li class="nav-item"><a class="nav-link hover-underline" href="#subscriptions">Абонаменти (x)</a></li>
+      </ul>
+    </nav>
+    <div class="logo">
+      <img src="Images/icon-inverted.png" alt="Pilates Reformer Studio by Dilona Logo" class="logo" onclick="location.reload()" ></img>
     </div>
+  </div>
+</header>
 
-    <div id="holidayModal" class="modal">
-     <div class="modal-content">
-       <span class="close">&times;</span>
-       <h2>Управление на почивни дни</h2>
-       <div class="holiday-controls">
-         <button id="wholeDayOff" class="holiday-btn">Цял ден</button>
-         <button id="partialDayOff" class="holiday-btn">Частично</button>
-       </div>
-       <div id="adminCalendar" class="admin-calendar"></div>
-       <div id="timeSlotSelection" class="time-slot-selection" style="display: none;">
-         <h3>Избери часове</h3>
-         <div class="time-slots"></div>
-       </div>
-     </div>
-    </div>
-<!-- 
-    <h1>Управление на почивни дни</h1>
-    <div class="calendar-wrap">
-      <div class="calendar-nav">
-        <button class="week-nav-btn" id="prev-week" type="button">Назад</button>
-        <button class="week-nav-btn" id="today-week" type="button">Днес</button>
-        <button class="week-nav-btn" id="next-week" type="button">Напред</button>
-      </div>
-        <div id="admin-calendar">
-      </div>
-    </div> -->
-</section>
-
-<section class="booking-requests">
-    <h1>Чакащи заявки</h1>
-    <div class="table-container">
-        <table id="pendingBookingsTable">
+<section class="admin-control">
+  <div class="container">
+    <div class="pendApprove">
+      <div class="pendingBookings">
+        <h1>Чакащи заявки</h1>
+        <div class="table-container">
+          <table id="pendingBookingsTable">
             <tr>
-                <th>ID</th>
-                <th>Вид услуга</th>
-                <th>Дата</th>
-                <th>Час</th>
-                <th>Имена</th>
-                <th>Телефон</th>
-                <th>E-mail</th>
-                <th>E-mail абонат</th>
-                <th>Времеви печат</th>
-                <th>Действие</th>
+              <th>ID</th>
+              <th>Вид услуга</th>
+              <th>Дата</th>
+              <th>Час</th>
+              <th>Имена</th>
+              <th>Телефон</th>
+              <th>E-mail</th>
+              <th>E-mail абонат</th>
+              <th>Времеви печат</th>
+              <th>Действие</th>
             </tr>
-        </table>
-        <div class="pagination" id="pendingPagination"></div>
-    </div>
-</section>
+          </table>
+          <div class="pagination" id="pendingPagination"></div>
+        </div>
+      </div>
 
-<section class="booking-approved">
-    <h1>Одобрени заявки</h1>
-    <div class="table-container">
-        <table id="approvedBookingsTable">
+      <div class="approvedBookings">
+        <h1>Одобрени заявки</h1>
+        <div class="table-container">
+          <table id="approvedBookingsTable">
             <th>ID</th>
-            <th>Вид услуга</th>
+            <th>Имена</th>
             <th>Дата</th>
             <th>Час</th>
-            <th>Имена</th>
+            <th>Вид услуга</th> 
             <th>Телефон</th>
             <th>E-mail</th>
-            <th>E-mail абонат</th>
-            <th>Времеви печат</th>
-        </table>
-        <div class="pagination" id="approvedPagination"></div>
+            <th>Заявена на</th>
+          </table>
+          <div class="pagination" id="approvedPagination"></div>
+        </div>
+      </div>
     </div>
+    <div class="holidays-grid">
+      <div class="manage-holidays">
+        <h1>Календар</h1>
+        <div class="calendar-wrap">
+          <div class="calendar-nav">
+            <button class="week-nav-btn" id="prev-week" type="button">Назад</button>
+            <button class="week-nav-btn" id="today-week" type="button">Днес</button>
+            <button class="week-nav-btn" id="next-week" type="button">Напред</button>
+          </div>
+            <div id="admin-calendar">
+          </div>
+        </div>
+      </div>
+      <div class="active-holidays">
+        <h1>Предстоящи почивни дни</h1>
+      </div>
+    </div>
+  </div>
 </section>
 
-<section class="booking-history">
+<section class="bookings-history">
+  <div class="container">
     <h1>История на заявките</h1>
     <div class="table-container">
         <table id="bookingHistoryTable">
@@ -96,12 +99,18 @@
         </table>
         <div class="pagination" id="historyPagination"></div>
     </div>
+  </div>
 </section>
+
+<footer>
+  <div class="container">
+    <div class="website-signature">
+      <p>Website by <a href="https://github.com/therealvaskicha/" class="links hover-underline">VA</a></p>
+      <i class="fab fa-github"></i>
+    </div>
+  </div>
+</footer>
 
     <script src="admin.js"></script>
 </body>
-
-  <div class="bottom-bar">
-    <p>&copy; 2025 Pilates Reformer Studio by Dilona. All rights reserved. Website by <a href="https://github.com/therealvaskicha/">VA</a></p>
-  </div>
 </html>

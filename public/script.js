@@ -271,20 +271,31 @@ document.addEventListener('DOMContentLoaded', function () {
                         slotBtn.className = taken ? 'slot taken' : 'slot available';
                         slotBtn.textContent = time;
                         slotBtn.disabled = taken;
-                        // Disable past slots
+                        
+                        // Disable if in the past
                         const slotDateTime = new Date(`${dateStr}T${time}`);
                         const now = new Date(); // Current time: 11:38 AM EEST, 2025-08-25
                         const fourHoursLater = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+                        
                         if (slotDateTime < fourHoursLater) {
-                        slotBtn.disabled = true; // Disable if in the past
-                        slotBtn.classList.add('past-slot'); // Optional class for styling
+                        slotBtn.disabled = true; 
+                        slotBtn.classList.add('past'); 
+                        slotBtn.classList.remove('available');
                         }
-
+                        
+                        // Enable open slots
                         if (slotDateTime >= fourHoursLater) {
-                        slotBtn.disabled = false; // Enable open slots
-                        slotBtn.classList.add('open-slot'); // Optional class for styling
+                        slotBtn.disabled = false; 
                         }
 
+                        // Disable taken slots
+                        if (taken) {
+                        slotBtn.disabled = true;
+                        slotBtn.classList.add('taken'); 
+                        slotBtn.classList.remove('available');
+                        }
+
+                        // Add click event for slots
                         slotBtn.onclick = () => {
                             if(!slotBtn.disabled) {
                             selectedDate = dateStr;

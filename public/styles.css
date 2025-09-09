@@ -573,7 +573,7 @@ h4 {
     transition: background 0.2s;
 }
 
-.slot.open-slot:hover {
+.slot.available:hover {
     opacity:0.6;
     transition:0.1s;
 }
@@ -587,7 +587,7 @@ h4 {
     cursor: not-allowed;
 }
 
-.slot.past-slot {
+.slot.past {
     background: #e0e0e0; /* Grey out past slots */
     color: #666;
     cursor: not-allowed;
@@ -906,6 +906,7 @@ footer p {
     /* background: #f9f9f9; */
     padding: 1rem;
     background-color: #f9f9f9;
+    border-radius: 1rem;;
 }
 
 #location h2, #contact h2 {
