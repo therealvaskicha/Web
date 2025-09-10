@@ -33,7 +33,7 @@ db.serialize(() => {
         }
     });
     // Example holiday insertion
-    //  db.run(`INSERT INTO holidays (date) VALUES ('2025-09-14')`)
+    //  db.run(`INSERT INTO holidays (date, time) VALUES ('2025-09-22',"12:00")`)
 });
 
 module.exports = db;

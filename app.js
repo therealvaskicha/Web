@@ -53,9 +53,9 @@ app.get('/api/bookings-history', (req, res) => {
 
 // Get holidays
 app.get('/api/holidays', (req, res) => {
-    db.all(`SELECT date FROM holidays`, [], (err, rows) => {
+    db.all(`SELECT date, time FROM holidays`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json(rows.map(r => r.date));
+        res.json(rows);
     });
 });
 

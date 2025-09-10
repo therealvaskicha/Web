@@ -57,18 +57,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     times.forEach(time => {
                         const taken = bookings.some(b => b.date === dateStr && b.time === time);
                         const pending = pendingBookings.some(d => d.date === dateStr && d.time === time && d.status === 'pending');
+                        const isHoliday = holidays.some(h => h.date === dateStr && (h.time === null || h.time === time));
                         const slotBtn = document.createElement('button');
                         // slotBtn.className = taken ? 'slot taken' : 'slot available';
                         slotBtn.className = 'slot'; // default class
-                        if (taken) {
+                        slotBtn.textContent = time;
+
+                        if (isHoliday) {
+                            slotBtn.disabled = true;
+                            slotBtn.classList.add('holiday');
+                        } else if (taken) {
+                            slotBtn.disabled = true; 
                             slotBtn.classList.add('taken');
                         } else if (pending) {
                             slotBtn.classList.add('pending');
                         } else {
                             slotBtn.classList.add('available');
                         }
-                        slotBtn.textContent = time;
-                        slotBtn.disabled = taken;
+
+                        // if (taken) {
+                            // slotBtn.classList.add('taken');
+                        // } else if (pending) {
+                            // slotBtn.classList.add('pending');
+                        // } else {
+                            // slotBtn.classList.add('available');
+                        // }
+                        
+                        // slotBtn.disabled = taken;
 
                         // Disable past slots
                         const slotDateTime = new Date(`${dateStr}T${time}`);

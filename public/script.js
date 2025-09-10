@@ -262,40 +262,33 @@ document.addEventListener('DOMContentLoaded', function () {
                     const slotsCol = dayCol.querySelector('.calendar-slots-col');
                     times.forEach(time => {
                         const taken = bookings.some(b => b.date === dateStr && b.time === time);
+                        const isHoliday = holidays.some(h => h.date === dateStr && (h.time === null || h.time === time));
                         const slotBtn = document.createElement('button');
-                        slotBtn.className = taken ? 'slot taken' : 'slot available';
+                        slotBtn.className = 'slot'; // default class
                         slotBtn.textContent = time;
-                        slotBtn.disabled = taken;
                         
-                        // Disable if in the past
+                        // Add holiday and taken slots
+                        if (isHoliday) {
+                            slotBtn.disabled = true;
+                            slotBtn.classList.add('holiday');
+                        } else if (taken) {
+                            slotBtn.disabled = true; 
+                            slotBtn.classList.add('taken');
+                            
+                        } else {
+                            slotBtn.classList.add('available');
+                        }
+                        
+                        // Disable past slots
                         const slotDateTime = new Date(`${dateStr}T${time}`);
-                        const now = new Date(); // Current time: 11:38 AM EEST, 2025-08-25
+                        const now = new Date();
                         const fourHoursLater = new Date(now.getTime() + 4 * 60 * 60 * 1000);
                         
                         if (slotDateTime < fourHoursLater) {
-                        slotBtn.disabled = true; 
-                        slotBtn.classList.add('past'); 
-                        slotBtn.classList.remove('available');
+                            slotBtn.disabled = true; 
+                            slotBtn.classList.add('past'); 
+                            slotBtn.classList.remove('available');
                         }
-                        
-                        // Enable open slots
-                        if (slotDateTime >= fourHoursLater) {
-                        slotBtn.disabled = false; 
-                        }
-
-                        // Disable taken slots
-                        if (taken) {
-                        slotBtn.disabled = true;
-                        slotBtn.classList.add('taken'); 
-                        slotBtn.classList.remove('available');
-                        }
-
-                        if (holidays.includes(dateStr)) {
-                        slotBtn.disabled = true; 
-                        slotBtn.classList.add('holiday'); 
-                        slotBtn.classList.remove('available');
-                        }
-
                         // Add click event for slots
                         slotBtn.onclick = () => {
                             if(!slotBtn.disabled) {
@@ -308,9 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             }
                         };
                         slotsCol.appendChild(slotBtn);
-                    })
-                    
-                    ;
+                    });
                 }
             });
         }
