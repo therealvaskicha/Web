@@ -138,7 +138,7 @@ button:hover {
     transition: background 0.2s;
 }
 
-.slot.available:hover {
+.slot:hover {
     opacity:0.6;
     transition:0.1s;
 }
@@ -153,7 +153,7 @@ button:hover {
 }
 
 .slot.pending {
-    background: #ffbcfd;
+    background: #79dd68;
     color: #222;
     cursor: pointer;
 }
@@ -161,19 +161,22 @@ button:hover {
 .slot.past {
     background: #e0e0e0; /* Grey out past slots */
     color: #666;
+    cursor: not-allowed;
+}
+
+.slot.holiday {
+    background: #f3b3d6; /* Grey out holiday slots */
+    color: #70405a;
     cursor: pointer;
 }
 
+.hint {
+    margin-top:0.5rem;
+    text-align:center;
+    font-size:1.125rem;
+    scroll-margin-top:5rem;
+}
 
-.holiday {
-    background: #d3d3d3 !important;
-}
-.holiday-label {
-    color: #444;
-    text-align: center;
-    font-size: 1rem;
-    margin-top: 1rem;
-}
 .calendar-nav {
     display: flex;
     justify-content: center;
