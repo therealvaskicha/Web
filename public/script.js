@@ -260,11 +260,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     const dateStr = date.toISOString().split('T')[0];
                     const dayCol = weekRow.children[d];
                     const slotsCol = dayCol.querySelector('.calendar-slots-col');
-                    if (holidays.includes(dateStr)) {
-                        dayCol.classList.add('holiday');
-                        slotsCol.innerHTML = '<div class="holiday-label">Почивен ден</div>';
-                        continue;
-                    }
                     times.forEach(time => {
                         const taken = bookings.some(b => b.date === dateStr && b.time === time);
                         const slotBtn = document.createElement('button');
@@ -292,6 +287,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (taken) {
                         slotBtn.disabled = true;
                         slotBtn.classList.add('taken'); 
+                        slotBtn.classList.remove('available');
+                        }
+
+                        if (holidays.includes(dateStr)) {
+                        slotBtn.disabled = true; 
+                        slotBtn.classList.add('holiday'); 
                         slotBtn.classList.remove('available');
                         }
 
