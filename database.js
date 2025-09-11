@@ -22,18 +22,16 @@ db.serialize(() => {
     });
 
     db.run(`CREATE TABLE IF NOT EXISTS holidays (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT UNIQUE,
-        time TEXT DEFAULT NULL
-    )`, (err) => {
+        date DATE NOT NULL,
+        time TIME DEFAULT NULL,
+        CONSTRAINT unique_date_time UNIQUE (date, time)
+        );`, (err) => {
         if (err) {
             console.error("Error creating holidays table:", err.message);
         } else {
             console.log("Holidays table created or already exists.");
         }
     });
-    // Example holiday insertion
-    //  db.run(`INSERT INTO holidays (date, time) VALUES ('2025-09-22',"12:00")`)
 });
 
 module.exports = db;

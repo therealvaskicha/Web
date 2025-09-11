@@ -568,6 +568,7 @@ h4 {
     flex-direction: column;
 }
 .slot {
+    font-family: 'Lora', sans-serif;
     border: none;
     border-radius: 0.25rem;
     padding: 0.25rem 0.5rem;
