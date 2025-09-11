@@ -75,17 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             slotBtn.classList.add('available');
                         }
 
-                        // if (taken) {
-                            // slotBtn.classList.add('taken');
-                        // } else if (pending) {
-                            // slotBtn.classList.add('pending');
-                        // } else {
-                            // slotBtn.classList.add('available');
-                        // }
-                        
-                        // slotBtn.disabled = taken;
-
-                        // Disable past slots
                         const slotDateTime = new Date(`${dateStr}T${time}`);
                         const now = new Date(); 
                         const fourHoursLater = new Date(now.getTime() + 4 * 60 * 60 * 1000);
@@ -115,9 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Week navigation
         let weekStart = new Date();
-        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1)); // Set to Monday
-        // console.log('Initial weekStart:', weekStart.toISOString().split('T')[0]); // Debug initial weekStart
-        // weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
         function showWeek(offset) {
             weekStart.setDate(weekStart.getDate() + offset * 7);
             renderWeek(weekStart);
@@ -129,9 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('next-week').onclick = () => showWeek(1);
         document.getElementById('today-week').onclick = () => {
             weekStart = new Date();
-            // weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
-            weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1)); // Reset to current Monday
-            // console.log('Today reset weekStart:', weekStart.toISOString().split('T')[0]); // Debug reset
+            weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
             renderWeek(weekStart);
         };
     }
@@ -192,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-        async function loadHolidays() {
+    async function loadHolidays() {
         const response = await fetch('/api/holidays');
         const holidays = await response.json();
         const table = document.getElementById('holidaysTable');
@@ -201,11 +186,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = table.insertRow();
             row.innerHTML = `
                 <td>${holiday.date}</td>
-                <td>${holiday.time}</td>
+                <td>${holiday.time || 'Цял ден'}</td>
                 <td>
-                    <button class="remove-btn" data-id="${holiday.id}">Премахни</button>
+                    <button class="remove-btn" 
+                        data-date="${holiday.date}" 
+                        data-time="${holiday.time || null}">Премахни</button>
                 </td>
             `;
+        });
+
+        // Add event listeners for removing holiday
+        table.querySelectorAll('.remove-btn').forEach(btn => {
+            btn.onclick = async () => {
+                const date = btn.dataset.date;
+                const time = btn.dataset.time === "null" ? null : btn.dataset.time;
+                await removeHoliday(date, time);
+            };
         });
     }
 
@@ -231,6 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Approve or reject booking
     async function updateBooking(id, status) {
         const response = await fetch('/api/approve', {
             method: 'POST',
@@ -241,5 +238,27 @@ document.addEventListener('DOMContentLoaded', function() {
         alert(result.message || result.error);
         loadPending();
         location.reload();
+    }
+
+    // Remove holiday
+    async function removeHoliday(date, time) {
+        try {
+            const response = await fetch('/api/delete-holiday', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date, time })
+            });
+            const result = await response.json();
+            if (response.ok) {
+                alert(result.message);
+                loadHolidays();
+                location.reload(); // Refresh the page to update the calendar
+            } else {
+                alert(result.error || 'Грешка при премахване на почивен ден');
+            }
+        } catch (error) {
+            console.error('Грешка:', error);
+            alert('Грешка при премахване на почивен ден');
+        }adHolidays();
     }
 });

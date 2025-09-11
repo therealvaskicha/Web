@@ -59,6 +59,28 @@ app.get('/api/holidays', (req, res) => {
     });
 });
 
+app.post('/api/delete-holiday', (req, res) => {
+    const { date, time } = req.body;
+    
+    // Handle both full day and specific time slots
+    const query = time === null 
+        ? `DELETE FROM holidays WHERE date = ? AND time IS NULL`
+        : `DELETE FROM holidays WHERE date = ? AND time = ?`;
+    
+    const params = time === null ? [date] : [date, time];
+    
+    db.run(query, params, function (err) {
+        if (err) {
+            console.error('Грешка при премахване:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'Почивният ден не е намерен' });
+        }
+        res.json({ message: 'Почивният ден е премахнат.' });
+    });
+});
+
 // Book a slot (extended fields)
 app.post('/api/book', (req, res) => {
     const {

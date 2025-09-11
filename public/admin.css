@@ -58,7 +58,7 @@ button {
     border: none;
     border-radius: 0.5rem;
     /* padding: 0.625rem 2rem; */
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-family: 'Lora', sans-serif;
     font-weight: 300;
     cursor: pointer;
@@ -119,11 +119,17 @@ button:hover {
 }
 
 .calendar-day-header {
+    font-size: 1rem;
     font-weight: bold;
     text-align: center;
-    margin-bottom: 0.5rem;
-    margin-top:0.5rem;
+    margin: 0.3rem 0;
+    cursor:default;
 }
+.calendar-day-header:hover {
+    opacity:0.7;
+    transition:0.1s;
+}
+
 .calendar-slots-col {
     display: flex;
     flex-direction: column;
@@ -199,6 +205,10 @@ button:hover {
 .week-nav-btn:hover {
   background: #f0a500;
   color: #fff;
+}
+
+.active-holidays{
+  margin-bottom:1rem;
 }
 
 /* Bookings Dashboard Styles */
