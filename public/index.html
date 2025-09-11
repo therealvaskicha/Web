@@ -296,11 +296,12 @@
       <div id="user-calendar">
       </div>
       <div class="hint" id="hint">
-        <small>Легенда: </small><br>
+        <small>Легенда за часовете: </small><br>
+        <button class="slot week">Днес</button>
         <button class="slot past">Отминал</button>
         <button class="slot available">Свободен</button>
         <button class="slot taken">Зает</button>
-        <button class="slot holiday">Не работи</button>
+        <button class="slot holiday">Неработен</button>
         <br>
         <small>При анулиране или промяна, моля обадете се на телефона в секция <a class="links hover-underline" href="#contact-title">Контакти.</a></small>
       </div>
@@ -312,8 +313,8 @@
           <label for="booking-type">Вид услуга*</label>
           <select id="booking-type" name="booking_type" required>
             <option value="">Изберете...</option>
-            <option value="Solo">Solo</option>
-            <option value="Private">Private</option>
+            <option value="Solo">Solo (в група)</option>
+            <option value="Private">Private (извън група)</option>
             <option value="Re4Me">Re4Me</option>
             <option value="Reform 8">Reform 8</option>
           </select>

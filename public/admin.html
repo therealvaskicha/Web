@@ -12,13 +12,17 @@
   <div class="admin-layout">
     <nav class="navbar">
       <ul class="nav-menu">
-        <li class="nav-item"><a class="nav-link hover-underline" href="#clients">Клиенти (x)</a></li>
-        <li class="nav-item"><a class="nav-link hover-underline" href="#subscriptions">Абонаменти (x)</a></li>
+        <li class="nav-item"><a class="nav-link hover-underline" href="#clients">Клиенти</a></li>
       </ul>
     </nav>
-    <div class="logo">
+    <div>
       <img src="Images/icon-inverted.png" alt="Pilates Reformer Studio by Dilona Logo" class="logo" onclick="location.reload()" ></img>
     </div>
+    <nav class="navbar">
+      <ul class="nav-menu">
+        <li class="nav-item"><a class="nav-link hover-underline" href="#subscriptions">Абонаменти</a></li>
+      </ul>
+    </nav>
   </div>
 </header>
 
@@ -27,15 +31,14 @@
     <div class="calendar-grid">
       <div class="pendApprove">
         <div class="pendingBookings">
-          <h1>Чакащи заявки</h1>
+          <h1>Нови заявки за тренировки</h1>
           <div class="table-container">
             <table id="pendingBookingsTable">
               <tr>
-                <th>ID</th>
+                <th>Тип</th> 
                 <th>Имена</th>
                 <th>Дата</th>
                 <th>Час</th>
-                <th>Вид услуга</th> 
                 <th>Телефон</th>
                 <th>E-mail</th>
                 <th>Заявена на</th>
@@ -47,17 +50,17 @@
         </div>
 
         <div class="approvedBookings">
-          <h1>Одобрени заявки</h1>
+          <h1>Предстоящи тренировки</h1>
           <div class="table-container">
             <table id="approvedBookingsTable">
-              <th>ID</th>
+              <th>Тип</th> 
               <th>Имена</th>
               <th>Дата</th>
               <th>Час</th>
-              <th>Вид услуга</th> 
               <th>Телефон</th>
               <th>E-mail</th>
               <th>Заявена на</th>
+              <th>Действие </th>
             </table>
             <div class="pagination" id="approvedPagination"></div>
           </div>
@@ -75,14 +78,16 @@
           </div>
           <div class="hint" id="hint">
             <small>Легенда: </small><br>
+            <button class="slot week">Днес</button>
             <button class="slot past">Отминал</button>
             <button class="slot available">Свободен</button>
+            <button class="slot pending">Нова заявка</button>
             <button class="slot taken">Зает</button>
-            <button class="slot holiday">Не работи</button>
+            <button class="slot holiday">Неработен</button>
           </div>
         </div>
         <div class="active-holidays">
-          <h1>Предстоящи почивни дни</h1>
+          <h1>Предстоящи неработни дни/часове</h1>
             <div class="table-container">
               <table id="holidaysTable">
                 <th>Дата</th>
@@ -90,6 +95,7 @@
                 <th>Действие</th>
               </table>
           </div>
+          <button class="add-holiday">Добави почивка</button>
         </div>
       </div>
     </div>
@@ -98,19 +104,18 @@
 
 <section class="bookings-history">
   <div class="container">
-    <h1>История на заявките</h1>
+    <h1>История</h1>
     <div class="table-container">
         <table id="bookingHistoryTable">
-            <th>ID</th>
-            <th>Вид услуга</th>
-            <th>Дата</th>
-            <th>Час</th>
-            <th>Имена</th>
-            <th>Телефон</th>
-            <th>E-mail</th>
-            <th>E-mail абонат</th>
-            <th>Времеви печат</th>
-            <th>Статус</th>
+          <th>Тип</th>
+          <th>Имена</th>
+          <th>Дата</th>
+          <th>Час</th>
+          <th>Телефон</th>
+          <th>E-mail</th>
+          <th>E-mail абонат</th>
+          <th>Времеви печат</th>
+          <th>Статус</th>
         </table>
         <div class="pagination" id="historyPagination"></div>
     </div>
@@ -120,8 +125,7 @@
 <footer>
   <div class="container">
     <div class="website-signature">
-      <p>Website by <a href="https://github.com/therealvaskicha/" class="links hover-underline">VA</a></p>
-      <i class="fab fa-github"></i>
+      <p>Website by <a href="https://github.com/therealvaskicha/" class="links hover-underline">VA</a></p><i class="fab fa-github"></i>
     </div>
   </div>
 </footer>
