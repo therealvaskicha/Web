@@ -14,6 +14,7 @@ body {
     background: #f9f9f9;
     font-family: 'Lora', sans-serif;
     color: #333;
+    cursor: default;
 }
 
 .container {
@@ -604,6 +605,13 @@ h4 {
     cursor: not-allowed;
 }
 
+.slot.week {
+  background:transparent;
+  color: black;
+  border: 0.125rem solid #f0a500;
+  cursor: default;
+}
+
 .calendar-nav {
     display: flex;
     justify-content: center;
@@ -745,6 +753,7 @@ label {
         border-radius: 0.625rem;
         font-size: 1rem;
         transition: border-color 0.3s ease;
+        font-family: 'Lora', sans-serif;
     }
 
     #contact input:focus, #contact textarea:focus {
@@ -757,6 +766,7 @@ label {
         min-height: 6.25rem;
     }
     #contact button {
+        font-family: 'Lora', sans-serif;
         padding: 0.625rem;
         background: #6b7280;
         color: #fff;

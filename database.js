@@ -32,6 +32,11 @@ db.serialize(() => {
             console.log("Holidays table created or already exists.");
         }
     });
+
+    // db.run (`INSERT INTO holidays (date, time) VALUES ('2025-09-13', '09:00')`);
+    // db.run (`INSERT INTO holidays (date, time) VALUES ('2025-09-13', '10:00')`);
+    // db.run (`INSERT INTO holidays (date, time) VALUES ('2025-09-13', '11:00')`);
+    // db.run (`INSERT INTO holidays (date) VALUES ('2025-09-22')`);
 });
 
 module.exports = db;
