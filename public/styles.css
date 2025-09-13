@@ -730,6 +730,10 @@ label {
     transition: 0.15s ease-in-out;
 } 
 
+option, select, input {
+    font-family: 'Lora', sans-serif;
+}
+
 /* Location Section */
     #location {
         font-size:1.875rem;

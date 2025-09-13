@@ -308,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Грешка:', error);
             alert('Грешка при премахване на почивен ден');
-        }adHolidays();
+        }
+        loadHolidays();
     }
 });
