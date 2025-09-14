@@ -216,6 +216,12 @@ button:hover {
     transition: transform 0.3s ease-in-out, box-shadow 0.2s;
 }
 
+.calendar-day-header.selected {
+    background-color: #4285f4;
+    color: white;
+    cursor: pointer;
+}
+
 .calendar-slots-col {
     display: flex;
     flex-direction: column;
@@ -311,7 +317,7 @@ button:hover {
   flex-direction: column;
 }
 
-.add-holiday {
+.add-holiday-btn {
   padding: 0.3rem 2rem;
 }
 

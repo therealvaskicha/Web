@@ -16,7 +16,7 @@ app.listen(3000, () => console.log('Server at http://localhost:3000'));
 // Everything else
 
 ////////////////////////
-/// ALL BOOKING APIs ///
+///     BOOKINGS     ///
 ////////////////////////
 
 // Get all pending bookings
@@ -41,7 +41,14 @@ app.post('/api/approve', (req, res) => {
 
 // Get all approved bookings
 app.get('/api/bookings-approved', (req, res) => {
-    db.all(`SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp FROM bookings WHERE status = 'approved' and date >= date('now') ORDER BY id desc`, [], (err, rows) => {
+    db.all(`
+        SELECT id, booking_type, date, time, client_name, client_phone, client_email, 
+        subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp 
+        FROM bookings 
+        WHERE status = 'approved'
+         and date >= date('now') 
+         and (date > date('now') OR (date = date('now') AND time > strftime('%H:%M', 'now', '-1 hour'))) 
+         ORDER BY id desc`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -90,28 +97,44 @@ app.post('/api/book', (req, res) => {
 ///   HOLIDAY APIs   ///
 ////////////////////////
 
-// Get holidays
+// Get all holidays
 app.get('/api/holidays', (req, res) => {
-    db.all(`SELECT date, time FROM holidays`, [], (err, rows) => {
+    db.all(`SELECT date, time, description FROM holidays`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
+// Get upcoming holidays
+app.get('/api/holidays-current', (req, res) => {
+    db.all(`
+        SELECT *
+        FROM holidays 
+        WHERE is_active = 1
+        ORDER BY date, time`, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// Automatically deactivate past holidays on loadHolidays and don't retrieve a message
+app.post('/api/auto-deactivate-past-holidays', (req, res) => {
+    db.run(`UPDATE holidays SET is_active = 0 WHERE date < date('now')`, function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+    });
+});
+
 // Delete holiday
 app.post('/api/delete-holiday', (req, res) => {
-    const { date, time } = req.body;
-    
-    // Handle both full day and specific time slots
-    const query = time === null 
-        ? `DELETE FROM holidays WHERE date = ? AND time IS NULL`
-        : `DELETE FROM holidays WHERE date = ? AND time = ?`;
-    
-    const params = time === null ? [date] : [date, time];
-    
-    db.run(query, params, function (err) {
+    const { id } = req.body;
+
+    if (!id) {
+        return res.status(400).json({ error: 'Missing holiday ID' });
+    }
+
+    db.run(`DELETE FROM holidays WHERE id = ?`, [id], function(err) {
         if (err) {
-            console.error('Грешка при премахване:', err);
+            console.error('Грешка при изтриване:', err);
             return res.status(500).json({ error: err.message });
         }
         if (this.changes === 0) {
@@ -122,24 +145,54 @@ app.post('/api/delete-holiday', (req, res) => {
 });
 
 // Add holiday
-app.post('/api/add-holiday', (req, res) => {
-    const { date, time } = req.body;
+app.post('/api/add-holiday', async (req, res) => {
+    const { holidays, description } = req.body;
+    
+    if (!holidays || !Array.isArray(holidays) || holidays.length === 0) {
+        return res.status(400).json({ error: 'Invalid request' });
+    }
 
-    // Handle both full day and specific time slots
-    const query = time === null 
-        ? `INSERT INTO holidays (date) VALUES (?)`
-        : `INSERT INTO holidays (date, time) VALUES (?, ?)`;
-    
-    const params = time === null ? [date] : [date, time];
-    
-    db.run(query, params, function (err) {
-        if (err) {
-            console.error('Грешка при добавяне:', err);
-            return res.status(500).json({ error: err.message });
+    try {
+        // Use a transaction to ensure all or nothing
+        await new Promise((resolve, reject) => {
+            db.run('BEGIN TRANSACTION', err => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        for (const holiday of holidays) {
+            await new Promise((resolve, reject) => {
+                const query = holiday.time === null
+                    ? `INSERT INTO holidays (date, description) VALUES (?, ?)`
+                    : `INSERT INTO holidays (date, time, description) VALUES (?, ?, ?)`;
+                const params = holiday.time === null
+                    ? [holiday.date, description]
+                    : [holiday.date, holiday.time, description];
+                
+                db.run(query, params, function(err) {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
         }
-        if (this.changes === 0) {
-            return res.status(404).json({ error: 'Почивният ден не е намерен' });
-        }
-        res.json({ message: 'Почивният ден е добавен.' });
-    });
+
+        await new Promise((resolve, reject) => {
+            db.run('COMMIT', err => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        res.json({ message: 'Почивката е добавена успешно.' });
+    } catch (error) {
+        await new Promise(resolve => {
+            db.run('ROLLBACK', () => resolve());
+        });
+        res.status(500).json({ 
+            error: error.message.includes('UNIQUE') 
+                ? 'Този ден/час вече е маркиран като почивка' 
+                : error.message 
+        });
+    }
 });
