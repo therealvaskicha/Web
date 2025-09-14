@@ -308,9 +308,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Week navigation
         let weekStart = new Date();
-        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1)); // Set to Monday
-        // console.log('Initial weekStart:', weekStart.toISOString().split('T')[0]); // Debug initial weekStart
-        // weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+        const now = new Date();
+        const lastSlotToday = new Date(now);
+        lastSlotToday.setHours(20, 0, 0, 0);
+
+        // Check if it's Sunday (0) and past 20:00 - 4 hours
+            if (now.getDay() === 0 && now > new Date(lastSlotToday.getTime() - 4 * 60 * 60 * 1000)) {
+                // Start from next Monday instead
+                weekStart.setDate(weekStart.getDate() + 1);
+            }
+        
+        // Set to Monday of current/next
+        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+
         function showWeek(offset) {
             weekStart.setDate(weekStart.getDate() + offset * 7);
             renderWeek(weekStart);

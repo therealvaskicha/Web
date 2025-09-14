@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
             calendarEl.innerHTML = '';
             const weekRow = document.createElement('div');
             weekRow.className = 'calendar-week-row';
+            
             const today = new Date();
             for (let d = 0; d < 7; d++) {
                 const date = new Date(startDate);
@@ -26,7 +27,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const dayCol = document.createElement('div');
                 dayCol.className = 'calendar-day-col';
                 dayCol.innerHTML = `<div class="calendar-day-header">${dayName} ${dateStr.slice(8,10)}.${dateStr.slice(5,7)}</div>`;
-                // console.log(`Checking date: ${dateStr}, Today: ${today.toISOString().split('T')[0]}`); // Debug log
+                // Add header click handlers
+                const header = dayCol.querySelector('.calendar-day-header');
+                header.addEventListener('click', () => handleDayHeaderClick(header));
+
                 if (date.toISOString().split('T')[0] === today.toISOString().split('T')[0]) {
                 dayCol.classList.add('today-highlight'); 
                 }
@@ -66,7 +70,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         slotBtn.textContent = time;
 
                         if (isHoliday) {
+                            const holiday = holidays.find(h => h.date === dateStr && (h.time === null || h.time === time));
                             slotBtn.classList.add('holiday');
+                            slotBtn.title = `${holiday.description || 'Почивен ден'}`
                         } else if (taken) {
                             const booking = bookings.find(b => b.date === dateStr && b.time === time) ||
                                             historicalBookings.find(b => b.date === dateStr && b.time === time);
@@ -98,9 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         };
                         slotsCol.appendChild(slotBtn);
-                    })
-                    
-                    ;
+                    });
                 }
             });
         }
@@ -122,6 +126,87 @@ document.addEventListener('DOMContentLoaded', function() {
             weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
             renderWeek(weekStart);
         };
+
+        const addHolidayBtn = document.querySelector('.add-holiday-btn');
+        if (addHolidayBtn && !addHolidayBtn.hasListener) {
+            addHolidayBtn.hasListener = true; // Flag to prevent multiple listeners
+            addHolidayBtn.addEventListener('click', async () => {
+                const holidays = [];
+                const headers = document.querySelectorAll('.calendar-day-header.selected');
+                const slots = document.querySelectorAll('.slot.selected');
+
+                // Get description once before processing
+                const description = prompt('Добавете описание (по желание):');
+                if (description === null) return; // User clicked Cancel
+
+                // Process headers (full days)
+                headers.forEach(header => {
+                    const dayCol = header.closest('.calendar-day-col');
+                    const dayIndex = Array.from(dayCol.parentNode.children).indexOf(dayCol);
+                    const date = new Date(weekStart);
+                    date.setDate(weekStart.getDate() + dayIndex);
+                    const dateStr = date.toISOString().split('T')[0];
+                    
+                    holidays.push({ date: dateStr, time: null });
+                });
+
+                // Process individual slots
+                slots.forEach(slot => {
+                    if (!slot.closest('.calendar-day-col').querySelector('.calendar-day-header.selected')) {
+                        const dayCol = slot.closest('.calendar-day-col');
+                        const dayIndex = Array.from(dayCol.parentNode.children).indexOf(dayCol);
+                        const date = new Date(weekStart);
+                        date.setDate(weekStart.getDate() + dayIndex);
+                        const dateStr = date.toISOString().split('T')[0];
+                        
+                        holidays.push({
+                            date: dateStr,
+                            time: slot.textContent
+                        });
+                    }
+                });
+
+                if (holidays.length === 0) {
+                    alert('Моля, изберете дни или часове за почивка');
+                    return;
+                }
+
+                const response = await fetch('/api/add-holiday', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ holidays, description })
+                });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert(result.message);
+                    // Clear selections
+                    headers.forEach(h => h.classList.remove('selected'));
+                    slots.forEach(s => s.classList.remove('selected'));
+                    await loadHolidays();
+                    renderWeek();
+                } else {
+                    alert(result.error || 'Грешка при добавяне на почивка');
+                }
+            });
+            renderWeek(weekStart);
+        }
+
+            function handleDayHeaderClick(header) {
+            header.classList.toggle('selected');
+            const slotsCol = header.nextElementSibling;
+            const slots = slotsCol.querySelectorAll('.slot');
+            if (header.classList.contains('selected')) {
+                slots.forEach(slot => {
+                    slot.classList.remove('selected');
+                    slot.disabled = true;
+                });
+            } else {
+                slots.forEach(slot => {
+                    slot.disabled = false;
+                });
+            }
+        }
     }
 
     // Load pending bookings
@@ -206,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load holidays
     async function loadHolidays() {
-        const response = await fetch('/api/holidays');
+        const response = await fetch('/api/holidays-current');
         const holidays = await response.json();
         const table = document.getElementById('holidaysTable');
         const container = table.parentElement;
@@ -222,23 +307,23 @@ document.addEventListener('DOMContentLoaded', function() {
             row.innerHTML = `
                 <td>${holiday.date}</td>
                 <td>${holiday.time || 'Цял ден'}</td>
+                <td>${holiday.description || ''}</td>
                 <td>
-                    <button class="remove-btn" 
-                        data-date="${holiday.date}" 
-                        data-time="${holiday.time || null}">Премахни</button>
+                    <button class="remove-btn" data-id="${holiday.id}">Премахни</button>
                 </td>
             `;
+
+        const removeBtn = row.querySelector('.remove-btn');
+        removeBtn.addEventListener('click', async () => {
+            if (confirm('Сигурни ли сте, че искате да премахнете този почивен ден?')) {
+                await deleteHoliday(holiday.id);
+            }
+            });
         });
 
-        // Add event listeners for removing holiday
-        table.querySelectorAll('.remove-btn').forEach(btn => {
-            btn.onclick = async () => {
-                const date = btn.dataset.date;
-                const time = btn.dataset.time === "null" ? null : btn.dataset.time;
-                await removeHoliday(date, time);
-            };
-        });
-    }
+        // Automatically deactivate past holidays
+        await fetch('/api/auto-deactivate-past-holidays', { method: 'POST' });
+}
 
         async function loadHistory() {
         const response = await fetch('/api/bookings-history');
@@ -249,6 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
         bookings.forEach(booking => {
             const row = table.insertRow();
             row.innerHTML = `
+                <td>${booking.id}</td>
                 <td>${booking.booking_type}</td>
                 <td>${booking.client_name}</td>
                 <td>${booking.date}</td>
@@ -290,25 +376,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Remove holiday
-    async function removeHoliday(date, time) {
-        try {
+    async function deleteHoliday(id) {
             const response = await fetch('/api/delete-holiday', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ date, time })
+                body: JSON.stringify({ id })
             });
             const result = await response.json();
             if (response.ok) {
                 alert(result.message);
-                loadHolidays();
-                location.reload(); // Refresh the page to update the calendar
-            } else {
-                alert(result.error || 'Грешка при премахване на почивен ден');
+                await loadHolidays();
+                location.reload();
             }
-        } catch (error) {
-            console.error('Грешка:', error);
-            alert('Грешка при премахване на почивен ден');
-        }
-        loadHolidays();
-    }
+    } 
 });
