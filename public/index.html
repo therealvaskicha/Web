@@ -207,7 +207,7 @@
           </div>
           <small>/ 6 тренировки</small>
         </div>
-        <button class="price-card-btn" data-type="Reform 8" type="button">Избери</button>
+        <button class="price-card-btn" data-type="SixLates" type="button">Избери</button>
       </div>
       <div class="price-card desktop-only popular">
         <div class="price-card-header">
@@ -307,18 +307,19 @@
       </div>
     </div>
     <div class="requestServices" id="requestServices">
-      <h2>Заяви услуга</h2>
+      <h2>Твоята тренировка</h2>
       <div class="container">
         <form id="booking-form">
-          <label for="booking-type">Вид услуга*</label>
+          <label for="booking-type">Вид тренировка*</label>
           <select id="booking-type" name="booking_type" required>
-            <option value="">Изберете...</option>
-            <option value="Solo">Solo (в група)</option>
-            <option value="Private">Private (извън група)</option>
+            <option value="">Вашият избор...</option>
+            <option value="Solo">Solo</option>
+            <option value="Private">Private</option>
             <option value="Re4Me">Re4Me</option>
+            <option value="SixLates">SixLates</option>
             <option value="Reform 8">Reform 8</option>
           </select>
-          <small class="booking-hint">Подсказка</small>
+          <small class="booking-hint"></small>
           <label for="client-name">Име и фамилия*</label>
           <input type="text" id="client-name" name="client_name" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
           <label for="client-phone">Телефон*</label>
@@ -327,6 +328,9 @@
           <input type="text" id="booking-date-hour" name="booking_date_hour" readonly>
           <label for="client-email">E-mail*</label>
           <input type="email" id="client-email" name="client_email" maxlength="50" required>
+          <small class="booking-hint">*Задължителни полета.</small>
+          <label for="booking-note">Бележка към треньора</label>
+          <input type="text" id="booking-note" name="booking-note" maxlength="200" placeholder='"първа тренировка", "бременност" и др.'>
           <label>
             <input type="checkbox" id="subscribe-email" name="subscribe_email">
             Абониране за имейл известия

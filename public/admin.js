@@ -231,7 +231,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${booking.time}</td>
                 <td>${booking.client_phone || 'N/A'}</td>
                 <td>${booking.client_email || 'N/A'}</td>
-                <td>${booking.timestamp}</td>
                 <td>
                     <button class="approve-btn" data-id="${booking.id}">Одобри</button>
                     <button class="reject-btn" data-id="${booking.id}">Откажи</button>

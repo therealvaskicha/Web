@@ -15,13 +15,30 @@ app.listen(3000, () => console.log('Server at http://localhost:3000'));
 
 // Everything else
 
-////////////////////////
-///     BOOKINGS     ///
-////////////////////////
+const timestamp = new Date().toISOString();
+
+/////////////////////////////
+///    SELECT QUERIES     ///
+/////////////////////////////
+
+const sql_get_pending_bookings = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) as timestamp, status FROM bookings WHERE status = 'pending'`;
+const sql_get_approved_bookings = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, 
+        subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp 
+        FROM bookings 
+        WHERE status = 'approved'
+         and date >= date('now') 
+         and (date > date('now') OR (date = date('now') AND time > strftime('%H:%M', 'now', '-1 hour'))) 
+         ORDER BY id desc;`;
+const sql_get_historically_approved_bookings = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp FROM bookings WHERE status = 'approved' and date <= date('now')`;
+const sql_get_bookings_history = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp, status FROM bookings ORDER BY id desc`;
+
+const sql_get_holidys = `SELECT date, time, description FROM holidays;`;
+const sql_get_upcoming_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
+
 
 // Get all pending bookings
 app.get('/api/pending', (req, res) => {
-    db.all(`SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) as timestamp, status FROM bookings WHERE status = 'pending'`, [], (err, rows) => {
+    db.all(sql_get_pending_bookings, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -29,11 +46,14 @@ app.get('/api/pending', (req, res) => {
 
 // Approve or reject booking
 app.post('/api/approve', (req, res) => {
+    const sql_approve_or_reject_booking = `UPDATE bookings SET status = ? WHERE id = ?`;
+    const sql_approve_or_reject_booking_values = ['approved', 'rejected', 'canceled'];
+
     const { id, status } = req.body;
-    if (!id || !['approved', 'rejected', 'canceled'].includes(status)) {
+    if (!id || !sql_approve_or_reject_booking_values.includes(status)) {
         return res.status(400).json({ error: 'Invalid request' });
     }
-    db.run(`UPDATE bookings SET status = ? WHERE id = ?`, [status, id], function (err) {
+    db.run(sql_approve_or_reject_booking, [status, id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: `Booking ${status}` });
     });
@@ -41,14 +61,7 @@ app.post('/api/approve', (req, res) => {
 
 // Get all approved bookings
 app.get('/api/bookings-approved', (req, res) => {
-    db.all(`
-        SELECT id, booking_type, date, time, client_name, client_phone, client_email, 
-        subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp 
-        FROM bookings 
-        WHERE status = 'approved'
-         and date >= date('now') 
-         and (date > date('now') OR (date = date('now') AND time > strftime('%H:%M', 'now', '-1 hour'))) 
-         ORDER BY id desc`, [], (err, rows) => {
+    db.all(sql_get_approved_bookings, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -56,7 +69,7 @@ app.get('/api/bookings-approved', (req, res) => {
 
 // Get all historically approved bookings
 app.get('/api/bookings-history-approved', (req, res) => {
-    db.all(`SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp FROM bookings WHERE status = 'approved' and date <= date('now')`, [], (err, rows) => {
+    db.all(sql_get_historically_approved_bookings, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -64,28 +77,32 @@ app.get('/api/bookings-history-approved', (req, res) => {
 
 // Get bookings history
 app.get('/api/bookings-history', (req, res) => {
-    db.all(`SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp, status FROM bookings ORDER BY id desc`, [], (err, rows) => {
+    db.all(sql_get_bookings_history, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
-// Book a slot (extended fields)
+// Book a slot
 app.post('/api/book', (req, res) => {
-    const {
-        booking_type, date, time, client_name, client_phone,
-        client_email, subscribe_email
-    } = req.body;
+    const { booking_type, date, time, client_name, client_phone, client_email, booking_note, subscribe_email } = req.body;
     const timestamp = new Date().toISOString();
+
     if (!booking_type || !date || !time || !client_name || !client_phone || !client_email) {
         return res.status(400).json({ error: 'Липсват необходими полета.' });
     }
-    db.get(`SELECT * FROM bookings WHERE date = ? AND time = ? AND status = 'approved'`, [date, time], (err, row) => {
+
+    const sql_book_check_existing = `SELECT * FROM bookings WHERE date = ? AND time = ? AND status = 'approved'`;  
+
+    db.get(sql_book_check_existing, [date, time], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (row) return res.status(400).json({ error: 'За съжаление този час е зает. Моля изберете свободен час.' });
-        db.run(`INSERT INTO bookings (booking_type, date, time, client_name, client_phone, client_email, subscribe_email, timestamp, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-            [booking_type, date, time, client_name, client_phone, client_email, !!subscribe_email, timestamp],
+        
+        const sql_book = `INSERT INTO bookings (booking_type, date, time, client_name, client_phone, client_email, booking_note, subscribe_email, timestamp, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`;
+        const sql_book_values = [booking_type, date, time, client_name, client_phone, client_email, booking_note, subscribe_email, timestamp];
+        
+        db.run(sql_book, sql_book_values,
             function (err) {
                 if (err) return res.status(500).json({ error: err.message });
                 res.json({ message: 'Заявката е изпратена за одобрение.', id: this.lastID });
@@ -99,7 +116,7 @@ app.post('/api/book', (req, res) => {
 
 // Get all holidays
 app.get('/api/holidays', (req, res) => {
-    db.all(`SELECT date, time, description FROM holidays`, [], (err, rows) => {
+    db.all(sql_get_holidys, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -107,11 +124,7 @@ app.get('/api/holidays', (req, res) => {
 
 // Get upcoming holidays
 app.get('/api/holidays-current', (req, res) => {
-    db.all(`
-        SELECT *
-        FROM holidays 
-        WHERE is_active = 1
-        ORDER BY date, time`, [], (err, rows) => {
+    db.all(sql_get_upcoming_holidays, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -119,20 +132,23 @@ app.get('/api/holidays-current', (req, res) => {
 
 // Automatically deactivate past holidays on loadHolidays and don't retrieve a message
 app.post('/api/auto-deactivate-past-holidays', (req, res) => {
-    db.run(`UPDATE holidays SET is_active = 0 WHERE date < date('now')`, function (err) {
+    const sql_auto_deactivate_past_holidays = `UPDATE holidays SET is_active = 0 WHERE date < date('now');`;
+
+    db.run(sql_auto_deactivate_past_holidays, function (err) {
         if (err) return res.status(500).json({ error: err.message });
     });
 });
 
 // Delete holiday
 app.post('/api/delete-holiday', (req, res) => {
-    const { id } = req.body;
+    const sql_delete_holiday = `DELETE FROM holidays WHERE id = ?;`;
+    const sql_delete_holiday_values = [id];
 
-    if (!id) {
+    if (!sql_delete_holiday_values) {
         return res.status(400).json({ error: 'Missing holiday ID' });
     }
 
-    db.run(`DELETE FROM holidays WHERE id = ?`, [id], function(err) {
+    db.run(sql_delete_holiday, sql_delete_holiday_values, function(err) {
         if (err) {
             console.error('Грешка при изтриване:', err);
             return res.status(500).json({ error: err.message });
