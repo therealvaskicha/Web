@@ -35,6 +35,9 @@ const sql_get_bookings_history = `SELECT id, booking_type, date, time, client_na
 const sql_get_holidys = `SELECT date, time, description FROM holidays;`;
 const sql_get_upcoming_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
 
+////////////////////////
+///   BOOKING APIs   ///
+////////////////////////
 
 // Get all pending bookings
 app.get('/api/pending', (req, res) => {
