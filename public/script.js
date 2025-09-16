@@ -3,6 +3,7 @@ const mobileMenuIcon = document.querySelector('.mobile-menu-icon');
 const navMenu = document.querySelector('.mobile-only .nav-menu');
 const header = document.querySelector('header');
 
+    // Ensure elements exist
 if (mobileMenuIcon && navMenu && header) {
     mobileMenuIcon.addEventListener('click', function () {
         const isActive = navMenu.classList.toggle('active');
@@ -73,8 +74,7 @@ scrollBtn.addEventListener('click', function() {
 const priceBtns = document.getElementsByClassName('price-card-btn'); // Correct class name
 const scheduleSection = document.getElementById('schedule');
 
-
-// Convert HTMLCollection to array and add event listener to each button
+    // Convert HTMLCollection to array and add event listener to each button
 Array.from(priceBtns).forEach(button => {
     button.addEventListener('click', function() {
         if (scheduleSection) {
@@ -85,12 +85,14 @@ Array.from(priceBtns).forEach(button => {
     });
 });
 
-// Add event listener to price-card-btn elements
+    // Add event listener to price-card-btn elements
 document.querySelectorAll('.price-card-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
     const dataType = btn.dataset.type;
     const bookingTypeSelect = document.getElementById('booking-type');
     bookingTypeSelect.value = dataType;
+    bookingTypeSelect.dispatchEvent(new Event('change')); // Trigger change event for hints
+
     // if (dataType === 'Re4Me' || dataType === 'Reform 8') {
     //   const numBookingsInput = document.getElementById('num-bookings');
     //   numBookingsInput.value = dataType === 'Re4Me' ? 4 : 8;
@@ -101,6 +103,22 @@ document.querySelectorAll('.price-card-btn').forEach((btn) => {
     //   calendarEl.classList.remove('multiple-selections');
     // }
   });
+});
+
+    // Add booking type hints
+document.getElementById('booking-type').addEventListener('change', function() {
+const hint = document.querySelector('.booking-hint');
+const bookingType = this.value;
+
+const hints = {
+    'Solo': 'Solo - €15,34 / 30лв. - 1 групова тренировка',
+    'Private': 'Private - €23,01 / 45лв. - 1 индивидуална тренировка',
+    'Re4Me': 'Re4Me - €56,24 / 110лв. - 4 тренировки - възможност за група',
+    'SixLates': 'SixLates - €76,70 / 150лв. - 6 тренировки - възможност за група',
+    'Reform 8': 'Reform ∞ - €92,04 / 180лв. - 8 тренировки - възможност за група'
+};
+
+hint.textContent = hints[bookingType] || '';
 });
 
 // Form submission (using Formspree as an example)
@@ -130,7 +148,7 @@ document.getElementById('contact-form').addEventListener('submit', async functio
     }
 });
 
-// Gallery Modal Functionality (Working as confirmed)
+// Gallery Modal config
 document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('gallery-modal');
     const modalImg = document.getElementById('modal-image');
@@ -139,6 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const prevBtn = document.querySelector('.modal-nav.prev-btn');
     const nextBtn = document.querySelector('.modal-nav.next-btn');
 
+    // Gallery modal logic
     if (modal && modalImg && modalCaption && closeBtn && prevBtn && nextBtn) {
         const galleryImages = document.querySelectorAll('.gallery-item img');
         let currentIndex = 0;
@@ -193,7 +212,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-    
 
     // Clipboard functionality
     const copyAddressBtn = document.getElementById('copyAddressBtn');
@@ -219,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedDate = null;
     let selectedTime = null;
 
+    // Calendar rendering
     if (calendarEl) {
         const times = [];
         for (let h = 8; h <= 20; h++) {
@@ -320,7 +339,8 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Set to Monday of current/next
         weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
-
+        
+        // Show week function
         function showWeek(offset) {
             weekStart.setDate(weekStart.getDate() + offset * 7);
             renderWeek(weekStart);
@@ -332,9 +352,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('next-week').onclick = () => showWeek(1);
         document.getElementById('today-week').onclick = () => {
             weekStart = new Date();
-            // weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
             weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1)); // Reset to current Monday
-            // console.log('Today reset weekStart:', weekStart.toISOString().split('T')[0]); // Debug reset
             renderWeek(weekStart);
         };
     }
@@ -355,6 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const client_name = document.getElementById('client-name').value;
             const client_phone = document.getElementById('client-phone').value;
             const client_email = document.getElementById('client-email').value;
+            const booking_note = document.getElementById('booking-note').value;
             const subscribe_email = document.getElementById('subscribe-email').checked;
             if (!selectedDate || !selectedTime) {
                 alert('Моля, изберете дата и час от календара.');
@@ -365,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     booking_type, date: selectedDate, time: selectedTime,
-                    client_name, client_phone, client_email, subscribe_email
+                    client_name, client_phone, client_email, booking_note, subscribe_email
                 })
             });
             const result = await res.json();
@@ -378,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 selectedDate = null;
                 selectedTime = null;
                 document.getElementById('booking-date-hour').value = '';
-                location.reload();
+                // location.reload();
             }
         };
     }
