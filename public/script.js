@@ -114,7 +114,7 @@ const hints = {
     'Solo': 'Solo - €15,34 / 30лв. - 1 групова тренировка',
     'Private': 'Private - €23,01 / 45лв. - 1 индивидуална тренировка',
     'Re4Me': 'Re4Me - €56,24 / 110лв. - 4 тренировки - възможност за група',
-    'SixLates': 'SixLates - €76,70 / 150лв. - 6 тренировки - възможност за група',
+    'Six': 'Six - €76,70 / 150лв. - 6 тренировки - възможност за група',
     'Reform 8': 'Reform ∞ - €92,04 / 180лв. - 8 тренировки - възможност за група'
 };
 
@@ -148,14 +148,17 @@ document.getElementById('contact-form').addEventListener('submit', async functio
     }
 });
 
-// Gallery Modal config
+// DOMContentLoaded event listener
 document.addEventListener('DOMContentLoaded', function () {
+    // Modal configs
     const modal = document.getElementById('gallery-modal');
     const modalImg = document.getElementById('modal-image');
     const modalCaption = document.getElementById('modal-caption');
     const closeBtn = document.querySelector('.modal-close');
     const prevBtn = document.querySelector('.modal-nav.prev-btn');
     const nextBtn = document.querySelector('.modal-nav.next-btn');
+    // Add intersection observer for fade-in sections
+    const fadeElements = document.querySelectorAll('.fade-in-section');
 
     // Gallery modal logic
     if (modal && modalImg && modalCaption && closeBtn && prevBtn && nextBtn) {
@@ -212,6 +215,22 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // Fade in section observer
+    const fadeObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    fadeElements.forEach(element => {
+        fadeObserver.observe(element);
+    });
 
     // Clipboard functionality
     const copyAddressBtn = document.getElementById('copyAddressBtn');
@@ -311,12 +330,23 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Add click event for slots
                         slotBtn.onclick = () => {
                             if(!slotBtn.disabled) {
+                            const previouslySelected = document.querySelector('.slot.selected');
+                            const bookingDateHour = document.getElementById('booking-date-hour');
+
+                            if (previouslySelected) {
+                                previouslySelected.classList.remove('selected');
+                                slotBtn.classList.add('selected');
+                            } else
+
+                            slotBtn.classList.add('selected');
                             selectedDate = dateStr;
                             selectedTime = time;
-                            document.getElementById('booking-date-hour').value = `${dateStr} ${time}`;
+                            bookingDateHour.value = `${dateStr} ${time}`;
                             requestServices.classList.add('active');
                             requestServices.style.opacity = '1';
-                            calendarHint.scrollIntoView({ behavior: 'smooth' });
+                            if (window.innerWidth <= 768) {
+                                calendarHint.scrollIntoView({ behavior: 'smooth' });
+                                }
                             }
                         };
                         slotsCol.appendChild(slotBtn);
@@ -360,13 +390,20 @@ document.addEventListener('DOMContentLoaded', function () {
     // Booking form logic
     if (bookingForm) {
         document.getElementById('cancel-booking').onclick = () => {
-            scheduleSection.scrollIntoView({ behavior: 'smooth' });
+            const previouslySelected = document.querySelector('.slot.selected');
+            if (previouslySelected) {
+                previouslySelected.classList.remove('selected');
+            }
+            if (window.innerWidth <= 768) {
+                scheduleSection.scrollIntoView({ behavior: 'smooth' });
+            }
             requestServices.style.opacity='0';
             setTimeout(() => {
                 requestServices.classList.remove('active');
                 bookingForm.reset();  
             }, 300);
         };
+
         bookingForm.onsubmit = async function (e) {
             e.preventDefault();
             const booking_type = document.getElementById('booking-type').value;

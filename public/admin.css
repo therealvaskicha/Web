@@ -276,7 +276,7 @@ button:hover {
 }
 
 .slot.selected {
-  border: 0.125rem solid #bcf000;
+  border: 0.125rem solid #60f000;
   transition: 0.05s;
 }
 

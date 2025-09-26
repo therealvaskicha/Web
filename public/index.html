@@ -9,15 +9,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="icon" href="Images/icon.jpg" type="image/jpeg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-</head>
+    <!-- Reset scroll position on page reload -->
+    <script>
+      if (history.scrollRestoration) {
+        history.scrollRestoration = 'manual';
+      }
+      window.onload = function() {
+        window.scrollTo(0, 0);
+      };
+    </script>
+  </head>
 <body>
-
-<!-- Remove this script if you want to keep the scroll position on page reload -->
-<script>
-  window.onbeforeunload = function () {
-    window.scrollTo(0, 0);
-  };
-</script> 
 
 <header>  
   <div class="container">      
@@ -85,8 +87,8 @@
             <img src="Images/loni.jfif" loading="lazy" class="loni-img" alt="Дилона - основател на студиото">
             <div class="description">
               <h3>Здравейте!</h3>
-              <p>Аз съм Дилона и с най-голямо удоволствие ви приветствам в моето реформър пилатес студио.</p>
-              <p>Персонализирани уроци за подобряване на силата, гъвкавостта и баланса.</p>
+              <p>Аз съм Дилона и с най-голямо удоволствие ви приветствам в моето реформър пилатес студио.</p><br>
+              <p>Възползвайте се от нашите персонализирани уроци за подобряване на силата, гъвкавостта и баланса.</p><br>
               <p>С няколко лесни стъпки можете още днес да запазите своята тренировка.</p>
             </div>
           </div>      
@@ -190,7 +192,7 @@
       </div>
       <div class="price-card">
         <div class="price-card-header">
-          <span class="price-card-title">SixLates</span>
+          <span class="price-card-title">Six</span>
         </div>
         <ul class="price-card-features">
           <li>Персонализирани тренировки &#11088;</li>
@@ -207,7 +209,7 @@
           </div>
           <small>/ 6 тренировки</small>
         </div>
-        <button class="price-card-btn" data-type="SixLates" type="button">Избери</button>
+        <button class="price-card-btn" data-type="Six" type="button">Избери</button>
       </div>
       <div class="price-card desktop-only popular">
         <div class="price-card-header">
@@ -256,23 +258,23 @@
         <button class="price-card-btn" data-type="Reform 8" type="button">Избери</button>
       </div>
     </div>
-      <div class="disclaimer">
-        <p style="text-align:center;">*Цените на абонаментните карти се изчисляват на база индивидуални тренировки (Solo) и приложеното към тях намаление.</p><br>
-        <h3><b>Политика за ползване</b></h3>
-          <p>Задължително е предварителното записване на час за тренировка директно с треньора или чрез нашия <a class="links hover-underline" href="#schedule">онлайн график.</a></p>
-        <h3 style="font-size:1.125rem;"><b>За абонаментни карти</b></h3>
-          <p>Абонаментните карти съдържат определен брой кредити:</p><br>
-          <li><b>Re4Me - 4 кредита</b></li>
-          <li><b>SixLates - 6 кредита</b></li>
-          <li><b>Reform 8 - 8 кредита</b></li><br>
-          <p><b>1 кредит = 1 тренировка</b></p><br>
-          <p>Абонаментните карти са валидни за период от <b>1 месец</b> от датата на закупуване.</p><br>
-          <p>Всяко посещение отнема 1 кредит от картата до изчерпване на баланса.</p><br>
+    <p style="text-align:center;">*Цените на абонаментните карти се изчисляват на база индивидуални тренировки (Solo) и приложеното към тях намаление.</p><br>
+    <div class="disclaimer">
+      <h3><b>Политика за ползване</b></h3>  
+          <p>Задължително е предварителното <a class="links hover-underline" href="#schedule">записване на час</a> за тренировка.</p>
+        <h4><b>За абонаментни карти</b></h4>
+          <div class="disclaimer-cards">
+            <div class="disclaimer-price-card"><b>Re4Me</b>(4 кредита)</div>
+            <div class="disclaimer-price-card"><b>Six</b>(6 кредита)</div>
+            <div class="disclaimer-price-card"><b>Reform &infin;</b>(8 кредита)</div>
+          </div>
+          <p style="text-align:center;margin:0.5rem;font-size:1.125rem;"><b>1 кредит = 1 тренировка</b></p>
+          <p>Картите са валидни за период от <b>1 месец</b> от датата на закупуване.</p><br>
           <p>Неизползваните кредити не се прехвърлят в следващ месец.</p><br>
           <p>Абонаментните карти не подлежат на възстановяване на сумата, но могат да бъдат използвани от друг клиент с предварително уведомяване.</p>   
         <h3><b>Политика за анулиране</b></h3>
           <p>При анулиране или промяна на час, моля обадете се на телефона в секция <a class="links hover-underline" href="#contact-title">Контакти.</a></p>
-        <h3 style="font-size:1.125rem;"><b>За абонаментни карти</b></h3>
+        <h4><b>За абонаментни карти</b></h4>
           <p>При отмяна на час по-малко от 12 часа преди началото, тренировката се счита за извършена и се отнема 1 кредит от картата.</p>
       </div>
   </div>
@@ -282,12 +284,13 @@
 <div class="spacing-between-sections-down"></div>
 
 <section id="schedule">
-  <h2>График</h2>
-  <h3>Онлайн графикът е в ремонт. &#128679;</h3>
+  <h2>График (в ремонт &#128679;&#128119;) </h2>
+  <!-- <h3></h3> -->
+  <div class="hint">
+    <h3>Запиши си час за тренировка <a href="#contact-title" class="links hover-underline">по телефона.</a></h3>
+  </div>
+  <div class="schedule-container">
     <div class="calendar-wrap">
-      <div class="hint">
-        <h3>Запиши си час за тренировка <a href="#contact-title" class="links hover-underline">по телефона.</a></h3>
-      </div>
       <div class="calendar-nav">
         <button class="week-nav-btn" id="prev-week" type="button">Назад</button>
         <button class="week-nav-btn" id="today-week" type="button">Днес</button>
@@ -306,7 +309,7 @@
         <small>При анулиране или промяна, моля обадете се на телефона в секция <a class="links hover-underline" href="#contact-title">Контакти.</a></small>
       </div>
     </div>
-    <div class="requestServices" id="requestServices">
+      <div class="requestServices" id="requestServices">
       <h2>Твоята тренировка</h2>
       <div class="container">
         <form id="booking-form">
@@ -316,7 +319,7 @@
             <option value="Solo">Solo</option>
             <option value="Private">Private</option>
             <option value="Re4Me">Re4Me</option>
-            <option value="SixLates">SixLates</option>
+            <option value="Six">Six</option>
             <option value="Reform 8">Reform 8</option>
           </select>
           <small class="booking-hint"></small>
@@ -336,13 +339,14 @@
             Абониране за имейл известия
           </label>
           <small>Ако желаете да получавате имейл известия от нашето студио относно намаления, оферти или събития.</small>
-          <div>
+          <div class="form-buttons" style="align-items:center;">
             <button type="submit" id="confirm-booking">Потвърди</button>
-            <button type="button" id="cancel-booking">Отказ</button>
+            <button type="button" id="cancel-booking">Откажи</button>
           </div>
         </form>
       </div>
-    </div>
+      </div>
+  </div>
 </section>
 
 <div>
