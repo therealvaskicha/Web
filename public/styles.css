@@ -32,10 +32,21 @@ body {
     display: block;
 }
 
+@keyframes scrolling {
+    from {
+        opacity:0;
+        scale: 0.5;
+    }
+    to {
+        opacity:1;
+        scale:1;
+    }
+}
+
 /* Sections */
 section {
-    padding: 2.5rem;
-    scroll-margin-top: 4.375rem;
+    padding: 1rem;
+    scroll-margin-top: 4rem;
 }
 
 h2 {
@@ -63,13 +74,13 @@ h4 {
 /* Gradient between sections */
 
 .spacing-between-sections-down {
-    height:3rem;
+    height:5rem;
     background-image: linear-gradient(to top, #f9f9f9, #e7debb);
     -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 0.66), transparent);
 }
 
 .spacing-between-sections-up {
-    height:3rem;
+    height:5rem;
     background-image: linear-gradient(to top, #e7debb, #f9f9f9);
     -webkit-mask-image: linear-gradient(transparent, rgba(0, 0, 0, 0.66));
 }
@@ -268,12 +279,15 @@ h4 {
         position:relative;
         max-width: 50rem;
         margin: 0 auto;
-        line-height: 1.6;
+        line-height: 1.2;
         font-size: 1.125rem;
         color: #555;
         padding: 0 1.25rem;
-        text-align: justify;
-        text-indent: 1.25rem;
+        text-align: center;
+
+        animation: scrolling linear;
+        animation-timeline: view();
+        animation-range: entry 0%;
     }
 
     .loni-img{
@@ -306,6 +320,10 @@ h4 {
         height: auto;
         object-fit:contain;
         aspect-ratio:9/16;
+
+        animation: scrolling linear;
+        animation-timeline: view();
+        animation-range: entry 0%;
     }
     .gallery-item img {
         max-width:100%;
@@ -440,7 +458,12 @@ h4 {
   position: relative;
   transition: box-shadow 0.2s;
   cursor:default;
+
+  animation: scrolling linear;
+  animation-timeline: view();
+  animation-range: entry 0%;
 }
+
 .price-card:hover {
   box-shadow: 0rem 0.5rem 2rem rgba(0,0,0,0.1);
   transform: translateY(-0.188rem);
@@ -532,7 +555,20 @@ h4 {
   color: #fff;
 }
 
+/* Schedule container */
+.schedule-container {
+    display:flex;
+    justify-content: center;
+    flex-wrap:wrap;
+}
 
+.calendar-wrap {
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 1rem;
+    margin: 0.5rem; 
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
+}
 /* Minimalistic calendar styles */
 
 #user-calendar {
@@ -612,6 +648,11 @@ h4 {
   cursor: default;
 }
 
+.slot.selected {
+  border: 0.125rem solid #60f000;
+  transition: 0.05s;
+}
+
 .calendar-nav {
     display: flex;
     justify-content: center;
@@ -644,32 +685,32 @@ h4 {
 
 /* Booking form styles */
 .requestServices {
-    display: none;
+    display: block;
     background: #fff;
     border-radius: 1rem;
     box-shadow: 0 0.25rem 1rem rgba(0,0,0,0.07);
-    padding: 2rem;
-    margin: 2rem auto;
+    padding: 1.5rem;
+    margin: 0.5rem;
     max-width: 500px;
-    scroll-margin-top:6rem;
+    scroll-margin-top:5rem;
     opacity:0;
     transition: 0.3s;
 }
 .requestServices.active {
     display: block;
     opacity:1;
-    transition: 0.3s;
 }
 
 label {
     display: block;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     font-weight: bold;
 }
+
 .requestServices input,
 .requestServices select {
     width: 100%;
-    padding: 0.5rem;
+    padding: 0.33rem;
     margin-top: 0.25rem;
     border-radius: 0.25rem;
     border: 1px solid #e7e4bb;
@@ -687,8 +728,14 @@ label {
     width:5%;
 }
 
+.form-buttons {
+    display:flex;
+    gap:1rem;
+    justify-content: center;
+}
+
 .requestServices button {
-    margin: 1rem 0.5rem 0 0;
+    margin-top: 1rem;
     padding: 0.5rem 1.5rem;
     border-radius: 0.25rem;
     border: none;
@@ -701,20 +748,79 @@ label {
     background: #f0a500;
     color: #fff;
 }
+
 .disclaimer {
-    margin-top: 1rem;
+    width: 48rem;
+    max-width: 100%;
+    margin: 1rem auto 0rem;
     font-size: 0.9rem;
     color: #555;
+    opacity: 1;
+    /* transform: translateY(-30px); */
+    transition: opacity 1s ease-in;
+    background: linear-gradient(to bottom right, #ffffff, #f9f9f9);
+    border-radius: 2rem;
+    padding: 2rem;
+    box-shadow: 0 0.125rem 0.200rem rgba(0, 0, 0, 0.1);
+    border-left: 0.125rem solid #aca97c;
+    border-right: 0.125rem solid #aca97c;
 }
+/* 
+.disclaimer.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+} */
 
 .disclaimer h3{
+    text-align:center;
+
+    color: #333;
+    margin: 1rem;
+}
+
+.disclaimer h4{
     text-align:start;
-    padding-top:1rem;
+    margin-top:0.75rem;
+    margin-bottom:0.75rem;
+    color: #333;
+}
+
+.disclaimer p {
+    line-height: 1;
+    color: #666;
+}
+
+.disclaimer-cards{
+    display:flex;
+    justify-content: center;
+    flex-wrap:wrap;
+    gap: 1rem;
+    margin:1rem;
+}
+
+.disclaimer-price-card {
+  background: #fff;
+  border: 0.125rem solid #e7e4bb;
+  border-radius: 1rem;
+  box-shadow: 0rem 0.25rem 1.5rem rgba(0,0,0,0.07);
+  padding: 0.625rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  transition: box-shadow 0.2s;
+  cursor:default;
+  font-size:1rem;
+  text-align:center;
+}
+.disclaimer-price-card:hover {
+  box-shadow: 0rem 0.5rem 2rem rgba(0,0,0,0.1);
+  transform: translateY(-0.075rem);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s;
 }
 
 .disclaimer p {
     font-size:1rem;
-    /* padding-bottom:0.125rem; */
     line-height: 1.25rem;
 }
 
@@ -1029,7 +1135,6 @@ top: 0rem;
         }
 
         section h2 {
-            font-size: 2rem; /* Reduced font size for mobile */
             margin-bottom: 1rem; /* Reduced margin for mobile */
         }
 
@@ -1291,9 +1396,22 @@ top: 0rem;
             padding: 0.625rem 1rem;
         }
         .requestServices {
+            display:none;
             padding: 1rem;
             max-width: 100%;
-            scroll-margin-top:8rem;
+            scroll-margin-top:10rem;
+        }
+
+        .requestServices h2 {
+            font-size: 1.5rem;
+        }
+
+        .requestServices.active {
+            display: block;
+        }
+
+        #hint {
+            scroll-margin-top:-3rem;
         }
 
         .calendar-slots-col
