@@ -332,6 +332,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             if(!slotBtn.disabled) {
                             const previouslySelected = document.querySelector('.slot.selected');
                             const bookingDateHour = document.getElementById('booking-date-hour');
+                            const calendarWrap = document.querySelector('.calendar-wrap');
 
                             if (previouslySelected) {
                                 previouslySelected.classList.remove('selected');
@@ -344,6 +345,11 @@ document.addEventListener('DOMContentLoaded', function () {
                             bookingDateHour.value = `${dateStr} ${time}`;
                             requestServices.classList.add('active');
                             requestServices.style.opacity = '1';
+                            
+                            if (window.innerWidth > 768) {
+                                calendarWrap.classList.add('shift-left');
+                            }
+                            
                             if (window.innerWidth <= 768) {
                                 calendarHint.scrollIntoView({ behavior: 'smooth' });
                                 }
@@ -391,6 +397,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (bookingForm) {
         document.getElementById('cancel-booking').onclick = () => {
             const previouslySelected = document.querySelector('.slot.selected');
+            const calendarWrap = document.querySelector('.calendar-wrap');
+
             if (previouslySelected) {
                 previouslySelected.classList.remove('selected');
             }
@@ -398,6 +406,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 scheduleSection.scrollIntoView({ behavior: 'smooth' });
             }
             requestServices.style.opacity='0';
+            
+            if (window.innerWidth > 768) {
+                calendarWrap.classList.remove('shift-left');
+            }
+
             setTimeout(() => {
                 requestServices.classList.remove('active');
                 bookingForm.reset();  
@@ -412,6 +425,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const client_email = document.getElementById('client-email').value;
             const booking_note = document.getElementById('booking-note').value;
             const subscribe_email = document.getElementById('subscribe-email').checked;
+            const calendarWrap = document.querySelector('.calendar-wrap');
+            
             if (!selectedDate || !selectedTime) {
                 alert('Моля, изберете дата и час от календара.');
                 return;
@@ -434,6 +449,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 selectedDate = null;
                 selectedTime = null;
                 document.getElementById('booking-date-hour').value = '';
+                if (window.innerWidth > 768) {
+                    calendarWrap.classList.remove('shift-left');
+                }
                 // location.reload();
             }
         };

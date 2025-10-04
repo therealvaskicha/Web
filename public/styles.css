@@ -560,6 +560,10 @@ h4 {
     display:flex;
     justify-content: center;
     flex-wrap:wrap;
+ /* new */
+    position:relative;
+    min-height:42rem;
+    overflow-x:hidden;
 }
 
 .calendar-wrap {
@@ -568,7 +572,17 @@ h4 {
     border-radius: 1rem;
     margin: 0.5rem; 
     box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
+    /*new*/
+    transition: transform 0.3s ease-out;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
+
+.calendar-wrap.shift-left {
+    transform: translateX(calc(-50% - 15rem)); /* Half the width of requestServices */
+}
+
 /* Minimalistic calendar styles */
 
 #user-calendar {
@@ -696,10 +710,20 @@ h4 {
     scroll-margin-top:5rem;
     opacity:0;
     transition: 0.3s;
+    /*new*/
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    transform: translateX(100px);
+    position: absolute;
+    right: -600px;
+    width: 30rem;
 }
+
 .requestServices.active {
     display: block;
     opacity:1;
+    transform: translateX(0);
+    right: 0;
+    margin-right: 15rem /* Half the width of requestServices */
 }
 
 label {
@@ -1379,6 +1403,20 @@ top: 0rem;
             grid-template-columns: 1fr;
         }
 
+        /*new*/
+        .schedule-container {
+        position: static;
+        }
+        
+        .calendar-wrap {
+            position: static;
+            transform: none;
+        }
+
+        .calendar-wrap.shift-left {
+        transform: none;
+        }
+
         .calendar-week-row {
             gap: 0rem;
             display: flex;
@@ -1396,11 +1434,14 @@ top: 0rem;
             font-size:0.9rem;
             padding: 0.625rem 1rem;
         }
+
         .requestServices {
             display:none;
             padding: 1rem;
             max-width: 100%;
             scroll-margin-top:10rem;
+            position: static;
+            transform: none;
         }
 
         .requestServices h2 {
@@ -1409,6 +1450,9 @@ top: 0rem;
 
         .requestServices.active {
             display: block;
+            position: static;
+            right: auto;
+            margin-right: 0;
         }
 
         #hint {
