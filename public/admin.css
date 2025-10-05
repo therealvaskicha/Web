@@ -356,6 +356,27 @@ button:hover {
   border-color: #007bff;
 }
 
+
+/* COMING SOON MSG
+
+.coming-soon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    text-align: center;
+}
+
+.coming-soon h1 {
+    font-size: 2.5rem;
+    color: #666;
+    font-style: italic;
+}
+
+.nav-link.active {
+    color: #4285f4;
+} */
+
 /* Footer */
 .website-signature{
     display:flex;
