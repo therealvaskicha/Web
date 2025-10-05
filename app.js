@@ -144,8 +144,8 @@ app.post('/api/auto-deactivate-past-holidays', (req, res) => {
 
 // Delete holiday
 app.post('/api/delete-holiday', (req, res) => {
+    const sql_delete_holiday_values = [req.body.id];
     const sql_delete_holiday = `DELETE FROM holidays WHERE id = ?;`;
-    const sql_delete_holiday_values = [id];
 
     if (!sql_delete_holiday_values) {
         return res.status(400).json({ error: 'Missing holiday ID' });

@@ -127,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
             renderWeek(weekStart);
         };
 
+        // Add holiday
         const addHolidayBtn = document.querySelector('.add-holiday-btn');
         if (addHolidayBtn && !addHolidayBtn.hasListener) {
             addHolidayBtn.hasListener = true; // Flag to prevent multiple listeners
@@ -134,10 +135,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const holidays = [];
                 const headers = document.querySelectorAll('.calendar-day-header.selected');
                 const slots = document.querySelectorAll('.slot.selected');
-
-                // Get description once before processing
-                const description = prompt('Добавете описание (по желание):');
-                if (description === null) return; // User clicked Cancel
+                // Get current approved bookings
+                const bookingsResponse = await fetch('/api/bookings-approved');
+                const approvedBookings = await bookingsResponse.json();
+                const conflicts = [];
 
                 // Process headers (full days)
                 headers.forEach(header => {
@@ -146,8 +147,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     const date = new Date(weekStart);
                     date.setDate(weekStart.getDate() + dayIndex);
                     const dateStr = date.toISOString().split('T')[0];
-                    
-                    holidays.push({ date: dateStr, time: null });
+
+                    // Check for conflicts on full days
+                    const dayConflicts = approvedBookings.filter(b => b.date === dateStr);
+                    if (dayConflicts.length > 0) {
+                        dayConflicts.forEach(booking => {
+                            conflicts.push(`${booking.date} ${booking.time}`);
+                        });
+                    } else {
+                        holidays.push({ date: dateStr, time: null });
+                    }
                 });
 
                 // Process individual slots
@@ -158,18 +167,37 @@ document.addEventListener('DOMContentLoaded', function() {
                         const date = new Date(weekStart);
                         date.setDate(weekStart.getDate() + dayIndex);
                         const dateStr = date.toISOString().split('T')[0];
+                        const time = slot.textContent;
                         
-                        holidays.push({
-                            date: dateStr,
-                            time: slot.textContent
-                        });
+                        // Check for conflicts on specific time slots
+                        const hasConflict = approvedBookings.some(b => 
+                            b.date === dateStr && b.time === time
+                        );
+                    
+                        if (hasConflict) {
+                            conflicts.push(`${dateStr} ${time}`);
+                        } else {
+                            holidays.push({
+                                date: dateStr,
+                                time: time
+                            });
+                        }
                     }
                 });
+
+                if (conflicts.length > 0) {
+                    alert(`Не може да добавите почивка, защото имате одобрени резервации:\n\n${conflicts.join('\n')}`);
+                    return;
+                }
 
                 if (holidays.length === 0) {
                     alert('Моля, изберете дни или часове за почивка');
                     return;
                 }
+
+                // Get description once before processing
+                const description = prompt('Добавете описание (по желание):');
+                if (description === null) return; // User clicked Cancel
 
                 const response = await fetch('/api/add-holiday', {
                     method: 'POST',
@@ -183,8 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Clear selections
                     headers.forEach(h => h.classList.remove('selected'));
                     slots.forEach(s => s.classList.remove('selected'));
-                    await loadHolidays();
-                    renderWeek();
+                    this.location.reload();
                 } else {
                     alert(result.error || 'Грешка при добавяне на почивка');
                 }
