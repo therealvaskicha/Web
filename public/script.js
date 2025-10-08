@@ -22,7 +22,8 @@ if (mobileMenuIcon && navMenu && header) {
                 navMenu.style.visibility = 'hidden';
             }, 300); // Match CSS transition duration
         }
-    });
+        }
+    );
 
     // Close menu when a nav link is clicked
     document.querySelectorAll(".nav-link").forEach(link => {
@@ -289,9 +290,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Fetch bookings and holidays
             Promise.all([
-                fetch('/api/bookings-approved').then(r => r.json()),
-                fetch('/api/holidays').then(r => r.json())
-            ]).then(([bookings, holidays]) => {
+                fetch('/api/unavailable-slots').then(r => r.json())
+                .catch(error => {
+                    console.error('Error fetching unavailable slots:', error);
+                    return []; // Return empty array on error
+                })
+            ]).then(([unavailable]) => {
+                    // Add error checking
+                    if (!Array.isArray(unavailable)) {
+                        console.error('Invalid data received:', unavailable);
+                        unavailable = []; // Ensure it's an array
+                    }
                 for (let d = 0; d < 7; d++) {
                     const date = new Date(startDate);
                     date.setDate(startDate.getDate() + d);
@@ -299,8 +308,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     const dayCol = weekRow.children[d];
                     const slotsCol = dayCol.querySelector('.calendar-slots-col');
                     times.forEach(time => {
-                        const taken = bookings.some(b => b.date === dateStr && b.time === time);
-                        const isHoliday = holidays.some(h => h.date === dateStr && (h.time === null || h.time === time));
+                        const taken = unavailable.some(u => u.date === dateStr && u.time === time);
+                        const isHoliday = unavailable.some(u => u.date === dateStr && u.status === 'holiday' && (u.time === null || u.time === time));
                         const slotBtn = document.createElement('button');
                         slotBtn.className = 'slot'; // default class
                         slotBtn.textContent = time;
@@ -417,43 +426,129 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 300);
         };
 
-        bookingForm.onsubmit = async function (e) {
-            e.preventDefault();
-            const booking_type = document.getElementById('booking-type').value;
-            const client_name = document.getElementById('client-name').value;
-            const client_phone = document.getElementById('client-phone').value;
-            const client_email = document.getElementById('client-email').value;
-            const booking_note = document.getElementById('booking-note').value;
-            const subscribe_email = document.getElementById('subscribe-email').checked;
-            const calendarWrap = document.querySelector('.calendar-wrap');
-            
-            if (!selectedDate || !selectedTime) {
-                alert('Моля, изберете дата и час от календара.');
-                return;
-            }
-            const res = await fetch('/api/book', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    booking_type, date: selectedDate, time: selectedTime,
-                    client_name, client_phone, client_email, booking_note, subscribe_email
-                })
-            });
-            const result = await res.json();
-            if (result.error) {
-                alert(result.error);
-            } else {
-                alert('Заявката е изпратена за одобрение!');
-                requestServices.classList.remove('active');
-                bookingForm.reset();
-                selectedDate = null;
-                selectedTime = null;
-                document.getElementById('booking-date-hour').value = '';
-                if (window.innerWidth > 768) {
-                    calendarWrap.classList.remove('shift-left');
+        // Replace both form submit handlers with this single one
+        if (bookingForm) {
+            bookingForm.onsubmit = async function(e) {
+                e.preventDefault();
+                
+                // First show captcha
+                let bookingCaptchaText = '';
+                
+                function generateBookingCaptcha() {
+                    const canvas = document.getElementById('booking-captcha');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 150;
+                    canvas.height = 50;
+                    
+                    ctx.fillStyle = '#f0f0f0';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    bookingCaptchaText = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    
+                    ctx.font = '30px Arial';
+                    ctx.fillStyle = '#333';
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'center';
+                    
+                    for (let i = 0; i < 50; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                        ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                        ctx.strokeStyle = '#999';
+                        ctx.stroke();
+                    }
+                    
+                    ctx.fillText(bookingCaptchaText, canvas.width/2, canvas.height/2);
                 }
-                // location.reload();
-            }
-        };
+
+                // Create and show captcha modal
+                const captchaModal = document.createElement('div');
+                captchaModal.className = 'captcha-modal';
+                captchaModal.innerHTML = `
+                    <div class="captcha-content">
+                        <h3>Моля въведете кода</h3>
+                        <canvas id="booking-captcha"></canvas>
+                        <input type="text" id="booking-captcha-input" placeholder="Въведете кода тук">
+                        <div>
+                            <button type="button" id="verify-captcha">Потвърди</button>
+                            <button type="button" id="refresh-booking-captcha">↻</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(captchaModal);
+                
+                generateBookingCaptcha();
+                
+                document.getElementById('refresh-booking-captcha').onclick = generateBookingCaptcha;
+
+                try {
+                    // Wait for captcha verification
+                    await new Promise((resolve, reject) => {
+                        document.getElementById('verify-captcha').onclick = async () => {
+                            const captchaInput = document.getElementById('booking-captcha-input').value;
+                            if (captchaInput.toUpperCase() === bookingCaptchaText) {
+                                captchaModal.remove();
+                                resolve();
+                            } else {
+                                alert('Неправилен код. Опитайте отново.');
+                                generateBookingCaptcha();
+                                document.getElementById('booking-captcha-input').value = '';
+                            }
+                        };
+                    });
+
+                    // After captcha is verified, submit the booking
+                    const booking_type = document.getElementById('booking-type').value;
+                    const client_name = document.getElementById('client-name').value;
+                    const client_phone = document.getElementById('client-phone').value;
+                    const client_email = document.getElementById('client-email').value;
+                    const booking_note = document.getElementById('booking-note').value;
+                    const subscribe_email = document.getElementById('subscribe-email').checked;
+                    const calendarWrap = document.querySelector('.calendar-wrap');
+                    
+                    if (!selectedDate || !selectedTime) {
+                        alert('Моля, изберете дата и час от календара.');
+                        return;
+                    }
+
+                    const res = await fetch('/api/book', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            booking_type, 
+                            date: selectedDate, 
+                            time: selectedTime,
+                            client_name, 
+                            client_phone, 
+                            client_email, 
+                            booking_note, 
+                            subscribe_email
+                        })
+                    });
+
+                    const result = await res.json();
+                    if (result.error) {
+                        alert(result.error);
+                    } else {
+                        alert('Заявката е изпратена за одобрение!');
+                        requestServices.classList.remove('active');
+                        bookingForm.reset();
+                        selectedDate = null;
+                        selectedTime = null;
+                        document.getElementById('booking-date-hour').value = '';
+                        if (window.innerWidth > 768) {
+                            calendarWrap.classList.remove('shift-left');
+                        }
+                        const previouslySelected = document.querySelector('.slot.selected');
+                        if (previouslySelected) {
+                            previouslySelected.classList.remove('selected');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Възникна грешка при изпращането на заявката.');
+                }
+            };
+        }
     }
 });

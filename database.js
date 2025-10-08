@@ -65,6 +65,29 @@ db.serialize(() => {
 db.run (sql_trigger_unique_date_full_day);
 db.run (sql_trigger_unique_date_time);
 
+// Views
+// db.run ('DROP VIEW IF EXISTS v_unavailable_slots;');
+const v_sql_create_unavailable_slots = `
+CREATE VIEW IF NOT EXISTS v_unavailable_slots AS
+SELECT date, time, status 
+    FROM bookings
+    WHERE
+    status = 'approved'
+    AND date >= date('now') 
+    AND (date > date('now') 
+        OR (date = date('now') AND time > strftime('%H:%M', 'now', '-1 hour')))
+UNION ALL
+SELECT date, time, 'holiday' as status
+    FROM holidays
+WHERE is_active = 1`;
+
+db.run(v_sql_create_unavailable_slots, (err) => {
+    if (err) {
+        console.error("Error creating v_available_slots view:", err.message);
+    } else {
+        console.log("v_available_slots view created or already exists.");
+    }
+});
 
 // One-off queries for testing or resetting the database
 

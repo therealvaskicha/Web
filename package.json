@@ -4,6 +4,7 @@
     "@fullcalendar/daygrid": "^6.1.18",
     "@fullcalendar/timegrid": "^6.1.18",
     "express": "^5.1.0",
+    "express-session": "^1.18.2",
     "sqlite3": "^5.1.7"
   }
 }
