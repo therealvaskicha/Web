@@ -1,17 +1,56 @@
 const express = require('express');
 const path = require('path');
 const db = require('./database');
+const session = require('express-session');
+
 const app = express();
 
+// Middleware setup
 app.use(express.static('public'));
-app.use(express.json()); // Parse JSON requests
+app.use(express.json());
+app.use(session({
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }
+}));
+
+// Middleware to check authentication
+function requireAuth(req, res, next) {
+    if (req.session.authenticated) {
+        next();
+    } else {
+        res.redirect('/login.html');
+    }
+}
+
+// Login endpoint
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    if (username === 'admin' && password === 'admin') {
+        req.session.authenticated = true;
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ error: 'Invalid credentials' });
+    }
+});
+
+// Protect admin routes
+app.get('/admin.html', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Protect admin API endpoints - fix the route pattern
+app.use('/api/admin', requireAuth);
+
+//////////////////////
+// EVERYTHING ELSE ///
+//////////////////////
 
 // Serve the main page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });
-
-app.listen(3000, () => console.log('Server at http://localhost:3000'));
 
 // Everything else
 
@@ -70,6 +109,14 @@ app.get('/api/bookings-approved', (req, res) => {
     });
 });
 
+// Get available slots
+app.get('/api/unavailable-slots', (req, res) => {
+    db.all(`SELECT date, time, status FROM v_unavailable_slots`, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
 // Get all historically approved bookings
 app.get('/api/bookings-history-approved', (req, res) => {
     db.all(sql_get_historically_approved_bookings, [], (err, rows) => {
@@ -94,7 +141,7 @@ app.post('/api/book', (req, res) => {
     if (!booking_type || !date || !time || !client_name || !client_phone || !client_email) {
         return res.status(400).json({ error: 'Липсват необходими полета.' });
     }
-
+    
     const sql_book_check_existing = `SELECT * FROM bookings WHERE date = ? AND time = ? AND status = 'approved'`;  
 
     db.get(sql_book_check_existing, [date, time], (err, row) => {
@@ -214,4 +261,9 @@ app.post('/api/add-holiday', async (req, res) => {
                 : error.message 
         });
     }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

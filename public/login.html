@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <form id="login-form">
+            <h2>Вход за администратори</h2>
+            <div class="form-group">
+                <label for="username">Потребителско име</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Парола</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="captcha">Въведете код</label>
+                <div class="captcha-container">
+                    <canvas id="captcha-canvas"></canvas>
+                    <button type="button" id="refresh-captcha">↻</button>
+                </div>
+                <input type="text" id="captcha-input" name="captcha" required>
+            </div>
+            <button type="submit">Вход</button>
+        </form>
+    </div>
+    <script src="login.js"></script>
+</body>
+</html>

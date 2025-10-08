@@ -1,3 +1,38 @@
+/* LOGIN */
+.login-container {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.captcha-container {
+    display: flex;
+    gap: 1rem;
+    margin: 0.5rem 0;
+}
+
+#captcha-canvas {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#refresh-captcha {
+    padding: 0.5rem;
+    border: none;
+    background: #f0f0f0;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+/* START ADMIN CSS */
+
 body { 
     font-family: 'Lora', sans-serif; 
     max-width: 1600px;
@@ -355,27 +390,6 @@ button:hover {
   color: white;
   border-color: #007bff;
 }
-
-
-/* COMING SOON MSG
-
-.coming-soon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 60vh;
-    text-align: center;
-}
-
-.coming-soon h1 {
-    font-size: 2.5rem;
-    color: #666;
-    font-style: italic;
-}
-
-.nav-link.active {
-    color: #4285f4;
-} */
 
 /* Footer */
 .website-signature{
