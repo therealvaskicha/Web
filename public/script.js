@@ -265,10 +265,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function renderWeek(startDate) {
-            calendarEl.innerHTML = '';
+            // calendarEl.innerHTML = '';
+            const newCalendar = document.createElement('div');
+            newCalendar.className = 'calendar-container';
+
             const weekRow = document.createElement('div');
             weekRow.className = 'calendar-week-row';
             const today = new Date();
+
             for (let d = 0; d < 7; d++) {
                 const date = new Date(startDate);
                 date.setDate(startDate.getDate() + d);
@@ -286,7 +290,33 @@ document.addEventListener('DOMContentLoaded', function () {
                 dayCol.appendChild(slotsCol);
                 weekRow.appendChild(dayCol);
             }
-            calendarEl.appendChild(weekRow);
+            newCalendar.appendChild(weekRow);
+
+            // Add transition classes
+            const oldCalendar = calendarEl.firstElementChild;
+            if (oldCalendar) {
+                while (calendarEl.firstChild) {
+                calendarEl.removeChild(calendarEl.firstChild);
+                }
+                // Determine direction based on date comparison
+                const direction = startDate > new Date(oldCalendar.dataset.weekStart) ? 'left' : 'right';
+                
+                oldCalendar.classList.add(`slide-out-${direction}`);
+                newCalendar.classList.add(`slide-in-${direction}`);
+                
+                // Store the week start date for comparison
+                newCalendar.dataset.weekStart = startDate.toISOString();
+                
+                // Animate transition
+                calendarEl.appendChild(newCalendar);
+                
+                // Remove old calendar after animation
+                setTimeout(() => {
+                    oldCalendar.remove();
+                }, 300); // Match this with CSS transition duration
+            } else {
+                calendarEl.appendChild(newCalendar);
+            }
 
             // Fetch bookings and holidays
             Promise.all([

@@ -564,7 +564,7 @@ h4 {
  /* new */
     position:relative;
     min-height:42rem;
-    overflow-x:hidden;
+    overflow:hidden;
     align-items: center;
 }
 
@@ -581,6 +581,49 @@ h4 {
     transform: translateX(-50%);
 }
 
+.calendar-container {
+    position: relative;
+    width: 100%;
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+.slide-out-left {
+    animation: slideOutLeft 0.3s forwards;
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.3s forwards;
+}
+
+.slide-out-right {
+    animation: slideOutRight 0.3s forwards;
+}
+
+.slide-in-right {
+    animation: slideInRight 0.3s forwards;
+}
+
+@keyframes slideOutLeft {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(-4%); opacity: 0; }
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(4%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(4%); opacity: 0; }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(-4%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
 .calendar-wrap.shift-left {
     transform: translateX(calc(-50% - 15rem)); /* Half the width of requestServices */
 }
@@ -589,6 +632,7 @@ h4 {
 
 #user-calendar {
     margin: 1rem auto;
+    min-height: 28rem;
 }
 .calendar-week-row {
     display: flex;
