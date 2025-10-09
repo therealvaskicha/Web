@@ -33,12 +33,23 @@
 
 /* START ADMIN CSS */
 
-body { 
-    font-family: 'Lora', sans-serif; 
-    max-width: 1600px;
-    margin: 20px auto;
-    background-color:#fef6ff;
-    cursor:default;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+html {
+    scroll-behavior:smooth;
+}
+
+body {
+    /* background: #e7e7e1; */
+    background: #f9f9f9;
+    font-family: 'Lora', sans-serif;
+    color: #333;
+    cursor: default;
 }
 
 .container {
@@ -88,13 +99,35 @@ tr:hover {
   color: #222;
 }
 
-h1 {
-  font-size:1.25rem;
-  text-align:center;
-}
-
 a {
     color: black;
+}
+
+section {
+    padding: 1rem;
+    scroll-margin-top: 4rem;
+}
+
+h2 {
+    text-align: center;
+    margin: 0.5rem 0rem;
+    font-size: 1.5rem;
+    font-weight: normal;
+}
+
+h3 {
+    text-align: center;
+    color:#1d1c12;
+    margin-bottom: 0.75rem;
+    font-size:1.25rem;
+    font-weight: normal;
+}
+
+h4 {
+    text-align: center;
+    color:#1d1c12;
+    font-size:1.25rem;
+    font-weight: normal;
 }
 
 /* Header */
@@ -108,14 +141,13 @@ header {
   z-index: 5; /* Ensure content is above other elements */
 }
 
-.admin-layout {
+.navigation-layout {
   display:flex;
   justify-content:center;
 }
 
 .logo {
   height: 4rem;
-  width: 4rem;
   cursor: pointer;
   padding-left: 1rem;
   padding-right: 1rem;
@@ -136,7 +168,7 @@ header {
 
 .nav-link {
     position:relative;
-    font-size:1.3rem;
+    font-size:1.5rem;
     font-family: "Lora", sans-serif;
     text-decoration: none;
 }
@@ -176,7 +208,7 @@ button {
     color: #333;
     border: none;
     border-radius: 0.5rem;
-    /* padding: 0.625rem 2rem; */
+    padding: 0.3rem 0.5rem;
     font-size: 1.1rem;
     font-family: 'Lora', sans-serif;
     font-weight: 300;
@@ -399,4 +431,14 @@ button:hover {
     justify-content: center;
     align-items: center;
     gap: 0.25rem;
+}
+
+/* ///////////////// */
+/* Responsive Design */
+/* ///////////////// */
+
+@media (max-width: 768px) {
+  .nav-link {
+      font-size: 5rem;
+  }
 }

@@ -9,10 +9,12 @@
 <body>
 
 <header>
-  <div class="admin-layout">
+  <div class="navigation-layout">
     <nav class="navbar">
       <ul class="nav-menu">
-        <li class="nav-item"><a class="nav-link hover-underline" href="clients.html">Клиенти</a></li>
+        <li class="nav-item">
+          <a class="nav-link hover-underline" href="clients.html">Клиенти</a>
+        </li>
       </ul>
     </nav>
     <div>
@@ -20,7 +22,9 @@
     </div>
     <nav class="navbar">
       <ul class="nav-menu">
-        <li class="nav-item"><a class="nav-link hover-underline" href="subscriptions.html">Абонаменти</a></li>
+        <li class="nav-item">
+          <a class="nav-link hover-underline" href="subscriptions.html">Абонаменти</a>
+        </li>
       </ul>
     </nav>
   </div>
@@ -31,16 +35,14 @@
     <div class="calendar-grid">
       <div class="pendApprove">
         <div class="pendingBookings">
-          <h1>Нови заявки за тренировки</h1>
+          <h2>Нови заявки за тренировки</h2>
           <div class="table-container">
             <table id="pendingBookingsTable">
               <tr>
-                <th>Тип</th> 
                 <th>Имена</th>
+                <th>Тип</th> 
                 <th>Дата</th>
                 <th>Час</th>
-                <th>Телефон</th>
-                <th>E-mail</th>
                 <th>Действие</th>
               </tr>
             </table>
@@ -49,16 +51,13 @@
         </div>
 
         <div class="approvedBookings">
-          <h1>Предстоящи тренировки</h1>
+          <h2>Предстоящи тренировки</h2>
           <div class="table-container">
             <table id="approvedBookingsTable">
-              <th>Тип</th> 
               <th>Имена</th>
+              <th>Тип</th> 
               <th>Дата</th>
               <th>Час</th>
-              <th>Телефон</th>
-              <th>E-mail</th>
-              <th>Заявена на</th>
               <th>Действие </th>
             </table>
             <div class="pagination" id="approvedPagination"></div>
@@ -66,7 +65,7 @@
         </div>
       </div>
       <div class="manage-holidays">
-        <h1>Календар</h1>
+        <h2>Календар</h2>
         <div class="calendar-wrap">
           <div class="calendar-nav">
             <button class="week-nav-btn" id="prev-week" type="button">Назад</button>
@@ -86,7 +85,7 @@
           </div>
         </div><br>
         <div class="active-holidays">
-          <h1>Предстоящи неработни дни/часове</h1>
+          <h2>Предстоящи неработни дни/часове</h2>
             <div class="table-container">
               <table id="holidaysTable">
                 <th>Дата</th>
@@ -104,18 +103,14 @@
 
 <section class="bookings-history">
   <div class="container">
-    <h1>История</h1>
+    <h2>История на заявки</h2>
     <div class="table-container">
         <table id="bookingHistoryTable">
-          <th>ID</th>
           <th>Тип</th>
           <th>Имена</th>
           <th>Дата</th>
           <th>Час</th>
-          <th>Телефон</th>
-          <th>E-mail</th>
-          <th>E-mail абонат</th>
-          <th>Времеви печат</th>
+          <th>Заявена на</th>
           <th>Статус</th>
         </table>
         <div class="pagination" id="historyPagination"></div>

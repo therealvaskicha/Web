@@ -252,12 +252,10 @@ document.addEventListener('DOMContentLoaded', function() {
         bookings.forEach(booking => {
             const row = table.insertRow();
             row.innerHTML = `
-                <td>${booking.booking_type}</td> 
                 <td>${booking.client_name}</td>
+                <td>${booking.booking_type}</td> 
                 <td>${booking.date}</td>
                 <td>${booking.time}</td>
-                <td>${booking.client_phone || 'N/A'}</td>
-                <td>${booking.client_email || 'N/A'}</td>
                 <td>
                     <button class="approve-btn" data-id="${booking.id}">Одобри</button>
                     <button class="reject-btn" data-id="${booking.id}">Откажи</button>
@@ -273,7 +271,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         table.querySelectorAll('.reject-btn').forEach(btn => {
             btn.onclick = async () => {
-                await updateBooking(btn.dataset.id, 'rejected');
+                if (confirm('Сигурни ли сте, че искате да откажете този час?')) {
+                    await updateBooking(btn.dataset.id, 'rejected');
+                }
             };
         });
     }
@@ -294,13 +294,10 @@ document.addEventListener('DOMContentLoaded', function() {
         bookings.forEach(booking => {
             const row = table.insertRow();
             row.innerHTML = `
-                <td>${booking.booking_type}</td>
                 <td>${booking.client_name}</td>
+                <td>${booking.booking_type}</td>
                 <td>${booking.date}</td>
                 <td>${booking.time}</td>
-                <td>${booking.client_phone || 'N/A'}</td>
-                <td>${booking.client_email || 'N/A'}</td>
-                <td>${booking.timestamp}</td>
                 <td>
                     <button class="cancel-btn" data-id="${booking.id}">Отмени</button>
                 </td>
@@ -310,7 +307,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add event listeners for cancel booking
         table.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.onclick = async () => {
+            if (confirm('Сигурни ли сте, че искате да отмените този час?')) {
                 await updateBooking(btn.dataset.id, 'canceled');
+            }
             };
         });
     }
@@ -360,14 +359,10 @@ document.addEventListener('DOMContentLoaded', function() {
         bookings.forEach(booking => {
             const row = table.insertRow();
             row.innerHTML = `
-                <td>${booking.id}</td>
                 <td>${booking.booking_type}</td>
                 <td>${booking.client_name}</td>
                 <td>${booking.date}</td>
                 <td>${booking.time}</td>
-                <td>${booking.client_phone || 'N/A'}</td>
-                <td>${booking.client_email || 'N/A'}</td>
-                <td>${booking.subscribe_email ? 'Да' : 'Не'}</td>
                 <td>${booking.timestamp}</td>
                 <td>${booking.status}</td>
             `;
