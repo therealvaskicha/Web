@@ -1,3 +1,16 @@
+// Add this at the top of your script.js file
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 // Hamburger menu functionality
 const mobileMenuIcon = document.querySelector('.mobile-menu-icon');
 const navMenu = document.querySelector('.mobile-only .nav-menu');
@@ -257,180 +270,224 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedDate = null;
     let selectedTime = null;
 
-    // Calendar rendering
-    if (calendarEl) {
-        const times = [];
-        for (let h = 8; h <= 20; h++) {
-            times.push((h < 10 ? '0' : '') + h + ':00');
+    // Cache for unavailable slots
+const unavailableSlotsCache = {
+    data: null,
+    lastFetch: null,
+    cacheExpiry: 5 * 60 * 1000 // 5 minutes
+};
+
+// Fetch unavailable slots with caching
+async function getUnavailableSlots() {
+    const now = Date.now();
+    
+    // Return cached data if it's still valid
+    if (unavailableSlotsCache.data && 
+        unavailableSlotsCache.lastFetch && 
+        (now - unavailableSlotsCache.lastFetch) < unavailableSlotsCache.cacheExpiry) {
+        return unavailableSlotsCache.data;
+    }
+
+    try {
+        const response = await fetch('/api/unavailable-slots');
+        const data = await response.json();
+        
+        // Update cache
+        unavailableSlotsCache.data = data;
+        unavailableSlotsCache.lastFetch = now;
+        
+        return data;
+    } catch (error) {
+        console.error('Error fetching unavailable slots:', error);
+        return [];
+    }
+}
+
+// Add at the top of your calendar code
+let isLoading = false;
+
+// Calendar rendering
+if (calendarEl) {
+    const times = [];
+    for (let h = 8; h <= 20; h++) {
+        times.push((h < 10 ? '0' : '') + h + ':00');
+    }
+
+    function renderWeek(startDate) {
+        // calendarEl.innerHTML = '';
+        const newCalendar = document.createElement('div');
+        newCalendar.className = 'calendar-container';
+
+        const weekRow = document.createElement('div');
+        weekRow.className = 'calendar-week-row';
+        const today = new Date();
+
+        for (let d = 0; d < 7; d++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + d);
+            const dateStr = date.toISOString().split('T')[0];
+            const dayName = ['нд','пн','вт','ср','чт','пт','сб'][date.getDay() === 0 ? 0 : date.getDay() - 0];
+            const dayCol = document.createElement('div');
+            dayCol.className = 'calendar-day-col';
+            dayCol.innerHTML = `<div class="calendar-day-header">${dayName} ${dateStr.slice(8,10)}.${dateStr.slice(5,7)}</div>`;
+            // console.log(`Checking date: ${dateStr}, Today: ${today.toISOString().split('T')[0]}`); // Debug log
+            if (date.toISOString().split('T')[0] === today.toISOString().split('T')[0]) {
+            dayCol.classList.add('today-highlight'); 
+            }
+            const slotsCol = document.createElement('div');
+            slotsCol.className = 'calendar-slots-col';
+            dayCol.appendChild(slotsCol);
+            weekRow.appendChild(dayCol);
+        }
+        newCalendar.appendChild(weekRow);
+
+        // Add transition classes
+        const oldCalendar = calendarEl.firstElementChild;
+        if (oldCalendar) {
+            while (calendarEl.firstChild) {
+                calendarEl.removeChild(calendarEl.firstChild);
+            }
+            // Determine direction based on date comparison
+            const direction = startDate > new Date(oldCalendar.dataset.weekStart) ? 'left' : 'right';
+            
+            oldCalendar.classList.add(`slide-out-${direction}`);
+            newCalendar.classList.add(`slide-in-${direction}`);
+            
+            // Store the week start date for comparison
+            newCalendar.dataset.weekStart = startDate.toISOString();
+            
+            // Animate transition
+            calendarEl.appendChild(newCalendar);
+            
+            // Remove old calendar after animation
+            setTimeout(() => {
+                oldCalendar.remove();
+            }, 300); // Match this with CSS transition duration
+        } else {
+            calendarEl.appendChild(newCalendar);
         }
 
-        function renderWeek(startDate) {
-            // calendarEl.innerHTML = '';
-            const newCalendar = document.createElement('div');
-            newCalendar.className = 'calendar-container';
-
-            const weekRow = document.createElement('div');
-            weekRow.className = 'calendar-week-row';
-            const today = new Date();
-
+        // Fetch bookings and holidays
+        return Promise.all([
+            getUnavailableSlots()
+        ]).then(([unavailable]) => {
+                // ... rest of your code
+                // Add error checking
+                if (!Array.isArray(unavailable)) {
+                    console.error('Invalid data received:', unavailable);
+                    unavailable = []; // Ensure it's an array
+                }
             for (let d = 0; d < 7; d++) {
                 const date = new Date(startDate);
                 date.setDate(startDate.getDate() + d);
                 const dateStr = date.toISOString().split('T')[0];
-                const dayName = ['нд','пн','вт','ср','чт','пт','сб'][date.getDay() === 0 ? 0 : date.getDay() - 0];
-                const dayCol = document.createElement('div');
-                dayCol.className = 'calendar-day-col';
-                dayCol.innerHTML = `<div class="calendar-day-header">${dayName} ${dateStr.slice(8,10)}.${dateStr.slice(5,7)}</div>`;
-                // console.log(`Checking date: ${dateStr}, Today: ${today.toISOString().split('T')[0]}`); // Debug log
-                if (date.toISOString().split('T')[0] === today.toISOString().split('T')[0]) {
-                dayCol.classList.add('today-highlight'); 
-                }
-                const slotsCol = document.createElement('div');
-                slotsCol.className = 'calendar-slots-col';
-                dayCol.appendChild(slotsCol);
-                weekRow.appendChild(dayCol);
-            }
-            newCalendar.appendChild(weekRow);
-
-            // Add transition classes
-            const oldCalendar = calendarEl.firstElementChild;
-            if (oldCalendar) {
-                while (calendarEl.firstChild) {
-                calendarEl.removeChild(calendarEl.firstChild);
-                }
-                // Determine direction based on date comparison
-                const direction = startDate > new Date(oldCalendar.dataset.weekStart) ? 'left' : 'right';
-                
-                oldCalendar.classList.add(`slide-out-${direction}`);
-                newCalendar.classList.add(`slide-in-${direction}`);
-                
-                // Store the week start date for comparison
-                newCalendar.dataset.weekStart = startDate.toISOString();
-                
-                // Animate transition
-                calendarEl.appendChild(newCalendar);
-                
-                // Remove old calendar after animation
-                setTimeout(() => {
-                    oldCalendar.remove();
-                }, 300); // Match this with CSS transition duration
-            } else {
-                calendarEl.appendChild(newCalendar);
-            }
-
-            // Fetch bookings and holidays
-            Promise.all([
-                fetch('/api/unavailable-slots').then(r => r.json())
-                .catch(error => {
-                    console.error('Error fetching unavailable slots:', error);
-                    return []; // Return empty array on error
-                })
-            ]).then(([unavailable]) => {
-                    // Add error checking
-                    if (!Array.isArray(unavailable)) {
-                        console.error('Invalid data received:', unavailable);
-                        unavailable = []; // Ensure it's an array
+                const dayCol = weekRow.children[d];
+                const slotsCol = dayCol.querySelector('.calendar-slots-col');
+                times.forEach(time => {
+                    const taken = unavailable.some(u => u.date === dateStr && u.time === time);
+                    const isHoliday = unavailable.some(u => u.date === dateStr && u.status === 'holiday' && (u.time === null || u.time === time));
+                    const slotBtn = document.createElement('button');
+                    slotBtn.className = 'slot'; // default class
+                    slotBtn.textContent = time;
+                    
+                    // Add holiday and taken slots
+                    if (isHoliday) {
+                        slotBtn.disabled = true;
+                        slotBtn.classList.add('holiday');
+                    } else if (taken) {
+                        slotBtn.disabled = true; 
+                        slotBtn.classList.add('taken');
+                        
+                    } else {
+                        slotBtn.classList.add('available');
                     }
-                for (let d = 0; d < 7; d++) {
-                    const date = new Date(startDate);
-                    date.setDate(startDate.getDate() + d);
-                    const dateStr = date.toISOString().split('T')[0];
-                    const dayCol = weekRow.children[d];
-                    const slotsCol = dayCol.querySelector('.calendar-slots-col');
-                    times.forEach(time => {
-                        const taken = unavailable.some(u => u.date === dateStr && u.time === time);
-                        const isHoliday = unavailable.some(u => u.date === dateStr && u.status === 'holiday' && (u.time === null || u.time === time));
-                        const slotBtn = document.createElement('button');
-                        slotBtn.className = 'slot'; // default class
-                        slotBtn.textContent = time;
-                        
-                        // Add holiday and taken slots
-                        if (isHoliday) {
-                            slotBtn.disabled = true;
-                            slotBtn.classList.add('holiday');
-                        } else if (taken) {
-                            slotBtn.disabled = true; 
-                            slotBtn.classList.add('taken');
-                            
-                        } else {
-                            slotBtn.classList.add('available');
-                        }
-                        
-                        // Disable past slots
-                        const slotDateTime = new Date(`${dateStr}T${time}`);
-                        const now = new Date();
-                        const fourHoursLater = new Date(now.getTime() + 4 * 60 * 60 * 1000);
-                        
-                        if (slotDateTime < fourHoursLater) {
-                            slotBtn.disabled = true; 
-                            slotBtn.classList.add('past'); 
-                            slotBtn.classList.remove('available');
-                        }
-                        // Add click event for slots
-                        slotBtn.onclick = () => {
-                            if(!slotBtn.disabled) {
-                            const previouslySelected = document.querySelector('.slot.selected');
-                            const bookingDateHour = document.getElementById('booking-date-hour');
-                            const calendarWrap = document.querySelector('.calendar-wrap');
+                    
+                    // Disable past slots
+                    const slotDateTime = new Date(`${dateStr}T${time}`);
+                    const now = new Date();
+                    const fourHoursLater = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+                    
+                    if (slotDateTime < fourHoursLater) {
+                        slotBtn.disabled = true; 
+                        slotBtn.classList.add('past'); 
+                        slotBtn.classList.remove('available');
+                    }
+                    // Add click event for slots
+                    slotBtn.onclick = () => {
+                        if(!slotBtn.disabled) {
+                        const previouslySelected = document.querySelector('.slot.selected');
+                        const bookingDateHour = document.getElementById('booking-date-hour');
+                        const calendarWrap = document.querySelector('.calendar-wrap');
 
-                            if (previouslySelected) {
-                                previouslySelected.classList.remove('selected');
-                                slotBtn.classList.add('selected');
-                            } else
-
+                        if (previouslySelected) {
+                            previouslySelected.classList.remove('selected');
                             slotBtn.classList.add('selected');
-                            selectedDate = dateStr;
-                            selectedTime = time;
-                            bookingDateHour.value = `${dateStr} ${time}`;
-                            requestServices.classList.add('active');
-                            requestServices.style.opacity = '1';
-                            
-                            if (window.innerWidth > 768) {
-                                calendarWrap.classList.add('shift-left');
-                            }
-                            
-                            if (window.innerWidth <= 768) {
-                                calendarHint.scrollIntoView({ behavior: 'smooth' });
-                                }
-                            }
-                        };
-                        slotsCol.appendChild(slotBtn);
-                    });
-                }
-            });
-        }
+                        } else
 
-        // Week navigation
-        let weekStart = new Date();
-        const now = new Date();
-        const lastSlotToday = new Date(now);
-        lastSlotToday.setHours(20, 0, 0, 0);
-
-        // Check if it's Sunday (0) and past 20:00 - 4 hours
-            if (now.getDay() === 0 && now > new Date(lastSlotToday.getTime() - 4 * 60 * 60 * 1000)) {
-                // Start from next Monday instead
-                weekStart.setDate(weekStart.getDate() + 1);
+                        slotBtn.classList.add('selected');
+                        selectedDate = dateStr;
+                        selectedTime = time;
+                        bookingDateHour.value = `${dateStr} ${time}`;
+                        requestServices.classList.add('active');
+                        requestServices.style.opacity = '1';
+                        
+                        if (window.innerWidth > 768) {
+                            calendarWrap.classList.add('shift-left');
+                        }
+                        
+                        if (window.innerWidth <= 768) {
+                            calendarHint.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        }
+                    };
+                    slotsCol.appendChild(slotBtn);
+                });
             }
-        
-        // Set to Monday of current/next
-        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
-        
-        // Show week function
-        function showWeek(offset) {
-            weekStart.setDate(weekStart.getDate() + offset * 7);
-            renderWeek(weekStart);
-        }
-        renderWeek(weekStart);
-
-        // Add navigation buttons
-        document.getElementById('prev-week').onclick = () => showWeek(-1);
-        document.getElementById('next-week').onclick = () => showWeek(1);
-        document.getElementById('today-week').onclick = () => {
-            weekStart = new Date();
-            weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1)); // Reset to current Monday
-            renderWeek(weekStart);
-        };
+        });
     }
+
+    // Week navigation
+    let weekStart = new Date();
+    const now = new Date();
+    const lastSlotToday = new Date(now);
+    lastSlotToday.setHours(20, 0, 0, 0);
+
+    // Check if it's Sunday (0) and past 20:00 - 4 hours
+        if (now.getDay() === 0 && now > new Date(lastSlotToday.getTime() - 4 * 60 * 60 * 1000)) {
+            // Start from next Monday instead
+            weekStart.setDate(weekStart.getDate() + 1);
+        }
+    
+    // Set to Monday of current/next
+    weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+    
+    // Show week function
+    function showWeek(offset) {
+        if (isLoading) return; // Prevent new calls while loading
+        
+        isLoading = true;
+        weekStart.setDate(weekStart.getDate() + offset * 7);
+        
+        renderWeek(weekStart).finally(() => {
+            isLoading = false;
+        });
+    }
+    renderWeek(weekStart);
+
+    // Create debounced version of renderWeek
+    const debouncedRenderWeek = debounce((startDate) => {
+        renderWeek(startDate);
+    }, 300); // 300ms delay
+
+    // Add navigation buttons
+    document.getElementById('prev-week').onclick = () => showWeek(-1);
+    document.getElementById('next-week').onclick = () => showWeek(1);
+    document.getElementById('today-week').onclick = () => {
+        weekStart = new Date();
+        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1)); // Reset to current Monday
+        renderWeek(weekStart);
+    };
+}
 
     // Booking form logic
     if (bookingForm) {
