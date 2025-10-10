@@ -351,37 +351,88 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
         async function loadHistory() {
-        const response = await fetch('/api/bookings-history');
-        const bookings = await response.json();
-        const table = document.getElementById('bookingHistoryTable');
+            const response = await fetch('/api/bookings-history');
+            const bookings = await response.json();
+            const table = document.getElementById('bookingHistoryTable');
+            const paginationContainer = document.getElementById('historyPagination');
+            
+            // Pagination settings
+            const recordsPerPage = 10;
+            const totalPages = Math.ceil(bookings.length / recordsPerPage);
+            let currentPage = 1;
 
-        while (table.rows.length > 1) table.deleteRow(1);
-        bookings.forEach(booking => {
-            const row = table.insertRow();
-            row.innerHTML = `
-                <td>${booking.booking_type}</td>
-                <td>${booking.client_name}</td>
-                <td>${booking.date}</td>
-                <td>${booking.time}</td>
-                <td>${booking.timestamp}</td>
-                <td>${booking.status}</td>
-            `;
+            function displayBookings(page) {
+                // Clear existing rows
+                while (table.rows.length > 1) table.deleteRow(1);
+                
+                // Calculate start and end indices
+                const start = (page - 1) * recordsPerPage;
+                const end = start + recordsPerPage;
+                const paginatedBookings = bookings.slice(start, end);
 
-            switch (booking.status) {
-                case 'canceled':
-                    row.classList.add('row-canceled');
-                case 'rejected':
-                    row.classList.add('row-rejected');
-                    break;
-                case 'approved':
-                    row.classList.add('row-approved');
-                    break;
-                default:
-                    row.classList.add('row-pending');
+                // Display bookings for current page
+                paginatedBookings.forEach(booking => {
+                    const row = table.insertRow();
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateY(-10px)';
+                    
+                    row.innerHTML = `
+                        <td>${booking.client_name}</td>
+                        <td>${booking.booking_type}</td>
+                        <td>${booking.date}</td>
+                        <td>${booking.time}</td>
+                        <td>${booking.timestamp}</td>
+                        <td>${booking.status}</td>
+                    `;
+
+                    switch (booking.status) {
+                        case 'canceled':
+                            row.classList.add('row-canceled');
+                            break;
+                        case 'rejected':
+                            row.classList.add('row-rejected');
+                            break;
+                        case 'approved':
+                            row.classList.add('row-approved');
+                            break;
+                        default:
+                            row.classList.add('row-pending');
+                    }
+
+                    // Animate row appearance
+                    setTimeout(() => {
+                        row.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
+                        row.style.opacity = '1';
+                        row.style.transform = 'translateY(0)';
+                    }, 50 * table.rows.length);
+                });
+
+                // Update pagination UI
+                updatePagination();
             }
-        });
 
-    }
+            function updatePagination() {
+                paginationContainer.innerHTML = '';
+                
+                // Create pagination buttons
+                for (let i = 1; i <= totalPages; i++) {
+                    const button = document.createElement('button');
+                    button.innerText = i;
+                    button.classList.add('pagination-btn');
+                    if (i === currentPage) {
+                        button.classList.add('active');
+                    }
+                    button.addEventListener('click', () => {
+                        currentPage = i;
+                        displayBookings(currentPage);
+                    });
+                    paginationContainer.appendChild(button);
+                }
+            }
+
+            // Initial display
+            displayBookings(currentPage);
+        }
 
     // Approve or reject booking
     async function updateBooking(id, status) {

@@ -59,44 +59,8 @@ body {
     padding: 0rem 0.938rem;
 }
 
-table { 
-  width: 100%; 
-  border-collapse: collapse; 
-}
-
-th, td { 
-  border: 1px solid #ddd; 
-  padding: 0.25rem; 
-  text-align: center; 
-  font-size:1rem;
-}
-
-th {
-  background-color: #f1f1f1;
-  font-weight: 100;
-}
-
-tr:hover {
-  background-color: #f1f1f1;
-  /* transition:0.1s; */
-}
-
-.row-rejected {
-  background-color: #ffcccc;
-}
-
-.row-canceled {
-  background-color: #c9a0a0;
-}
-
-.row-approved {
-  background: #d6f5d6;
-  color: #222;
-}
-
-.row-pending {
-  background: #ffd699;
-  color: #222;
+.admin-control div {
+    margin-top: 0.5rem;
 }
 
 a {
@@ -130,7 +94,8 @@ h4 {
     font-weight: normal;
 }
 
-/* Header */
+/* HEADER NAV */
+
 header {
   background: #ebc3ff;
   /* overflow:hidden; */
@@ -142,8 +107,14 @@ header {
 }
 
 .navigation-layout {
-  display:flex;
-  justify-content:center;
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-column-gap: 2px;
+  justify-items: center;
+  align-items: center;
+  padding-left:33rem;
+  padding-right:33rem;
+  max-width: 100%;
 }
 
 .logo {
@@ -179,7 +150,7 @@ header {
     left: 50%;
     height: 0.125rem;
     width:0;
-    background: black;
+    background: #18004c66;
     transition: 0.15s;
 }
 
@@ -205,6 +176,54 @@ ul {
     margin: 0;
 }
 
+/* TABLES */
+
+.table-container {
+  margin-top:1rem;
+  box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.1);
+  border-radius:1rem;
+  padding:0.5rem 1rem;
+  overflow-x:auto;
+}
+
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+}
+
+th, td { 
+  border-left: 0.065rem solid #ddd;
+  padding: 0.5rem; 
+  text-align: center; 
+  font-size:1rem;
+}
+
+th {
+  font-weight: 600;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+  /* transition:0.1s; */
+}
+
+.row-rejected {
+  background-color: #ffcccc;
+}
+
+.row-canceled {
+  background-color: #c9a0a0;
+}
+
+.row-approved {
+  background: #d6f5d6;
+  color: #222;
+}
+
+.row-pending {
+  background: #ffd699;
+  color: #222;
+}
 
 button { 
     background: #e7e4bb;
@@ -225,17 +244,6 @@ button:hover {
 }
 
 /* Sections */
-.admin-control {
-  border-style: solid;
-  border-width: 0.125rem;
-  border-color: #ebc3ff;
-}
-
-.bookings-history {
-  border-style: solid;
-  border-width: 0.125rem;
-  border-color: #ebc3ff;
-}
 
 /* Calendar styles */
 .calendar-grid {
@@ -248,6 +256,13 @@ button:hover {
 }
 
 /* Minimalistic calendar styles */
+.calendar-wrap{
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 1rem;
+  margin: 0.3rem; 
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
+}
 
 #user-calendar {
     margin: 1rem auto;
@@ -296,20 +311,23 @@ button:hover {
     display: flex;
     flex-direction: column;
 }
+
 .slot {
+    font-family: 'Lora', sans-serif;
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 0.35rem;
     padding: 0.25rem 0.5rem;
-    margin: 0.1rem 0;
+    margin: 0.1rem 0.05rem;
     cursor: pointer;
     font-size: 1rem;
     transition: background 0.2s;
 }
 
 .slot:hover {
-    opacity:0.6;
+    opacity:0.7;
     transition:0.1s;
 }
+
 .slot.available {
     background: #d6f5d6;
     color: #222;
@@ -406,26 +424,6 @@ button:hover {
     color: #666;
 }
 
-/* Pagination styles */
-.pagination {
-  margin: 20px 0;
-  text-align: center;
-}
-
-.pagination button {
-  padding: 5px 10px;
-  margin: 0 5px;
-  border: 1px solid #ddd;
-  background: white;
-  cursor: pointer;
-}
-
-.pagination button.active {
-  background: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
 /* Footer */
 .website-signature{
     display:flex;
@@ -434,6 +432,55 @@ button:hover {
     justify-content: center;
     align-items: center;
     gap: 0.25rem;
+    margin-bottom:1rem;
+}
+
+.links {
+    position:relative;
+    font-family: "Lora", sans-serif;
+    text-decoration: none;
+    color: #18004c;
+}
+
+.links:hover {
+    color: #18004c99;
+    transition: 0.15s ease-in-out;
+} 
+
+/* Add these styles at the end of your CSS file */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    background: #e7e4bb;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.pagination-btn:hover {
+    background: #f0a500;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.pagination-btn.active {
+    background: #f0a500;
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Add transition styles for table rows */
+#bookingHistoryTable tr {
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 /* ///////////////// */
@@ -441,10 +488,6 @@ button:hover {
 /* ///////////////// */
 
 @media (max-width: 768px) {
-
-header {
-  height: 5rem; /* Adjusted for mobile */
-}
 
 .container {
   padding: 0rem 0.625rem;
@@ -454,11 +497,13 @@ header {
 }
 
 .navigation-layout {
-  margin:1rem;
+  height: 4rem;
+  padding-left:1.5rem;
+  padding-right:1.5rem;
 }
 
 .nav-item {
-    font-size: 1.25rem;
+    font-size: 1rem;
 }
 
 .logo {
@@ -517,10 +562,19 @@ button {
   /* margin-bottom:auto; */
 }
 
-.slot {
-  padding: 0.25rem 0.375rem;
-  border-radius:0.5rem;
-  font-size:0.85rem;
+.calendar-day-header{
+  font-size: 0.85rem;
+  margin: 0.2rem 0;
 }
 
+.slot {
+    padding: 0.25rem 0.375rem;
+    border-radius:0.5rem;
+    font-size:0.7rem;
+}
+
+.pagination-btn {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.9rem;
+}
 }
