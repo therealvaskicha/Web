@@ -10,29 +10,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   </head>
 <body>
-
 <header>
-  <div class="navigation-layout">
-    <nav class="navbar">
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a class="nav-link hover-underline" href="clients.html">Клиенти</a>
-        </li>
-      </ul>
-    </nav>
-    <div>
+  <div class="container">
+    <div class="navigation-layout">
+      <nav class="navbar">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a class="nav-link hover-underline" href="clients.html">Клиенти</a>
+          </li>
+        </ul>
+      </nav>
       <img src="Images/icon-inverted.png" alt="Pilates Reformer Studio by Dilona Logo" class="logo" onclick="location.reload()" ></img>
+      <nav class="navbar">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a class="nav-link hover-underline" href="subscriptions.html">Абонаменти</a>
+          </li>
+        </ul>
+      </nav>
     </div>
-    <nav class="navbar">
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a class="nav-link hover-underline" href="subscriptions.html">Абонаменти</a>
-        </li>
-      </ul>
-    </nav>
   </div>
 </header>
-
+<h1>Админ контрол</h1>
 <section class="admin-control">
   <div class="container">
     <div class="calendar-grid">
@@ -107,6 +106,14 @@
 <section class="bookings-history">
   <div class="container">
     <h2>История на заявки</h2>
+      <div class="history-filters">
+        <div class="by-status">
+          <button class="slot row-pending">Чакащи</button>
+          <button class="slot row-approved">Одобрени</button>
+          <button class="slot row-rejected">Отказани</button>
+          <button class="slot row-canceled">Отменени</button>
+        </div>
+      </div>
     <div class="table-container">
         <table id="bookingHistoryTable">
           <th>Имена</th>
@@ -114,7 +121,6 @@
           <th>Дата</th>
           <th>Час</th>
           <th>Заявена на</th>
-          <th>Статус</th>
         </table>
         <div class="pagination" id="historyPagination"></div>
     </div>

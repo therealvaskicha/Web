@@ -72,6 +72,11 @@ section {
     scroll-margin-top: 4rem;
 }
 
+h1 {
+  text-align:center;
+  margin: 1rem;
+}
+
 h2 {
     text-align: center;
     margin: 0.5rem 0rem;
@@ -97,7 +102,7 @@ h4 {
 /* HEADER NAV */
 
 header {
-  background: #ebc3ff;
+  background: #e7e4bb;
   /* overflow:hidden; */
   position: sticky;
   top: 0;
@@ -107,34 +112,18 @@ header {
 }
 
 .navigation-layout {
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-column-gap: 2px;
-  justify-items: center;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(1rem, 11rem));
   align-items: center;
-  padding-left:33rem;
-  padding-right:33rem;
-  max-width: 100%;
+  justify-items: center;
+  justify-content: center;
 }
 
 .logo {
+  margin:0 5rem;
   height: 4rem;
-  cursor: pointer;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-.navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding:0rem 0.75rem;
-    flex-wrap:wrap;
-}
-
-.nav-menu {
-    display: flex;
-    gap: 1.5rem;
+  width:4rem;
+  cursor: pointer;  
 }
 
 .nav-link {
@@ -150,7 +139,7 @@ header {
     left: 50%;
     height: 0.125rem;
     width:0;
-    background: #18004c66;
+    background: #3d3c33;
     transition: 0.15s;
 }
 
@@ -181,8 +170,8 @@ ul {
 .table-container {
   margin-top:1rem;
   box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.1);
-  border-radius:1rem;
-  padding:0.5rem 1rem;
+  border-radius:0.5rem;
+  padding:0.125rem 0.25rem;
   overflow-x:auto;
 }
 
@@ -198,13 +187,14 @@ th, td {
   font-size:1rem;
 }
 
+th, td:first-child { border-left: none; }
+
 th {
   font-weight: 600;
 }
 
 tr:hover {
   background-color: #f1f1f1;
-  /* transition:0.1s; */
 }
 
 .row-rejected {
@@ -221,7 +211,7 @@ tr:hover {
 }
 
 .row-pending {
-  background: #ffd699;
+  background: #79dd68;
   color: #222;
 }
 
@@ -259,7 +249,7 @@ button:hover {
 .calendar-wrap{
   padding: 1rem;
   background-color: #fff;
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   margin: 0.3rem; 
   box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
 }
@@ -297,13 +287,14 @@ button:hover {
 .calendar-day-header:hover {
     opacity:0.7;
     transition:0.1s;
-    transform: translateY(-0.125rem);
-    transition: transform 0.3s ease-in-out, box-shadow 0.2s;
+    transition: box-shadow 0.2s;
+    cursor:pointer;
 }
 
 .calendar-day-header.selected {
-    background-color: #4285f4;
-    color: white;
+    border: 0.125rem solid #60f000;
+    border-radius:0.5rem;
+    transition: 0.05s;
     cursor: pointer;
 }
 
@@ -360,7 +351,6 @@ button:hover {
   background:transparent;
   color: black;
   border: 0.125rem solid #f0a500;
-  cursor: default;
 }
 
 .slot.selected {
@@ -409,10 +399,20 @@ button:hover {
   padding: 0.3rem 2rem;
 }
 
+/* History filters */
+.history-filters {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
 /* Bookings Dashboard Styles */
 .pendApprove{
   display: flex;
-  flex-direction: column;;
+  flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
 }
@@ -461,20 +461,18 @@ button:hover {
     padding: 0.5rem 1rem;
     background: #e7e4bb;
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 1rem;
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    transition: all 0.1s ease-in-out;
 }
 
 .pagination-btn:hover {
-    background: #f0a500;
-    color: #fff;
     transform: translateY(-2px);
+    /* border-radius:0.5rem; */
 }
 
 .pagination-btn.active {
-    background: #f0a500;
-    color: #fff;
+    background: #e7e4bb;
     font-weight: bold;
 }
 
@@ -489,6 +487,10 @@ button:hover {
 
 @media (max-width: 768px) {
 
+h1 {
+  font-size:1.5rem;
+}
+
 .container {
   padding: 0rem 0.625rem;
   align-items: center;
@@ -496,18 +498,19 @@ button:hover {
   flex-direction: column;
 }
 
-.navigation-layout {
-  height: 4rem;
-  padding-left:1.5rem;
-  padding-right:1.5rem;
-}
-
 .nav-item {
-    font-size: 1rem;
+    font-size: 1.25rem;
 }
 
 .logo {
+    margin:0 2rem;
     height: 3rem;
+    width: 3rem;
+}
+
+/* Navigation */
+.navigation-layout {
+  grid-template-columns: repeat(3, minmax(1rem, 5rem));
 }
 
 /* test */
