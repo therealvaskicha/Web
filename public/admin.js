@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     times.forEach(time => {
                         const taken = bookings.some(b => b.date === dateStr && b.time === time) || 
                                     historicalBookings.some(b => b.date === dateStr && b.time === time);
-                        const pending = pendingBookings.some(d => d.date === dateStr && d.time === time && d.status === 'pending');
+                        const pending = pendingBookings.some(d => d.date === dateStr && d.time === time && d.status === 1);
                         const isHoliday = holidays.some(h => h.date === dateStr && (h.time === null || h.time === time));
                         
                         const slotBtn = document.createElement('button');
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             slotBtn.classList.add('taken');
                             slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.client_phone}\nДата: ${booking.date}`;
                         } else if (pending) {
-                            const booking = pendingBookings.find(d => d.date === dateStr && d.time === time && d.status === 'pending');
+                            const booking = pendingBookings.find(d => d.date === dateStr && d.time === time && d.status === 1);
                             slotBtn.classList.add('pending');
                             slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.client_phone}\nДата: ${booking.date}`;
                         } else {
@@ -266,13 +266,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add event listeners for approve/reject
         table.querySelectorAll('.approve-btn').forEach(btn => {
             btn.onclick = async () => {
-                await updateBooking(btn.dataset.id, 'approved');
+                await updateBooking(btn.dataset.id, 2);
             };
         });
         table.querySelectorAll('.reject-btn').forEach(btn => {
             btn.onclick = async () => {
                 if (confirm('Сигурни ли сте, че искате да откажете този час?')) {
-                    await updateBooking(btn.dataset.id, 'rejected');
+                    await updateBooking(btn.dataset.id, 4);
                 }
             };
         });
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
         table.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.onclick = async () => {
             if (confirm('Сигурни ли сте, че искате да отмените този час?')) {
-                await updateBooking(btn.dataset.id, 'canceled');
+                await updateBooking(btn.dataset.id, 3);
             }
             };
         });
@@ -381,18 +381,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>${booking.booking_type}</td>
                         <td>${booking.date}</td>
                         <td>${booking.time}</td>
-                        <td>${booking.timestamp}</td>
-                        <td>${booking.status}</td>
+                        <td>${booking.stamp_created}</td>
                     `;
 
                     switch (booking.status) {
-                        case 'canceled':
+                        case 3:
                             row.classList.add('row-canceled');
                             break;
-                        case 'rejected':
+                        case 4:
                             row.classList.add('row-rejected');
                             break;
-                        case 'approved':
+                        case 2:
                             row.classList.add('row-approved');
                             break;
                         default:

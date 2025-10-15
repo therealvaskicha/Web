@@ -54,22 +54,22 @@ app.get('/', (req, res) => {
 
 // Everything else
 
-const timestamp = new Date().toISOString();
+const stamp_created = new Date().toISOString();
 
 /////////////////////////////
 ///    SELECT QUERIES     ///
 /////////////////////////////
 
-const sql_get_pending_bookings = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) as timestamp, status FROM bookings WHERE status = 'pending'`;
+const sql_get_pending_bookings = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, status FROM bookings WHERE status = 1`;
 const sql_get_approved_bookings = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, 
-        subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp 
+        subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created 
         FROM bookings 
-        WHERE status = 'approved'
+        WHERE status = 2
          and date >= date('now') 
          and (date > date('now') OR (date = date('now') AND time > strftime('%H:%M', 'now', '-1 hour'))) 
          ORDER BY id desc;`;
-const sql_get_historically_approved_bookings = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp FROM bookings WHERE status = 'approved' and date <= date('now')`;
-const sql_get_bookings_history = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', timestamp) AS timestamp, status FROM bookings ORDER BY id desc`;
+const sql_get_historically_approved_bookings = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created FROM bookings WHERE status = 2 and date <= date('now')`;
+const sql_get_bookings_history = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created, status FROM bookings ORDER BY id desc`;
 
 const sql_get_holidys = `SELECT date, time, description FROM holidays;`;
 const sql_get_upcoming_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
@@ -89,7 +89,7 @@ app.get('/api/pending', (req, res) => {
 // Approve or reject booking
 app.post('/api/approve', (req, res) => {
     const sql_approve_or_reject_booking = `UPDATE bookings SET status = ? WHERE id = ?`;
-    const sql_approve_or_reject_booking_values = ['approved', 'rejected', 'canceled'];
+    const sql_approve_or_reject_booking_values = [2, 4, 3]; // approved, rejected, canceled
 
     const { id, status } = req.body;
     if (!id || !sql_approve_or_reject_booking_values.includes(status)) {
@@ -97,7 +97,7 @@ app.post('/api/approve', (req, res) => {
     }
     db.run(sql_approve_or_reject_booking, [status, id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: `Booking ${status}` });
+        res.json({ message: `Booking ${status === 2 ? 'approved' : status === 4 ? 'rejected' : 'canceled'}.`});
     });
 });
 
@@ -136,21 +136,21 @@ app.get('/api/bookings-history', (req, res) => {
 // Book a slot
 app.post('/api/book', (req, res) => {
     const { booking_type, date, time, client_name, client_phone, client_email, booking_note, subscribe_email } = req.body;
-    const timestamp = new Date().toISOString();
+    const stamp_created = new Date().toISOString();
 
     if (!booking_type || !date || !time || !client_name || !client_phone || !client_email) {
         return res.status(400).json({ error: 'Липсват необходими полета.' });
     }
     
-    const sql_book_check_existing = `SELECT * FROM bookings WHERE date = ? AND time = ? AND status = 'approved'`;  
+    const sql_book_check_existing = `SELECT * FROM bookings WHERE date = ? AND time = ? AND status = 2`;  
 
     db.get(sql_book_check_existing, [date, time], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (row) return res.status(400).json({ error: 'За съжаление този час е зает. Моля изберете свободен час.' });
         
-        const sql_book = `INSERT INTO bookings (booking_type, date, time, client_name, client_phone, client_email, booking_note, subscribe_email, timestamp, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`;
-        const sql_book_values = [booking_type, date, time, client_name, client_phone, client_email, booking_note, subscribe_email, timestamp];
+        const sql_book = `INSERT INTO bookings (booking_type, date, time, client_name, client_phone, client_email, booking_note, subscribe_email, stamp_created, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`;
+        const sql_book_values = [booking_type, date, time, client_name, client_phone, client_email, booking_note, subscribe_email, stamp_created];
         
         db.run(sql_book, sql_book_values,
             function (err) {
