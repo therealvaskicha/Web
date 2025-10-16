@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ диспечер</title>
     <link rel="stylesheet" href="admin.css">
+    <link rel="icon" href="Images/icon-inverted.png" type="image/jpeg">
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -66,26 +67,27 @@
           </div>
         </div>
       </div>
-      <div class="manage-holidays">
+      <div class="adminCalendar">
         <h2>Календар</h2>
-        <div class="calendar-wrap">
-          <div class="calendar-nav">
-            <button class="week-nav-btn" id="prev-week" type="button">Назад</button>
-            <button class="week-nav-btn" id="today-week" type="button">Днес</button>
-            <button class="week-nav-btn" id="next-week" type="button">Напред</button>
+          <div class="calendar-wrap">
+            <div class="calendar-nav">
+              <button class="week-nav-btn" id="prev-week" type="button">Назад</button>
+              <button class="week-nav-btn" id="today-week" type="button">Днес</button>
+              <button class="week-nav-btn" id="next-week" type="button">Напред</button>
+            </div>
+              <div id="admin-calendar">
+            </div>
+            <div class="hint" id="hint">
+              <small>Легенда: </small><br>
+              <button class="slot week">Днес</button>
+              <button class="slot past">Отминал</button>
+              <button class="slot available">Свободен</button>
+              <button class="slot pending">Нова заявка</button>
+              <button class="slot taken">Зает</button>
+              <button class="slot holiday">Неработен</button>
+            </div>
           </div>
-            <div id="admin-calendar">
-          </div>
-          <div class="hint" id="hint">
-            <small>Легенда: </small><br>
-            <button class="slot week">Днес</button>
-            <button class="slot past">Отминал</button>
-            <button class="slot available">Свободен</button>
-            <button class="slot pending">Нова заявка</button>
-            <button class="slot taken">Зает</button>
-            <button class="slot holiday">Неработен</button>
-          </div>
-        </div><br>
+        </div>
         <div class="active-holidays">
           <h2>Предстоящи неработни дни/часове</h2>
             <div class="table-container">
@@ -96,9 +98,10 @@
                 <th>Действие</th>
               </table>
           </div>
-          <button class="add-holiday-btn">Добави почивка</button>
+          <div class="hint">
+            <button class="add-holiday-btn">Добави почивка</button>
+          </div>
         </div>
-      </div>
     </div>
   </div>
 </section>
@@ -106,14 +109,6 @@
 <section class="bookings-history">
   <div class="container">
     <h2>История на заявки</h2>
-      <div class="history-filters">
-        <div class="by-status">
-          <button class="slot row-pending">Чакащи</button>
-          <button class="slot row-approved">Одобрени</button>
-          <button class="slot row-rejected">Отказани</button>
-          <button class="slot row-canceled">Отменени</button>
-        </div>
-      </div>
     <div class="table-container">
         <table id="bookingHistoryTable">
           <th>Имена</th>
@@ -124,13 +119,21 @@
         </table>
         <div class="pagination" id="historyPagination"></div>
     </div>
+    <div class="history-filters">
+      <div class="by-status">
+        <button class="slot row-pending">Чакащи</button>
+        <button class="slot row-approved">Одобрени</button>
+        <button class="slot row-rejected">Отказани</button>
+        <button class="slot row-canceled">Отменени</button>
+      </div>
+    </div>
   </div>
 </section>
 
 <footer>
   <div class="container">
     <div class="website-signature">
-      <p>Website by <a href="https://github.com/therealvaskicha/" class="links hover-underline">VA</a></p><i class="fab fa-github"></i>
+      <p>Website by <a href="https://www.vasilapostolov.tech/" class="links hover-underline">VA</a></p>
     </div>
   </div>
 </footer>
