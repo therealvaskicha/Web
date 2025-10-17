@@ -103,85 +103,55 @@ db.serialize(() => {
     db.run(sql_create_bookings_table, (err) => {
         if (err) {
             console.error("Error creating bookings table:", err.message);
-        } else {
-            console.log("Bookings table created or already exists.");
         }
     });
 
     // Holidays table
     db.run(sql_create_holidays_table, (err) => {
-        (err) => {
         if (err) {
             console.error("Error creating bookings table:", err.message);
-        } else {
-            console.log("Bookings table created or already exists.");
-        }
         }
     });
 
     // Client table
     db.run(sql_create_client_table, (err) => {
-        (err) => {
         if (err) {
             console.error("Error creating client table:", err.message);
-        } else {
-            console.log("Client table created or already exists.");
-        }
         }
     });
 
     // Mailing list table
     db.run(sql_create_mailing_list_table, (err) => {
-        (err) => {
         if (err) {
             console.error("Error creating mailing_list table:", err.message);
-        } else {
-            console.log("mailing_list table created or already exists.");
-        }
         }
     });
 
     // Client card table
         db.run(sql_create_client_card_table, (err) => {
         (err) => {
-        if (err) {
             console.error("Error creating client_card table:", err.message);
-        } else {
-            console.log("client_card table created or already exists.");
-        }
         }
     });
 
     // Services table
         db.run(sql_create_services_table, (err) => {
         (err) => {
-        if (err) {
             console.error("Error creating services table:", err.message);
-        } else {
-            console.log("Services table created or already exists.");
-        }
         }
     });
 
     // Subscriptions table
         db.run(sql_create_subscriptions_table, (err) => {
         (err) => {
-        if (err) {
             console.error("Error creating subscriptions table:", err.message);
-        } else {
-            console.log("Subscriptions table created or already exists.");
-        }
         }
     });
 
     // Enum table
     db.run(sql_create_enum_table, (err) => {
-        (err) => {
         if (err) {
             console.error("Error creating enum table:", err.message);
-        } else {
-            console.log("Enum table created or already exists.");
-        }
         }
     });
 
@@ -218,17 +188,13 @@ SELECT card_id, credits_balance, expiration_date
 // create the views
 db.run(v_sql_create_unavailable_slots, (err) => {
     if (err) {
-        console.error("Error creating v_available_slots view:", err.message);
-    } else {
-        console.log("v_available_slots view created or already exists.");
+        console.error("Error creating v_available_slots view:", err.message); 
     }
 });
 
 db.run(v_sql_create_check_credits, (err) => {
     if (err) {
         console.error("Error creating v_check_credits view:", err.message);
-    } else {
-        console.log("v_check_credits view created or already exists.");
     }
 });
 
