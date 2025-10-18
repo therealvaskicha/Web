@@ -186,20 +186,20 @@ tr:hover {
   background-color: #f1f1f1;
 }
 
-.row-rejected {
+.slot.row-rejected {
   background-color: #ffcccc;
 }
 
-.row-canceled {
+.slot.row-canceled {
   background-color: #c9a0a0;
 }
 
-.row-approved {
+.slot.row-approved {
   background: #d6f5d6;
   color: #222;
 }
 
-.row-pending {
+.slot.row-pending {
   background: #79dd68;
   color: #222;
 }
