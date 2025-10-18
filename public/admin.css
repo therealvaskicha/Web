@@ -63,12 +63,13 @@ section {
 h1 {
   text-align:center;
   margin: 1rem;
+  font-size:2rem;
 }
 
 h2 {
     text-align: center;
-    margin: 0.5rem 0rem;
-    font-size: 1.5rem;
+    margin: 1rem 0rem;
+    font-size: 1.375rem;
     font-weight: normal;
 }
 
@@ -173,13 +174,17 @@ th, td {
   border-left: 0.065rem solid #ddd;
   padding: 0.5rem; 
   text-align: center; 
-  font-size:1rem;
+}
+
+td {
+  font-size: 0.9rem;
 }
 
 th, td:first-child { border-left: none; }
 
 th {
   font-weight: 600;
+  font-size:1rem;
 }
 
 tr:hover {
@@ -220,6 +225,10 @@ button {
 button:hover { 
   background: #f0a500;
   color: #fff;
+}
+
+.approve-btn, .reject-btn, .remove-btn, .add-holiday-btn, .cancel-btn {
+  font-size: 0.9rem;
 }
 
 /* GRID */
@@ -384,7 +393,7 @@ button:hover {
     border: none;
     border-radius: 1.5rem;
     padding: 0.625rem 1rem;
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-family: 'Lora', sans-serif;
     font-weight: 600;
     cursor: pointer;

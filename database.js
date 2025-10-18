@@ -82,17 +82,20 @@ const sql_create_enum_table = `CREATE TABLE IF NOT EXISTS enum (
 // 1. Only one full-day holiday per date (time IS NULL)
 // 2. Only one time-specific holiday per date and time
 
+db.run (`DROP TRIGGER IF EXISTS unique_date_full_day;`);
+db.run (`DROP TRIGGER IF EXISTS unique_date_time;`);
+
 const sql_trigger_unique_date_full_day = `CREATE TRIGGER IF NOT EXISTS unique_date_full_day
     BEFORE INSERT ON holidays
     WHEN EXISTS (SELECT 1 FROM holidays WHERE date = NEW.date AND time IS NULL)
     BEGIN
-      SELECT RAISE(ABORT, 'unique_date_full_day');
+      SELECT RAISE(ABORT, "Вече има зададена почивка за този ден.");
     END;`;
 const sql_trigger_unique_date_time = `CREATE TRIGGER IF NOT EXISTS unique_date_time
     BEFORE INSERT ON holidays
     WHEN EXISTS (SELECT 1 FROM holidays WHERE date = NEW.date AND time = NEW.time)
     BEGIN
-      SELECT RAISE(ABORT, 'unique_date_time');
+      SELECT RAISE(ABORT, "Вече има зададена почивка за този часови интервал.");
     END;`;
 
 

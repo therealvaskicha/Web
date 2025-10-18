@@ -135,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const holidays = [];
                 const headers = document.querySelectorAll('.calendar-day-header.selected');
                 const slots = document.querySelectorAll('.slot.selected');
+                const now = new Date();
                 // Get current approved bookings
                 const bookingsResponse = await fetch('/api/bookings-approved');
                 const approvedBookings = await bookingsResponse.json();
@@ -148,11 +149,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     date.setDate(weekStart.getDate() + dayIndex);
                     const dateStr = date.toISOString().split('T')[0];
 
+                    // Check if date is in the past
+                    if (date < new Date(now.setHours(0, 0, 0, 0))) {
+                        conflicts.push(`Отминала дата: ${dateStr}`);
+                        return;
+                    }
+
                     // Check for conflicts on full days
                     const dayConflicts = approvedBookings.filter(b => b.date === dateStr);
                     if (dayConflicts.length > 0) {
                         dayConflicts.forEach(booking => {
-                            conflicts.push(`${booking.date} ${booking.time}`);
+                            conflicts.push(`Предстояща тренировка: ${booking.date} ${booking.time}`);
                         });
                     } else {
                         holidays.push({ date: dateStr, time: null });
@@ -168,6 +175,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         date.setDate(weekStart.getDate() + dayIndex);
                         const dateStr = date.toISOString().split('T')[0];
                         const time = slot.textContent;
+
+                        // Check if date and time is in the past
+                        const slotDateTime = new Date(`${dateStr}T${time}`);
+                        if (slotDateTime < now) {
+                            conflicts.push(`Отминала дата: ${dateStr} ${time}`);
+                            return;
+                        }
                         
                         // Check for conflicts on specific time slots
                         const hasConflict = approvedBookings.some(b => 
@@ -175,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         );
                     
                         if (hasConflict) {
-                            conflicts.push(`${dateStr} ${time}`);
+                            conflicts.push(`Предстояща тренировка: ${dateStr} ${time}`);
                         } else {
                             holidays.push({
                                 date: dateStr,
@@ -186,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (conflicts.length > 0) {
-                    alert(`Не може да добавите почивка, защото имате одобрени резервации:\n\n${conflicts.join('\n')}`);
+                    alert(`Не може да добавите почивка поради следните причини:\n\n${conflicts.join('\n')}`);
                     return;
                 }
 

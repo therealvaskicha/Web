@@ -99,23 +99,13 @@ Array.from(priceBtns).forEach(button => {
     });
 });
 
-    // Add event listener to price-card-btn elements
+// Add event listener to price-card-btn elements
 document.querySelectorAll('.price-card-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
     const dataType = btn.dataset.type;
     const bookingTypeSelect = document.getElementById('booking-type');
     bookingTypeSelect.value = dataType;
     bookingTypeSelect.dispatchEvent(new Event('change')); // Trigger change event for hints
-
-    // if (dataType === 'Re4Me' || dataType === 'Reform 8') {
-    //   const numBookingsInput = document.getElementById('num-bookings');
-    //   numBookingsInput.value = dataType === 'Re4Me' ? 4 : 8;
-    //   // Enable multiple selections in calendar
-    //   calendarEl.classList.add('multiple-selections');
-    // } else {
-    //   numBookingsInput.value = 1;
-    //   calendarEl.classList.remove('multiple-selections');
-    // }
   });
 });
 
@@ -262,15 +252,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Calendar config
-    const calendarEl = document.getElementById('user-calendar');
-    const requestServices = document.getElementById('requestServices');
-    const calendarHint = document.getElementById('hint');
-    const bookingForm = document.getElementById('booking-form');
-    let selectedDate = null;
-    let selectedTime = null;
+// Calendar config
+const calendarEl = document.getElementById('user-calendar');
+const requestServices = document.getElementById('requestServices');
+const calendarHint = document.getElementById('hint');
+const bookingForm = document.getElementById('booking-form');
+let selectedDate = null;
+let selectedTime = null;
 
-    // Cache for unavailable slots
+// Cache for unavailable slots
 const unavailableSlotsCache = {
     data: null,
     lastFetch: null,
