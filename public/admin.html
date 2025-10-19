@@ -38,7 +38,7 @@
     <div class="calendar-grid">
       <div class="pendApprove">
         <div class="pendingBookings">
-          <h2>Нови заявки за тренировки</h2>
+          <h2>Нови заявки</h2>
           <div class="table-container">
             <table id="pendingBookingsTable">
               <tr>
@@ -46,6 +46,7 @@
                 <th>Тип</th> 
                 <th>Дата</th>
                 <th>Час</th>
+                <th>Бележка</th>
                 <th>Действие</th>
               </tr>
             </table>
@@ -61,9 +62,53 @@
               <th>Тип</th> 
               <th>Дата</th>
               <th>Час</th>
+              <th>Бележка</th>
               <th>Действие </th>
             </table>
             <div class="pagination" id="approvedPagination"></div>
+          </div>
+        </div>
+        <div class="manualBookings">
+          <div class="hint">
+            <button class="add-booking-btn">Добави тренировка</button>
+          </div>
+          <div class="modal-overlay" id="modalOverlay"></div>
+          <div class="modal" id="bookingModal">
+            <div class="requestServices" id="requestServices">
+              <form id="booking-form">
+                <label for="booking-type">Вид тренировка*</label>
+                <select id="booking-type" name="booking_type" required>
+                  <option value="">Избери ...</option>
+                  <option value="Solo">Solo</option>
+                  <option value="Private">Private</option>
+                  <option value="Re4Me">Re4Me</option>
+                  <option value="Six">Six</option>
+                  <option value="Reform 8">Reform 8</option>
+                </select>
+                <small class="booking-hint"></small>
+                <label for="client-forename">Име*</label>
+                <input type="text" id="client-forename" name="client_forename" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
+                <label for="client-lastname">Фамилия*</label>
+                <input type="text" id="client-lastname" name="client_lastname" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
+                <label for="client-phone">Телефон*</label>
+                <input type="text" id="client-phone" name="client_phone" maxlength="20" pattern="\d+" required>
+                <label for="booking-date-hour">Дата и час*</label>
+                <input type="text" id="booking-date-hour" name="booking_date_hour" readonly>
+                <label for="client-email">E-mail*</label>
+                <input type="email" id="client-email" name="client_email" maxlength="50" required>
+                <small class="booking-hint">*Задължителни полета.</small>
+                <label for="booking-note">Бележка</label>
+                <input type="text" id="booking-note" name="booking-note" maxlength="200" placeholder='"първа тренировка", "бременност" и др.'>
+                <label>
+                  <input type="checkbox" id="subscribe-email" name="subscribe_email">
+                  Абониране за имейл известия
+                </label>
+                <div class="form-buttons" style="align-items:center;">
+                  <button type="submit" id="confirm-booking">Потвърди</button>
+                  <button type="button" id="cancel-booking">Откажи</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -89,12 +134,12 @@
           </div>
         </div>
         <div class="active-holidays">
-          <h2>Предстоящи неработни дни/часове</h2>
+          <h2>Планирани почивни дни</h2>
             <div class="table-container">
               <table id="holidaysTable">
                 <th>Дата</th>
                 <th>Час</th>
-                <th>Описание</th>
+                <th>Бележка</th>
                 <th>Действие</th>
               </table>
           </div>
