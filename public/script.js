@@ -576,7 +576,8 @@ if (calendarEl) {
 
                     // After captcha is verified, submit the booking
                     const booking_type = document.getElementById('booking-type').value;
-                    const client_name = document.getElementById('client-name').value;
+                    const client_forename = document.getElementById('client-forename').value;
+                    const client_lastname = document.getElementById('client-lastname').value;
                     const client_phone = document.getElementById('client-phone').value;
                     const client_email = document.getElementById('client-email').value;
                     const booking_note = document.getElementById('booking-note').value;
@@ -595,7 +596,8 @@ if (calendarEl) {
                             booking_type, 
                             date: selectedDate, 
                             time: selectedTime,
-                            client_name, 
+                            client_forename, 
+                            client_lastname, 
                             client_phone, 
                             client_email, 
                             booking_note, 

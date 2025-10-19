@@ -227,14 +227,14 @@ button:hover {
   color: #fff;
 }
 
-.approve-btn, .reject-btn, .remove-btn, .add-holiday-btn, .cancel-btn {
+.approve-btn, .reject-btn, .remove-btn, .add-holiday-btn, .cancel-btn, .add-booking-btn {
   font-size: 0.9rem;
 }
 
 /* GRID */
 .calendar-grid {
     display:grid;
-    grid-template-columns: 1.5fr 2fr 1.5fr;
+    grid-template-columns: 2fr 2fr 1fr;
     gap: 2rem;
 }
 
@@ -259,6 +259,101 @@ button:hover {
   grid-area: 1 / 3 / 1 / last-line;
 }
 
+/* Manual entry form */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.7);
+    z-index: 1000;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transition: all 0.3s ease;
+    max-width: 90%;
+    width: 500px;
+}
+
+.modal.active {
+    display: block;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+.requestServices {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+label {
+    display: block;
+    margin-top: 0.5rem;
+    font-weight: bold;
+}
+
+.requestServices input,
+.requestServices select {
+    width: 100%;
+    padding: 0.33rem;
+    margin-top: 0.25rem;
+    border-radius: 0.25rem;
+    border: 1px solid #e7e4bb;
+    font-size: 1rem;
+}
+
+.booking-hint {
+  color: #666;
+  font-size: 0.9em;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+#subscribe-email {
+    width:5%;
+}
+
+.form-buttons {
+    display:flex;
+    gap:1rem;
+    justify-content: center;
+}
+
+.requestServices button {
+    margin-top: 1rem;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.25rem;
+    border: none;
+    background: #e7e4bb;
+    color: #333;
+    font-size: 1rem;
+    cursor: pointer;
+}
+.requestServices button:hover {
+    background: #f0a500;
+    color: #fff;
+}
+
 /* Minimalistic calendar styles */
 .calendar-wrap{
   padding: 1rem;
@@ -269,6 +364,7 @@ button:hover {
 
 #admin-calendar {
   overflow:auto;
+  min-height:27rem;
 }
 
 #user-calendar {
@@ -564,6 +660,10 @@ button {
 }
 
 /* Calendar adjustments for mobile */
+#admin-calendar {
+  min-height:23rem;
+}
+
 .calendar-grid {
     display: flex;
     justify-content: space-around;
@@ -605,7 +705,7 @@ button {
 }
 
 .calendar-day-header{
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   margin: 0.2rem 0;
 }
 

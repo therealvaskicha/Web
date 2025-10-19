@@ -324,9 +324,10 @@
             <option value="Reform 8">Reform 8</option>
           </select>
           <small class="booking-hint"></small>
-          <!-- трябва да разделим име и фамилия на два инпута -->
-          <label for="client-name">Име и фамилия*</label>
-          <input type="text" id="client-name" name="client_name" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
+          <label for="client-forename">Име*</label>
+          <input type="text" id="client-forename" name="client_forename" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
+          <label for="client-lastname">Фамилия*</label>
+          <input type="text" id="client-lastname" name="client_lastname" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
           <label for="client-phone">Телефон*</label>
           <input type="text" id="client-phone" name="client_phone" maxlength="20" pattern="\d+" required>
           <label for="booking-date-hour">Дата и час*</label>

@@ -4,6 +4,32 @@ document.addEventListener('DOMContentLoaded', function() {
     loadHistory();
     loadHolidays();
 
+    // Add bookings manually via btn
+    const addBookingBtn = document.querySelector('.add-booking-btn');
+    const cancelBookingBtn = document.querySelector('#cancel-booking');
+    const bookingModal = document.querySelector('#bookingModal');
+    const modalOverlay = document.querySelector('#modalOverlay');
+    
+        addBookingBtn.addEventListener('click', () => {
+        bookingModal.classList.add('active');
+        modalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    });
+    
+    const hideModal = () => {
+        bookingModal.classList.remove('active');
+        modalOverlay.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+    };
+    
+    cancelBookingBtn.addEventListener('click', hideModal);
+    modalOverlay.addEventListener('click', hideModal);
+    
+    // Close modal when clicking outside the form
+    bookingModal.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
     // Holidays calendar setup
     const calendarEl = document.getElementById('admin-calendar');
 
@@ -76,10 +102,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         } else if (taken) {
                             const booking = bookings.find(b => b.date === dateStr && b.time === time) ||
                                             historicalBookings.find(b => b.date === dateStr && b.time === time);
+                            booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
                             slotBtn.classList.add('taken');
                             slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.client_phone}\nДата: ${booking.date}`;
                         } else if (pending) {
                             const booking = pendingBookings.find(d => d.date === dateStr && d.time === time && d.status === 1);
+                            booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
                             slotBtn.classList.add('pending');
                             slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.client_phone}\nДата: ${booking.date}`;
                         } else {
@@ -257,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const table = document.getElementById('pendingBookingsTable');
         const container = table.parentElement;
 
-        if (bookings.length === 0) {
+        if (bookings.length < 1) {
         container.innerHTML = '<p class="no-data-message">Няма нови заявки</p>';
         return;
         }
@@ -265,11 +293,14 @@ document.addEventListener('DOMContentLoaded', function() {
         while (table.rows.length > 1) table.deleteRow(1);
         bookings.forEach(booking => {
             const row = table.insertRow();
+            // concatenate forename and lastname
+            booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
             row.innerHTML = `
                 <td>${booking.client_name}</td>
                 <td>${booking.booking_type}</td> 
                 <td>${booking.date}</td>
                 <td>${booking.time}</td>
+                <td>${booking.booking_note || '-'}</td>
                 <td>
                     <button class="approve-btn" data-id="${booking.id}">Одобри</button>
                     <button class="reject-btn" data-id="${booking.id}">Откажи</button>
@@ -299,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const table = document.getElementById('approvedBookingsTable');
         const container = table.parentElement;
 
-        if (bookings.length === 0) {
+        if (bookings.length < 1) {
         container.innerHTML = '<p class="no-data-message">Няма предстоящи тренировки.</p>';
         return;
         }
@@ -307,11 +338,13 @@ document.addEventListener('DOMContentLoaded', function() {
         while (table.rows.length > 1) table.deleteRow(1);
         bookings.forEach(booking => {
             const row = table.insertRow();
+            booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
             row.innerHTML = `
                 <td>${booking.client_name}</td>
                 <td>${booking.booking_type}</td>
                 <td>${booking.date}</td>
                 <td>${booking.time}</td>
+                <td>${booking.booking_note || '-'}</td>
                 <td>
                     <button class="cancel-btn" data-id="${booking.id}">Отмени</button>
                 </td>
@@ -335,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const table = document.getElementById('holidaysTable');
         const container = table.parentElement;
         
-        if (holidays.length === 0) {
+        if (holidays.length < 1) {
         container.innerHTML = '<p class="no-data-message">Няма предстоящи почивни дни/часове</p>';
         return;
         }

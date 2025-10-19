@@ -60,16 +60,16 @@ const stamp_created = new Date().toISOString();
 ///    SELECT QUERIES     ///
 /////////////////////////////
 
-const sql_get_pending_bookings = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, status FROM bookings WHERE status = 1`;
-const sql_get_approved_bookings = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, 
+const sql_get_pending_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, status FROM bookings WHERE status = 1`;
+const sql_get_approved_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, 
         subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created 
         FROM bookings 
         WHERE status = 2
          and date >= date('now') 
          and (date > date('now') OR (date = date('now') AND time > strftime('%H:%M', 'now', '-1 hour'))) 
          ORDER BY id desc;`;
-const sql_get_historically_approved_bookings = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created FROM bookings WHERE status = 2 and date <= date('now')`;
-const sql_get_bookings_history = `SELECT id, booking_type, date, time, client_name, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created, status FROM bookings ORDER BY id desc`;
+const sql_get_historically_approved_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created FROM bookings WHERE status = 2 and date <= date('now')`;
+const sql_get_bookings_history = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created, status FROM bookings ORDER BY id desc`;
 
 const sql_get_holidys = `SELECT date, time, description FROM holidays;`;
 const sql_get_upcoming_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
@@ -135,10 +135,9 @@ app.get('/api/bookings-history', (req, res) => {
 
 // Book a slot
 app.post('/api/book', (req, res) => {
-    const { booking_type, date, time, client_name, client_phone, client_email, booking_note, subscribe_email } = req.body;
-    const stamp_created = new Date().toISOString();
+    const { booking_type, date, time, client_forename, client_lastname, client_phone, client_email, booking_note, subscribe_email } = req.body;
 
-    if (!booking_type || !date || !time || !client_name || !client_phone || !client_email) {
+    if (!booking_type || !date || !time || !client_forename || !client_lastname || !client_phone || !client_email) {
         return res.status(400).json({ error: 'Липсват необходими полета.' });
     }
     
@@ -148,9 +147,9 @@ app.post('/api/book', (req, res) => {
         if (err) return res.status(500).json({ error: err.message });
         if (row) return res.status(400).json({ error: 'За съжаление този час е зает. Моля изберете свободен час.' });
         
-        const sql_book = `INSERT INTO bookings (booking_type, date, time, client_name, client_phone, client_email, booking_note, subscribe_email, stamp_created, status)
+        const sql_book = `INSERT INTO bookings (booking_type, date, time, client_forename, client_lastname, client_phone, client_email, booking_note, subscribe_email, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`;
-        const sql_book_values = [booking_type, date, time, client_name, client_phone, client_email, booking_note, subscribe_email, stamp_created];
+        const sql_book_values = [booking_type, date, time, client_forename, client_lastname, client_phone, client_email, booking_note, subscribe_email];
         
         db.run(sql_book, sql_book_values,
             function (err) {

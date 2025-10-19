@@ -754,7 +754,6 @@ h4 {
     scroll-margin-top:5rem;
     opacity:0;
     transition: 0.3s;
-    /*new*/
     transition: opacity 0.3s ease-out, transform 0.3s ease-out;
     transform: translateX(100px);
     position: absolute;
