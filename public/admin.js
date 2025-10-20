@@ -422,7 +422,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const row = table.insertRow();
                     row.style.opacity = '0';
                     row.style.transform = 'translateY(-10px)';
-                    
+                    booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
                     row.innerHTML = `
                         <td>${booking.client_name}</td>
                         <td>${booking.booking_type}</td>
