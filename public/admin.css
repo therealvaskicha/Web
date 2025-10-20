@@ -647,7 +647,7 @@ section {
 
 /* Navigation */
 .navigation-layout {
-  grid-template-columns: repeat(3, minmax(1rem, 5rem));
+  grid-template-columns: 1.5fr 1fr 1.5fr;
 }
 
 .pendingBookings {
