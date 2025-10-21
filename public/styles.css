@@ -71,6 +71,12 @@ h4 {
     font-weight: normal;
 }
 
+h5 {
+    text-align:center;
+    font-size:1rem;
+    font-weight:normal;
+}
+
 /* Gradient between sections */
 
 .spacing-between-sections-down {
@@ -741,6 +747,10 @@ h4 {
 }
 
 /* Booking form styles */
+.switch-card {
+    display:none;
+}
+
 .requestServices {
     display: block;
     background: #fff;
@@ -801,7 +811,7 @@ label {
 }
 
 .requestServices button {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     padding: 0.5rem 1.5rem;
     border-radius: 0.25rem;
     border: none;

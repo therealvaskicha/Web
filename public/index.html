@@ -314,34 +314,44 @@
       <h2>Твоята тренировка</h2>
       <div class="container">
         <form id="booking-form">
-          <label for="booking-type">Вид тренировка*</label>
-          <select id="booking-type" name="booking_type" required>
-            <option value="">Вашият избор...</option>
-            <option value="Solo">Solo</option>
-            <option value="Private">Private</option>
-            <option value="Re4Me">Re4Me</option>
-            <option value="Six">Six</option>
-            <option value="Reform 8">Reform 8</option>
-          </select>
-          <small class="booking-hint"></small>
-          <label for="client-forename">Име*</label>
-          <input type="text" id="client-forename" name="client_forename" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
-          <label for="client-lastname">Фамилия*</label>
-          <input type="text" id="client-lastname" name="client_lastname" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
-          <label for="client-phone">Телефон*</label>
-          <input type="text" id="client-phone" name="client_phone" maxlength="20" pattern="\d+" required>
-          <label for="booking-date-hour">Дата и час*</label>
-          <input type="text" id="booking-date-hour" name="booking_date_hour" readonly>
-          <label for="client-email">E-mail*</label>
-          <input type="email" id="client-email" name="client_email" maxlength="50" required>
-          <small class="booking-hint">*Задължителни полета.</small>
-          <label for="booking-note">Бележка към треньора</label>
-          <input type="text" id="booking-note" name="booking-note" maxlength="200" placeholder='"първа тренировка", "бременност" и др.'>
-          <label>
-            <input type="checkbox" id="subscribe-email" name="subscribe_email">
-            Абониране за имейл известия
-          </label>
-          <small>Ако желаете да получавате имейл известия от нашето студио относно намаления, оферти или събития.</small>
+          <h5>Имаш карта? <a style="cursor:pointer;" onclick="switchToCard()" class="links hover-underline">Натисни тук</a></h5>
+          <div class="switch-card">
+            <label for="card-id">Номер на картата:</label>
+            <div class="form-buttons" style="align-items:center;">
+            <button type="submit" id="confirm-booking">Потвърди</button>
+            <button type="button" id="cancel-booking">Откажи</button>
+          </div>
+          </div>
+          <div class="switch-booking">
+            <label for="booking-type">Вид тренировка*</label>
+            <select id="booking-type" name="booking_type" required>
+              <option value="">Вашият избор...</option>
+              <option value="Solo">Solo</option>
+              <option value="Private">Private</option>
+              <option value="Re4Me">Re4Me</option>
+              <option value="Six">Six</option>
+              <option value="Reform 8">Reform 8</option>
+            </select>
+            <small class="booking-hint"></small>
+            <label for="client-forename">Име*</label>
+            <input type="text" id="client-forename" name="client_forename" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
+            <label for="client-lastname">Фамилия*</label>
+            <input type="text" id="client-lastname" name="client_lastname" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
+            <label for="client-phone">Телефон*</label>
+            <input type="text" id="client-phone" name="client_phone" maxlength="20" pattern="\d+" required>
+            <label for="booking-date-hour">Дата и час*</label>
+            <input type="text" id="booking-date-hour" name="booking_date_hour" readonly>
+            <label for="client-email">E-mail*</label>
+            <input type="email" id="client-email" name="client_email" maxlength="50" required>
+            <small class="booking-hint">*Задължителни полета.</small>
+            <label for="booking-note">Бележка към треньора</label>
+            <input type="text" id="booking-note" name="booking-note" maxlength="200" placeholder='"първа тренировка", "бременност" и др.'>
+            <label>
+              <input type="checkbox" id="subscribe-email" name="subscribe_email">
+              Абониране за имейл известия
+            </label>
+            <small>Ако желаете да получавате имейл известия от нашето студио относно намаления, оферти или събития.</small>
+          </div>
           <div class="form-buttons" style="align-items:center;">
             <button type="submit" id="confirm-booking">Потвърди</button>
             <button type="button" id="cancel-booking">Откажи</button>
