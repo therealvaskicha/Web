@@ -37,7 +37,7 @@ const sql_create_client_table = `CREATE TABLE IF NOT EXISTS client (
 const sql_create_mailing_list_table = `CREATE TABLE IF NOT EXISTS mailing_list (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     client_id INTEGER NOT NULL,
-    date_subscribed DATETIME NOT NULL,
+    date_subscribed DATE NOT NULL,
     date_unsubscribed DEFAULT NULL,
     is_subscribed INTEGER DEFAULT 1,
     FOREIGN KEY(client_id) REFERENCES client(client_id)
@@ -64,12 +64,14 @@ const sql_create_services_table = `CREATE TABLE IF NOT EXISTS services (
 
 const sql_create_subscriptions_table = `CREATE TABLE IF NOT EXISTS subscriptions (
     sub_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    service_id INTEGER NOT NULL,
     card_id INTEGER NOT NULL,
     credits_balance INTEGER NOT NULL,
     start_date DATETIME NOT NULL,
     expiration_date DATETIME NOT NULL,
     status INTEGER NOT NULL DEFAULT 5,
     FOREIGN KEY(card_id) REFERENCES client_card(card_id),
+    FOREIGN KEY(service_id) REFERENCES services(service_id),
     FOREIGN KEY(status) REFERENCES enum(id)
 );`
 
@@ -213,7 +215,7 @@ db.run(v_sql_create_check_credits, (err) => {
     // db.run (`DROP TABLE IF EXISTS services;`);
     // db.run (`DROP TABLE IF EXISTS subscriptions;`);
 
-// db.run (`INSERT INTO enum (enum_name, enum_value) VALUES ('booking_status', 'pending'), ('booking_status', 'approved'), ('booking_status', 'canceled'), ('booking_status', 'rejected'), ('subscription_status', 'pending'), ('subscription_status', 'active'), ('subscription_status', 'expired'), ('subscription_status', 'canceled');`);
+// db.run (`INSERT INTO enum (enum_name, enum_value) VALUES ('subscription_status', 'used');`);
 
 // db.run(`INSERT INTO holidays (date, description) VALUES ('2025-12-24','Коледа')`, function(err) {
 //     if (err) {
