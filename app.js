@@ -57,7 +57,7 @@ app.get('/', (req, res) => {
 const stamp_created = new Date().toISOString();
 
 /////////////////////////////
-///    SELECT QUERIES     ///
+///    QUERIES            ///
 /////////////////////////////
 
 const sql_get_pending_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, status FROM bookings WHERE status = 1`;
@@ -73,6 +73,21 @@ const sql_get_bookings_history = `SELECT id, booking_type, date, time, booking_n
 
 const sql_get_holidys = `SELECT date, time, description FROM holidays;`;
 const sql_get_upcoming_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
+
+const sql_check_existing_client = `SELECT client_id FROM client WHERE client_phone = ? OR client_email = ? LIMIT 1`;
+const sql_insert_client = `INSERT INTO client (client_forename, client_lastname, client_phone, client_email) VALUES (?, ?, ?, ?)`;
+const sql_insert_mailing_list = `INSERT INTO  mailing_list (client_id, date_subscribed) VALUES (?, ?)`;
+const sql_insert_client_card = `INSERT INTO client_card (client_id, service_id) VALUES (?, ?)`;
+const sql_insert_subscription = `INSERT INTO subscriptions (card_id, credits_balance, start_date, expiration_date) VALUES (?, ?, ?, ?)`;
+const sql_select_service = `SELECT service_id, credits_balance FROM services WHERE name = ? LIMIT 1`;
+const sql_subtract_credits = `UPDATE subscriptions 
+SET credits_balance = credits_balance - 1,
+     status = CASE 
+        WHEN credits_balance - 1 = 0 THEN 9 
+        WHEN date('now') >= expiration_date THEN 7
+        ELSE 6 `;
+
+const sql_update_client_card_status = `UPDATE client_card SET is_active = ? WHERE card_id = ?`;
 
 ////////////////////////
 ///   BOOKING APIs   ///
