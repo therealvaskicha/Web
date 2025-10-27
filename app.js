@@ -52,15 +52,30 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-// Everything else
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}
 
-const stamp_created = new Date().toISOString();
+function addMonths(date, months) {
+    const newDate = new Date(date);
+    newDate.setMonth(newDate.getMonth() + months);
+    return newDate;
+}
+
+const stamp_created = formatDate(new Date());
+const nextMonth = formatDate(addMonths(new Date(), 1));
 
 /////////////////////////////
 ///    QUERIES            ///
 /////////////////////////////
 
 const sql_get_pending_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, status FROM bookings WHERE status = 1`;
+
+const sql_get_pending_booking = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, 
+            client_phone, client_email, subscribe_email, 
+            strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, 
+            status 
+            FROM bookings WHERE id = ?`
 const sql_get_approved_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, 
         subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created 
         FROM bookings 
@@ -71,22 +86,41 @@ const sql_get_approved_bookings = `SELECT id, booking_type, date, time, booking_
 const sql_get_historically_approved_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created FROM bookings WHERE status = 2 and date <= date('now')`;
 const sql_get_bookings_history = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created, status FROM bookings ORDER BY id desc`;
 
+const sql_approve_or_reject_booking = `UPDATE bookings SET status = ? WHERE id = ?`;
+
 const sql_get_holidys = `SELECT date, time, description FROM holidays;`;
 const sql_get_upcoming_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
 
 const sql_check_existing_client = `SELECT client_id FROM client WHERE client_phone = ? OR client_email = ? LIMIT 1`;
-const sql_insert_client = `INSERT INTO client (client_forename, client_lastname, client_phone, client_email) VALUES (?, ?, ?, ?)`;
-const sql_insert_mailing_list = `INSERT INTO  mailing_list (client_id, date_subscribed) VALUES (?, ?)`;
+const sql_insert_client = `INSERT INTO client (foreName, lastName, client_phone, client_email) VALUES (?, ?, ?, ?)`;
+const sql_insert_mailing_list = `INSERT INTO  mailing_list (client_id, date_subscribed) VALUES (?, date(?))`;
 const sql_insert_client_card = `INSERT INTO client_card (client_id, service_id) VALUES (?, ?)`;
-const sql_insert_subscription = `INSERT INTO subscriptions (card_id, credits_balance, start_date, expiration_date) VALUES (?, ?, ?, ?)`;
-const sql_select_service = `SELECT service_id, credits_balance FROM services WHERE name = ? LIMIT 1`;
+const sql_insert_subscription = `INSERT INTO subscriptions (service_id, card_id, credits_balance, start_date, expiration_date, status) VALUES (?, ?, ?, date(?), date(?), ?)`;
+const sql_select_service = `SELECT service_id, nr_credits FROM services WHERE name = ? LIMIT 1`;
 const sql_subtract_credits = `UPDATE subscriptions 
 SET credits_balance = credits_balance - 1,
      status = CASE 
         WHEN credits_balance - 1 = 0 THEN 9 
-        WHEN date('now') >= expiration_date THEN 7
-        ELSE 6 `;
+        WHEN expiration_date < date('now') THEN 7
+        ELSE 6
+        END
+        WHERE sub_id = ?;`;
+const sql_sync_sub_status = `UPDATE subscriptions 
+    SET status = CASE 
+        WHEN credits_balance > 0 AND date('now') =< expiration_date THEN    6
+        WHEN date('now') > expiration_date THEN 7
+        WHEN status = 8 THEN 8
+        WHEN credits_balance = 0 THEN 9 
+    END`
 
+const sql_sync_client_card_status = `UPDATE client_card 
+    SET is_active = CASE 
+        WHEN card_id IN (
+            SELECT card_id FROM subscriptions 
+            WHERE status = 6
+        ) THEN 1
+        ELSE 0
+    END`
 const sql_update_client_card_status = `UPDATE client_card SET is_active = ? WHERE card_id = ?`;
 
 ////////////////////////
@@ -102,18 +136,148 @@ app.get('/api/pending', (req, res) => {
 });
 
 // Approve or reject booking
-app.post('/api/approve', (req, res) => {
-    const sql_approve_or_reject_booking = `UPDATE bookings SET status = ? WHERE id = ?`;
-    const sql_approve_or_reject_booking_values = [2, 4, 3]; // approved, rejected, canceled
-
+app.post('/api/approve', async (req, res) => {
     const { id, status } = req.body;
-    if (!id || !sql_approve_or_reject_booking_values.includes(status)) {
-        return res.status(400).json({ error: 'Invalid request' });
-    }
-    db.run(sql_approve_or_reject_booking, [status, id], function (err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: `Booking ${status === 2 ? 'approved' : status === 4 ? 'rejected' : 'canceled'}.`});
+
+    try {
+        //Begin transaction
+        await new Promise((resolve, reject) => {
+            db.run('BEGIN TRANSACTION', err => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+    // Get booking details
+    const booking = await new Promise((resolve, reject) => {
+        db.get(sql_get_pending_booking, [id], (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+        });
     });
+
+    // Update booking status
+    await new Promise ((resolve, reject) => {
+        db.run(sql_approve_or_reject_booking, [status, id], function(err) {
+            if (err) reject(err);
+            else resolve(this);
+        });
+    });
+
+    // Check if client exists
+    if (status === 2) {
+        const existingClient = await new Promise ((resolve, reject) => {
+            db.get(sql_check_existing_client, [booking.client_phone, booking.client_email], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        let clientId;
+        if (existingClient) {
+            clientId = existingClient.client_id;
+        } else {
+            // Create new client
+            const newClient = await new Promise ((resolve, reject) => {
+            db.run(sql_insert_client, 
+                [booking.client_forename, booking.client_lastname, booking.client_phone, booking.client_email],
+                function(err) {
+                if (err) reject(err);
+                else resolve(this);
+            });
+        });
+        clientId = newClient.lastID;
+
+        // Handle email subscription
+        if (booking.subscribe_email) {
+            await new Promise ((resolve, reject) => {
+                const subscriptionDate = formatDate(new Date());
+                db.run(sql_insert_mailing_list, 
+                    [clientId, subscriptionDate],
+                    function(err) {
+                        if (err) reject(err);
+                        else resolve(this);
+                    });
+            });
+        }
+
+        // Handle subscribed clients
+        if (!['Solo','Private'].includes(booking.booking_type)) {
+            // Get service
+            const serviceType = await new Promise ((resolve, reject) => {
+                db.get(sql_select_service, [booking.booking_type], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                });
+            });
+
+            // Create card
+            const cardResult = await new Promise ((resolve, reject) => {
+                db.run(sql_insert_client_card, 
+                    [clientId, serviceType.service_id],
+                    function(err) {
+                    if (err) reject(err);
+                    else resolve(this);
+                });
+            })
+
+            // Create subscritpion
+            await new Promise ((resolve,reject) => {
+                const startDate = formatDate(new Date());
+                const expirationDate = formatDate(addMonths(new Date(), 1));
+
+                db.run(sql_insert_subscription, 
+                    [serviceType.service_id, cardResult.lastID, serviceType.nr_credits, startDate, expirationDate, 5],
+                    function(err) {
+                        if (err) reject(err);
+                        else resolve(this);
+                    });
+            });
+            }
+        }
+    }
+
+    // Commit transaction
+    await new Promise((resolve,reject) => {
+        db.run('COMMIT', err => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+
+    res.json({ message: `Тренировката беше ${status === 2 ? 'добавена' : status === 4 ? 'отказана' : 'отменена'}.` });
+
+    } catch (error) {
+        // Rollback transaction 
+        await new Promise(resolve => {
+            db.run('ROLLBACK', () => resolve());
+        })
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add new endpoint to handle subscription status updates
+app.post('/api/update-subscriptions', async (req, res) => {
+    try {
+        await new Promise((resolve, reject) => {
+            db.run(sql_sync_sub_status, [], (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Update client_card active status based on subscription status
+        await new Promise((resolve, reject) => {
+            db.run(sql_sync_client_card_status, [], (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        res.json({ message: 'Subscriptions updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Get all approved bookings
