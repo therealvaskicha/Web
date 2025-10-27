@@ -32,6 +32,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Holidays calendar setup
     const calendarEl = document.getElementById('admin-calendar');
+    const requestServices = document.getElementById('requestServices');
+    const calendarHint = document.getElementById('hint');
+    const bookingForm = document.getElementById('booking-form');
+    let selectedDate = null;
+    let selectedTime = null;
 
         if (calendarEl) {
         const times = [];
@@ -92,6 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         const isHoliday = holidays.some(h => h.date === dateStr && (h.time === null || h.time === time));
                         
                         const slotBtn = document.createElement('button');
+                        const bookingDateHour = document.getElementById('booking-date-hour');
+
                         slotBtn.className = 'slot';
                         slotBtn.textContent = time;
 
@@ -117,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const slotDateTime = new Date(`${dateStr}T${time}`);
                         const now = new Date(); 
                         const fourHoursLater = new Date(now.getTime() + 4 * 60 * 60 * 1000);
-
+                        
                         if (slotDateTime < fourHoursLater && !taken) {
                         slotBtn.disabled = true; 
                         slotBtn.classList.add('past');
@@ -129,6 +136,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             slotBtn.classList.remove('selected');
                             } else {
                             slotBtn.classList.add('selected');
+                            selectedDate = dateStr;
+                            selectedTime = time;
+                            bookingDateHour.value = `${dateStr} ${time}`;
                             }
                         };
                         slotsCol.appendChild(slotBtn);
@@ -136,6 +146,66 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+
+        if (bookingForm) {
+            document.getElementById('cancel-booking').onclick = () => {
+            const previouslySelected = document.querySelector('.slot.selected');
+            if (previouslySelected) {
+                previouslySelected.classList.remove('selected');
+            }
+
+            bookingForm.reset(); 
+        }
+
+        bookingForm.onsubmit = async function(e) {
+        e.preventDefault();
+        const booking_type = document.getElementById('booking-type').value;
+        const client_forename = document.getElementById('client-forename').value;
+        const client_lastname = document.getElementById('client-lastname').value;
+        const client_phone = document.getElementById('client-phone').value;
+        const client_email = document.getElementById('client-email').value;
+        const booking_note = document.getElementById('booking-note').value;
+        const subscribe_email = document.getElementById('subscribe-email').checked;
+                
+        if (!selectedDate || !selectedTime) {
+            alert('Моля, изберете дата и час от календара.');
+            return;
+        }
+
+        // Book via api/book and approve via api/approve
+        const res = await fetch('/api/book', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                booking_type, 
+                date: selectedDate, 
+                time: selectedTime,
+                client_forename, 
+                client_lastname, 
+                client_phone, 
+                client_email, 
+                booking_note, 
+                subscribe_email
+            })
+        });
+
+        const result = await res.json();
+        if (result.error) {
+            alert(result.error);
+        } else {
+            await updateBooking(result.id, 2);
+            requestServices.classList.remove('active');
+            bookingForm.reset();
+            selectedDate = null;
+            selectedTime = null;
+            document.getElementById('booking-date-hour').value = '';
+            const previouslySelected = document.querySelector('.slot.selected');
+            if (previouslySelected) {
+                previouslySelected.classList.remove('selected');
+            }
+        }
+    }
+    };
 
         // Week navigation
         let weekStart = new Date();
@@ -312,6 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
         table.querySelectorAll('.approve-btn').forEach(btn => {
             btn.onclick = async () => {
                 await updateBooking(btn.dataset.id, 2);
+                document.getElementById('booking-date-hour').value = '';
             };
         });
         table.querySelectorAll('.reject-btn').forEach(btn => {
@@ -321,6 +392,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             };
         });
+    }
+
+    // Approve or reject booking
+    async function updateBooking(id, status) {
+        const response = await fetch('/api/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, status })
+        });
+        const result = await response.json();
+        alert(result.message || result.error);
+        loadPending();
+        location.reload();
     }
 
     // Load approve bookings
@@ -479,19 +563,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Initial display
             displayBookings(currentPage);
         }
-
-    // Approve or reject booking
-    async function updateBooking(id, status) {
-        const response = await fetch('/api/approve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, status })
-        });
-        const result = await response.json();
-        alert(result.message || result.error);
-        loadPending();
-        location.reload();
-    }
 
     // Remove holiday
     async function deleteHoliday(id) {

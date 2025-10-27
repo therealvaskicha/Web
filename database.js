@@ -49,6 +49,7 @@ const sql_create_client_card_table = `CREATE TABLE IF NOT EXISTS client_card (
     service_id INTEGER NOT NULL,
     is_active INTEGER DEFAULT 0,
     stamp_created DATETIME DEFAULT CURRENT_TIMESTAMP,
+    stamp_modified DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(client_id) REFERENCES client(client_id),
     FOREIGN KEY(service_id) REFERENCES services(service_id)
 );`
@@ -87,6 +88,10 @@ const sql_create_enum_table = `CREATE TABLE IF NOT EXISTS enum (
 
 db.run (`DROP TRIGGER IF EXISTS unique_date_full_day;`);
 db.run (`DROP TRIGGER IF EXISTS unique_date_time;`);
+db.run (`DROP TRIGGER IF EXISTS unique_client_booking;`);
+db.run (`DROP TRIGGER IF EXISTS bookings_modified;`);
+db.run (`DROP TRIGGER IF EXISTS client_modified;`);
+db.run (`DROP TRIGGER IF EXISTS client_card_modified;`);
 
 const sql_trigger_unique_date_full_day = `CREATE TRIGGER IF NOT EXISTS unique_date_full_day
     BEFORE INSERT ON holidays
@@ -101,6 +106,36 @@ const sql_trigger_unique_date_time = `CREATE TRIGGER IF NOT EXISTS unique_date_t
       SELECT RAISE(ABORT, "Вече има зададена почивка за този часови интервал.");
     END;`;
 
+const sql_trigger_unique_client_booking = `CREATE TRIGGER IF NOT EXISTS unique_client_booking
+    BEFORE INSERT ON bookings
+    WHEN EXISTS (SELECT 1 FROM bookings WHERE client_email = NEW.client_email AND client_phone = NEW.client_phone AND date = NEW.date AND status in (1,2))
+    BEGIN
+      SELECT RAISE(ABORT, "Вече има заявна тренировка от този клиент за този ден.");
+    END;`;
+
+const sql_trigger_bookings_modified = `CREATE TRIGGER IF NOT EXISTS bookings_modified
+    AFTER UPDATE OF status ON bookings
+    BEGIN
+        UPDATE bookings 
+        SET stamp_modified = CURRENT_TIMESTAMP 
+        WHERE id = NEW.id;
+    END;`;
+
+const sql_trigger_client_modified = `CREATE TRIGGER IF NOT EXISTS client_modified
+    AFTER UPDATE OF client_phone, client_email ON client
+    BEGIN
+        UPDATE client 
+        SET stamp_modified = CURRENT_TIMESTAMP 
+        WHERE client_id = NEW.client_id;
+    END;`;
+
+const sql_trigger_client_card_modified = `CREATE TRIGGER IF NOT EXISTS client_card_modified
+    AFTER UPDATE OF is_active ON client_card
+    BEGIN
+        UPDATE client_card 
+        SET stamp_modified = CURRENT_TIMESTAMP 
+        WHERE card_id = NEW.card_id;
+    END;`;
 
 // EXECUTE TABLE CREATION STATEMENTS
 db.serialize(() => {
@@ -164,6 +199,10 @@ db.serialize(() => {
 // Triggers to enforce
 db.run (sql_trigger_unique_date_full_day);
 db.run (sql_trigger_unique_date_time);
+db.run (sql_trigger_unique_client_booking);
+db.run (sql_trigger_bookings_modified);
+db.run (sql_trigger_client_modified);
+db.run (sql_trigger_client_card_modified);
 
 // Views
 // db.run ('DROP VIEW IF EXISTS v_unavailable_slots;');
@@ -205,6 +244,8 @@ db.run(v_sql_create_check_credits, (err) => {
 });
 
 // One-off queries for testing or resetting the database
+    // db.run(`DELETE FROM bookings where id=3;`);
+
 
     // drop all tables
     // db.run (`DROP TABLE IF EXISTS bookings;`);
@@ -212,19 +253,7 @@ db.run(v_sql_create_check_credits, (err) => {
     // db.run (`DROP TABLE IF EXISTS client;`);
     // db.run (`DROP TABLE IF EXISTS mailing_list;`);
     // db.run (`DROP TABLE IF EXISTS client_card;`);
-    // db.run (`DROP TABLE IF EXISTS services;`);
     // db.run (`DROP TABLE IF EXISTS subscriptions;`);
-
-// db.run (`INSERT INTO enum (enum_name, enum_value) VALUES ('subscription_status', 'used');`);
-
-// db.run(`INSERT INTO holidays (date, description) VALUES ('2025-12-24','Коледа')`, function(err) {
-//     if (err) {
-//         console.error('Error with the query:', err);
-//         // Handle the error here, e.g. log it or display an error message to the user
-//     } else {
-//         console.log('Successful query.');
-//     }
-//     });
 });
 
 module.exports = db;
