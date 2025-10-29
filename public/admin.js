@@ -372,11 +372,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${booking.time}</td>
                 <td>${booking.booking_note || '-'}</td>
                 <td>
-                    <button class="approve-btn" data-id="${booking.id}">Одобри</button>
-                    <button class="reject-btn" data-id="${booking.id}">Откажи</button>
+                    <img src="Images/btn-yes.png" class="approve-btn" data-id="${booking.id}"></img>
+                    <img src="Images/btn-no.png" class="reject-btn" data-id="${booking.id}"></img>
                 </td>
             `;
         });
+
+        // <td>
+        //     <button class="approve-btn" data-id="${booking.id}">Одобри</button>
+        //     <button class="reject-btn" data-id="${booking.id}">Откажи</button>
+        // </td>
 
         // Add event listeners for approve/reject
         table.querySelectorAll('.approve-btn').forEach(btn => {
