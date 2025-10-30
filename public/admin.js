@@ -1,3 +1,14 @@
+// Prevent double-tap zoom
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function(event) {
+  const now = new Date().getTime();
+  if (now - lastTouchEnd <= 300) {
+    event.preventDefault();
+  }
+  lastTouchEnd = now;
+}, false);
+
+
 document.addEventListener('DOMContentLoaded', function() {
     loadPending();
     loadBookings();
@@ -372,8 +383,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${booking.time}</td>
                 <td>${booking.booking_note || '-'}</td>
                 <td>
-                    <img src="Images/btn-yes.png" class="approve-btn" data-id="${booking.id}"></img>
-                    <img src="Images/btn-no.png" class="reject-btn" data-id="${booking.id}"></img>
+                    <img src="Images/btn-yes-test.png" class="approve-btn" data-id="${booking.id}"></img>
+                    <img src="Images/btn-no-test.png" class="reject-btn" data-id="${booking.id}"></img>
                 </td>
             `;
         });
@@ -386,8 +397,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add event listeners for approve/reject
         table.querySelectorAll('.approve-btn').forEach(btn => {
             btn.onclick = async () => {
+                if (confirm('Сигурни ли сте, че искате да одобрите този час?')) {
                 await updateBooking(btn.dataset.id, 2);
                 document.getElementById('booking-date-hour').value = '';
+                }
             };
         });
         table.querySelectorAll('.reject-btn').forEach(btn => {
