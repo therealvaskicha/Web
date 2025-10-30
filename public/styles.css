@@ -227,11 +227,6 @@ h5 {
     position: relative; /* Ensure button stays within flow */
 }
 
-/* #hero h2 {
-    font-size: 2rem;
-    text-shadow: 0.125rem 0.125rem 0.25rem rgba(0, 0, 0, 0.5);
-    margin-bottom: 1rem;
-} */
 
 #hero p {
     margin-top: 1.2rem;
@@ -313,6 +308,7 @@ h5 {
         position: relative;
         overflow: hidden;
         border-radius: 0.5rem;
+        outline: 0.125rem solid #e7e4bb;
         box-shadow: 0rem 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
         cursor:pointer;       
         height: auto;
@@ -568,7 +564,7 @@ h5 {
     flex-wrap:wrap;
  /* new */
     position:relative;
-    min-height:42rem;
+    min-height:44rem;
     overflow:hidden;
     align-items: center;
 }
@@ -576,6 +572,7 @@ h5 {
 .calendar-wrap {
     padding: 1rem;
     background-color: #fff;
+    outline: 0.125rem solid #e7e4bb;
     border-radius: 1rem;
     margin: 0.3rem; 
     box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
@@ -636,7 +633,7 @@ h5 {
 /* Minimalistic calendar styles */
 
 #user-calendar {
-    margin-bottom:1rem;
+    margin-bottom:0.5rem;
 }
 .calendar-week-row {
     display: flex;
@@ -653,7 +650,8 @@ h5 {
 }
 
 .calendar-day-col.today-highlight {
-    border: 0.125rem solid #f0a500; /* Highlight with a border matching your theme */
+    outline: 0.125rem solid #f0a500; /* Highlight with a border matching your theme */
+    z-index:25;
 }
 
 .calendar-day-header {
@@ -713,8 +711,9 @@ h5 {
 }
 
 .slot.selected {
-  border: 0.125rem solid #60f000;
+  outline: 0.125rem solid #60f000;
   transition: 0.05s;
+  z-index:50;
 }
 
 .calendar-nav {
@@ -910,7 +909,6 @@ label {
 }
 
 .links:hover {
-    color: #6a694f;
     transition: 0.15s ease-in-out;
 } 
 
@@ -950,19 +948,22 @@ option, select, input {
     }
 
     #contact textarea {
-        resize: vertical;
-        min-height: 6.25rem;
+        resize: none;
+        min-height: 7rem;
     }
     #contact button {
         font-family: 'Lora', sans-serif;
         padding: 0.625rem;
-        background: #6b7280;
-        color: #fff;
         border: none;
         border-radius: 0.313rem;
         cursor: pointer;
         font-size: 1rem;
         transition: background-color 0.3s ease;
+    }
+
+    #contact button:hover {
+        background: #f0a500;
+        color: #fff;
     }
 
 /* Footer Social Links */
@@ -1008,7 +1009,7 @@ option, select, input {
 .phone-link {
     color: #333;
     text-decoration: none;
-    font-size: 1.5rem; /* Match h4 size or adjust as needed */
+    font-size: 1.25rem; /* Match h4 size or adjust as needed */
     transition: color 0.3s ease;
 }
 
@@ -1020,20 +1021,18 @@ option, select, input {
 .clipboard-btn {
     display: inline-block;
     padding: 0.313rem 0.625rem;
-    background: #6b7280;
-    color: #fff;
     border: none;
     border-radius: 0.313rem;
     font-size: 0.9rem;
     font-family: 'Lora', sans-serif;
-    font-weight: 500;
     cursor: pointer;
     margin: 0.625rem 0rem;
     transition: background-color 0.3s ease;
 }
 
 .clipboard-btn:hover {
-    background-color: #4b5563;
+  background: #f0a500;
+  color: #fff;
 }
 
 /* Footer */
@@ -1041,7 +1040,7 @@ option, select, input {
 iframe {
     width: 25rem;
     height: 20rem;
-    border: solid 0.063rem #e7e4bb;
+    border: solid 0.125rem #e7e4bb;
     border-radius: 0.5rem;
     box-shadow: 0rem 0.25rem 1.5rem rgba(0,0,0,0.07);
 }
@@ -1105,12 +1104,12 @@ footer p {
     /* background: #f9f9f9; */
     padding: 1rem;
     background-color: #f9f9f9;
-    border-radius: 1rem;;
+    border-radius: 1rem;
+    outline: 0.125rem solid #e7e4bb;
 }
 
 #location h2, #contact h2 {
-    font-size: 1.3rem;
-    margin-bottom: 1rem;
+    font-size: 1.25rem;
     text-align: left;
 }
 
@@ -1524,6 +1523,7 @@ top: 0rem;
         /*new*/
         .schedule-container {
         position: static;
+        min-height: 42rem;
         }
         
         .calendar-wrap {
@@ -1624,10 +1624,6 @@ top: 0rem;
         gap: 0.75rem; /* Reduce gap on mobile */
         }
 
-        .phone-link {
-        font-size: 1.25rem; /* Adjust phone number size on mobile */
-        }
-
         #scrollTopBtn {
         position: fixed;
         bottom: 2.5rem;
@@ -1654,6 +1650,6 @@ top: 0rem;
         }
 
         .bottom-bar {
-        font-size: 0.775rem;
+        font-size: 0.66rem;
         }
     }
