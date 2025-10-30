@@ -226,7 +226,8 @@ th {
 }
 
 tr:hover {
-  opacity:0.7;
+  background-color: #f5f5f5;
+  transition: 0.2s;
 }
 
 .row-rejected {
