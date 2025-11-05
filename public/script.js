@@ -1,3 +1,5 @@
+// const { createElement } = require("react");
+
 // Add this at the top of your script.js file
 function debounce(func, wait) {
     let timeout;
@@ -270,6 +272,20 @@ const bookingForm = document.getElementById('booking-form');
 let selectedDate = null;
 let selectedTime = null;
 
+// Switching form between card owners and non-card owners
+const formSwitcher = document.querySelector('.form-switcher');
+const cardOwnerForm = document.querySelector('.card-owner-form');
+const regularForm = document.querySelector('.regular-form');
+const cardFormLink = document.getElementById('card-form-link');
+
+
+    // Add event listener to card owner form link
+    cardFormLink.addEventListener('click', function() {
+        formSwitcher.style.display = 'none';
+        regularForm.classList.add('active');
+        cardOwnerForm.classList.add('active');
+    });
+
 // Cache for unavailable slots
 const unavailableSlotsCache = {
     data: null,
@@ -489,6 +505,15 @@ if (calendarEl) {
         };
     }
 
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const cancelButton = document.getElementById('cancel-booking');
+            if (cancelButton) {
+                cancelButton.click();
+            }
+        }
+    });
+
     // Booking form logic
     if (bookingForm) {
         document.getElementById('cancel-booking').onclick = () => {
@@ -508,6 +533,9 @@ if (calendarEl) {
             }
 
             setTimeout(() => {
+                formSwitcher.style.display = 'block';
+                regularForm.classList.remove('active');
+                cardOwnerForm.classList.remove('active');
                 requestServices.classList.remove('active');
                 bookingForm.reset();  
             }, 300);

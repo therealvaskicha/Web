@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const paginationContainer = document.getElementById('historyPagination');
             
             // Pagination settings
-            const recordsPerPage = 10;
+            const recordsPerPage = 5;
             const totalPages = Math.ceil(bookings.length / recordsPerPage);
             let currentPage = 1;
 

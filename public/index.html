@@ -259,10 +259,12 @@
       </div>
     </div>
     <p style="text-align:center;">*Цените на абонаментните карти се изчисляват на база индивидуални тренировки (Solo) и приложеното към тях намаление.</p><br>
-    <div class="disclaimer">
-      <h3><b>Политика за ползване</b></h3>  
-          <p>Задължително е предварителното <a class="links hover-underline" href="#schedule">записване на час</a> за тренировка.</p>
-        <h4><b>Абонаментни карти</b></h4>
+    <div class="disclaimer" style="display:none;">
+      <h3><b>Общи условия</b></h3>
+      <p>При ползване на онлайн услугата ни за записване на час, потребителят се съгласява с Общите условия.</p>
+        <h4><b>Политика за ползване</b></h4>
+        <p>Задължително е предварителното <a class="links hover-underline" href="#schedule">записване на час</a> за тренировка.</p>
+        <h4 style="color:#aca97c;"><b>Абонаментни карти</b></h4>
           <div class="disclaimer-cards">
             <div class="disclaimer-price-card"><b>Re4Me</b>(4 кредита)</div>
             <div class="disclaimer-price-card"><b>Six</b>(6 кредита)</div>
@@ -272,11 +274,25 @@
           <li>Картите са валидни за период от <b>1 месец</b> от датата на закупуване.</li>
           <li>Неизползваните кредити не се прехвърлят в следващ месец.</li>
           <li>Абонаментните карти не подлежат на възстановяване на сумата, но могат да бъдат използвани от друг клиент с предварително уведомяване.</li>   
-        <br>
-          <h3><b>Политика за анулиране</b></h3>
+        <h4><b>Анулиране и промяна на резервация</b></h4>
           <p>При анулиране или промяна на час, моля обадете се на телефона в секция <a class="links hover-underline" href="#contact-title">Контакти.</a></p>
-        <h4><b>За абонаментни карти</b></h4>
+        <h4 style="color:#aca97c;"><b>Абонаментни карти</b></h4>
           <p>При отмяна на час по-малко от 12 часа преди началото, тренировката се счита за извършена и се отнема 1 кредит от картата.</p>
+        <h3><b>Политика за поверителност</b></h3>
+          <p>Ако ползвате нашата онлайн услуга, Вие се съгласявате да събираме и използваме информацията описана в тази политика.</p>
+          <p>Личната информация, която ние събираме служи единствено за предоставяне и подобряване на услугата.</p>
+        <h4><b>Обработка на информация</b></h4>
+        <p>За да предоставим нашата онлайн услуга, изискваме информация, която би могла да Ви идентифицира, включително първо име, фамилия, имейл и телефонен номер.</p>
+        <p><b>Информацията се използва за:</b></p>
+          <li>Функционалност на услугата.</li>
+          <li>Управление на резервации и абонаменти, както и предоставяне на помощ, свързана с услугата.</li>
+          <li>Да Ви изпращаме известия относно Вашата резервация, събития, промоции или промени в Общите условия.</li>
+          <li>Да отговаряме на правни искания от държавни институции по силата на закон или подзаконов акт.</li>
+        <p>Обработваме вашата лична информация само с вашето съгласие, което може да бъде оттеглено по всяко време.</p>
+        <h4><b>Изтриване на лични данни</b></h4>
+          <p>В случай че желаете личните Ви данни да бъдат заличени е необходимо да изпратите писмено искането си чрез имейл към <a class="links hover-underline" href="mailto:va-technology@protonmail.com">va-technology@protonmail.com</a></p>
+          <p>В съобщението е необходимо да включите следната информация: име, фамилия и телефонен номер.</p>
+          <p><b>Ако имате въпроси относно Общите условия, не се колебайте да се <a class="links hover-underline" href="#contact-title">свържете с нас</a>.</b></p>
       </div>
   </div>
 </section>
@@ -314,11 +330,22 @@
       <h2>Твоята тренировка</h2>
       <div class="container">
         <form id="booking-form">
-          <h5>Имаш карта? <a style="cursor:pointer;"  class="links hover-underline">Натисни тук</a></h5>
-          <div class="switch-card">
-            <label for="card-id">Номер на картата:</label>
+          <div class="form-switcher">
+            <h5>Имаш карта? <a style="cursor:pointer;" class="links hover-underline" id="card-form-link">Натисни тук</a></h5>
           </div>
-          <div class="switch-booking">
+          <div class="card-owner-form">
+            <label for="card-id">Номер на картата*</label>
+            <input type="text" id="card-id" name="card_id" inputmode="numeric" pattern="[0-9]+" required>
+            <label for="client-phone">Телефон*</label>
+            <input type="text" id="client-phone" name="client_phone" maxlength="20" pattern="\d+" required>
+            <label for="booking-date-hour">Дата и час*</label>
+            <input type="text" id="booking-date-hour" name="booking_date_hour" readonly>
+            <small class="booking-hint">*Задължителни полета.</small>
+            <label for="booking-note">Бележка към треньора</label>
+            <input type="text" id="booking-note" name="booking-note" maxlength="200" placeholder='"първа тренировка", "бременност" и др.'>
+
+          </div>
+          <div class="regular-form">
             <label for="booking-type">Вид тренировка*</label>
             <select id="booking-type" name="booking_type" required>
               <option value="">Вашият избор...</option>
@@ -339,14 +366,18 @@
             <input type="text" id="booking-date-hour" name="booking_date_hour" readonly>
             <label for="client-email">E-mail*</label>
             <input type="email" id="client-email" name="client_email" maxlength="50" required>
-            <small class="booking-hint">*Задължителни полета.</small>
             <label for="booking-note">Бележка към треньора</label>
             <input type="text" id="booking-note" name="booking-note" maxlength="200" placeholder='"първа тренировка", "бременност" и др.'>
+            <label>
+              <input type="checkbox" id="check-terms-and-conditions" name="check_terms_and_conditions">
+              Съгласен съм с <a style="cursor:pointer;" class="links hover-underline" id="terms-and-conditions-link">Общите условия</a>.*
+            </label>
             <label>
               <input type="checkbox" id="subscribe-email" name="subscribe_email">
               Абониране за имейл известия
             </label>
             <small>Ако желаете да получавате имейл известия от нашето студио относно намаления, оферти или събития.</small>
+            <small class="booking-hint" style="text-align:center;">*Задължителни полета.</small>
           </div>
           <div class="form-buttons" style="align-items:center;">
             <button type="submit" id="confirm-booking">Потвърди</button>
