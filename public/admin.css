@@ -626,7 +626,8 @@ footer {
 }
 
 .pagination-btn.active {
-    background: #e7e4bb;
+    background: #f0a500;
+    color: white;
     font-weight: bold;
 }
 

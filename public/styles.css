@@ -747,7 +747,19 @@ h5 {
 }
 
 /* Booking form styles */
-.switch-card {
+.card-owner-form {
+    display:none;
+}
+
+.card-owner-form.active {
+    display:block;
+}
+
+.regular-form {
+    display:block;
+}
+
+.regular-form.active {
     display:none;
 }
 
@@ -786,8 +798,8 @@ label {
 .requestServices input,
 .requestServices select {
     width: 100%;
-    padding: 0.33rem;
-    margin-top: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    margin-top: 0.125rem;
     border-radius: 0.25rem;
     border: 1px solid #e7e4bb;
     font-size: 1rem;
@@ -800,7 +812,7 @@ label {
   display: block;
 }
 
-#subscribe-email {
+#subscribe-email, #check-terms-and-conditions {
     width:5%;
 }
 
@@ -863,7 +875,7 @@ label {
 }
 
 .disclaimer p {
-    line-height: 1;
+    line-height: 1.5;
     color: #666;
     margin-bottom:0.25rem;
     font-size:0.9rem;
@@ -871,6 +883,7 @@ label {
 
 .disclaimer li {
     margin-left: 1rem;
+    line-height:1.5;
 }
 
 .disclaimer-cards{
@@ -878,7 +891,6 @@ label {
     justify-content: center;
     flex-wrap:wrap;
     gap: 1rem;
-    margin:1rem;
 }
 
 .disclaimer-price-card {
