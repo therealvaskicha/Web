@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Holidays calendar setup
     const calendarEl = document.getElementById('admin-calendar');
     const requestServices = document.getElementById('requestServices');
-    const calendarHint = document.getElementById('hint');
     const bookingForm = document.getElementById('booking-form');
     let selectedDate = null;
     let selectedTime = null;
@@ -363,17 +362,17 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadPending() {
         const response = await fetch('/api/pending');
         const bookings = await response.json();
-        const table = document.getElementById('pendingBookingsTable');
-        const container = table.parentElement;
+        const pendingBookingsTable = document.getElementById('pendingBookingsTable');
+        const container = pendingBookingsTable.parentElement;
 
         if (bookings.length < 1) {
         container.innerHTML = '<p class="no-data-message">Няма нови заявки</p>';
         return;
         }
 
-        while (table.rows.length > 1) table.deleteRow(1);
+        while (pendingBookingsTable.rows.length > 1) pendingBookingsTable.deleteRow(1);
         bookings.forEach(booking => {
-            const row = table.insertRow();
+            const row = pendingBookingsTable.insertRow();
             // concatenate forename and lastname
             booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
             row.innerHTML = `
@@ -395,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // </td>
 
         // Add event listeners for approve/reject
-        table.querySelectorAll('.approve-btn').forEach(btn => {
+        pendingBookingsTable.querySelectorAll('.approve-btn').forEach(btn => {
             btn.onclick = async () => {
                 if (confirm('Сигурни ли сте, че искате да одобрите този час?')) {
                 await updateBooking(btn.dataset.id, 2);
@@ -403,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             };
         });
-        table.querySelectorAll('.reject-btn').forEach(btn => {
+        pendingBookingsTable.querySelectorAll('.reject-btn').forEach(btn => {
             btn.onclick = async () => {
                 if (confirm('Сигурни ли сте, че искате да откажете този час?')) {
                     await updateBooking(btn.dataset.id, 4);
@@ -429,17 +428,17 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadBookings() {
         const response = await fetch('/api/bookings-approved');
         const bookings = await response.json();
-        const table = document.getElementById('approvedBookingsTable');
-        const container = table.parentElement;
+        const approvedBookingsTable = document.getElementById('approvedBookingsTable');
+        const container = approvedBookingsTable.parentElement;
 
         if (bookings.length < 1) {
         container.innerHTML = '<p class="no-data-message">Няма предстоящи тренировки.</p>';
         return;
         }
 
-        while (table.rows.length > 1) table.deleteRow(1);
+        while (approvedBookingsTable.rows.length > 1) approvedBookingsTable.deleteRow(1);
         bookings.forEach(booking => {
-            const row = table.insertRow();
+            const row = approvedBookingsTable.insertRow();
             booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
             row.innerHTML = `
                 <td>${booking.client_name}</td>
@@ -454,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Add event listeners for cancel booking
-        table.querySelectorAll('.cancel-btn').forEach(btn => {
+        approvedBookingsTable.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.onclick = async () => {
             if (confirm('Сигурни ли сте, че искате да отмените този час?')) {
                 await updateBooking(btn.dataset.id, 3);
@@ -467,17 +466,17 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadHolidays() {
         const response = await fetch('/api/holidays-current');
         const holidays = await response.json();
-        const table = document.getElementById('holidaysTable');
-        const container = table.parentElement;
+        const holidaysTable = document.getElementById('holidaysTable');
+        const container = holidaysTable.parentElement;
         
         if (holidays.length < 1) {
         container.innerHTML = '<p class="no-data-message">Няма предстоящи почивни дни/часове</p>';
         return;
         }
 
-        while (table.rows.length > 1) table.deleteRow(1);
+        while (holidaysTable.rows.length > 1) holidaysTable.deleteRow(1);
         holidays.forEach(holiday => {
-            const row = table.insertRow();
+            const row = holidaysTable.insertRow();
             row.innerHTML = `
                 <td>${holiday.date}</td>
                 <td>${holiday.time || 'Цял ден'}</td>
@@ -502,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
         async function loadHistory() {
             const response = await fetch('/api/bookings-history');
             const bookings = await response.json();
-            const table = document.getElementById('bookingHistoryTable');
+            const bookingHistoryTable = document.getElementById('bookingHistoryTable');
             const paginationContainer = document.getElementById('historyPagination');
             
             // Pagination settings
@@ -512,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             function displayBookings(page) {
                 // Clear existing rows
-                while (table.rows.length > 1) table.deleteRow(1);
+                while (bookingHistoryTable.rows.length > 1) bookingHistoryTable.deleteRow(1);
                 
                 // Calculate start and end indices
                 const start = (page - 1) * recordsPerPage;
@@ -521,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Display bookings for current page
                 paginatedBookings.forEach(booking => {
-                    const row = table.insertRow();
+                    const row = bookingHistoryTable.insertRow();
                     row.style.opacity = '0';
                     row.style.transform = 'translateY(-10px)';
                     booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
@@ -552,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         row.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
                         row.style.opacity = '1';
                         row.style.transform = 'translateY(0)';
-                    }, 50 * table.rows.length);
+                    }, 50 * bookingHistoryTable.rows.length);
                 });
 
                 // Update pagination UI

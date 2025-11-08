@@ -279,12 +279,12 @@ const regularForm = document.querySelector('.regular-form');
 const cardFormLink = document.getElementById('card-form-link');
 
 
-    // Add event listener to card owner form link
-    cardFormLink.addEventListener('click', function() {
-        formSwitcher.style.display = 'none';
-        regularForm.classList.add('active');
-        cardOwnerForm.classList.add('active');
-    });
+    // Add event listener to card owner form link (TURNED OFF FOR NOW)
+    // cardFormLink.addEventListener('click', function() {
+    //     formSwitcher.style.display = 'none';
+    //     regularForm.classList.add('active');
+    //     cardOwnerForm.classList.add('active');
+    // });
 
 // Cache for unavailable slots
 const unavailableSlotsCache = {
