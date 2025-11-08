@@ -51,6 +51,30 @@
         </div>
     </section>
 
+    <section class="bookings-history">
+  <div class="container">
+    <h2>История на заявки</h2>
+    <div class="table-container">
+        <table id="bookingHistoryTable">
+          <th>Имена</th>
+          <th>Тип</th>
+          <th>Дата</th>
+          <th>Час</th>
+          <th>Заявена на</th>
+        </table>
+        <div class="pagination" id="historyPagination"></div>
+    </div>
+    <div class="history-filters">
+      <div class="by-status">
+        <button class="slot pending">Чакащи</button>
+        <button class="slot available">Одобрени</button>
+        <button class="slot rejected">Отказани</button>
+        <button class="slot canceled">Отменени</button>
+      </div>
+    </div>
+  </div>
+</section>
+
     <footer>
         <div class="container">
             <div class="website-signature">
@@ -59,5 +83,7 @@
             </div>
         </div>
     </footer>
+    
+<script src="admin.js"></script>
 </body>
 </html>

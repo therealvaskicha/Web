@@ -1,10 +1,25 @@
+/* GLOBAL VARIABLES */
+:root {
+    --primary-color: #e7e4bb;
+    --active-color: #f0a500;
+    --text-color: #333;
+    --text-secondary-color: #666;
+    --default-background-color: #f9f9f9;
+    --default-box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
+    --mobile-font-size: 0.9rem;
+    --font-size: 1rem;
+    --default-font-family: 'Lora', sans-serif;
+    --standard-border-radius: 1rem;
+}
+
+
 /* LOGIN */
 .login-container {
     max-width: 400px;
     margin: 100px auto;
     padding: 2rem;
-    background: #fff;
-    border-radius: 10px;
+    background: var(--default-background-color);
+    border-radius: var(--standard-border-radius);
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
 }
 
@@ -20,7 +35,7 @@
 
 #captcha-canvas {
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: var(--standard-border-radius);
 }
 
 #refresh-captcha {
@@ -28,7 +43,7 @@
     border: none;
     background: #f0f0f0;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--standard-border-radius);
 }
 
 /* START ADMIN CSS */
@@ -47,65 +62,62 @@ html {
 
 body {
     /* background: #e7e7e1; */
-    background: #f9f9f9;
-    font-family: 'Lora', sans-serif;
-    color: #333;
+    background: var(--default-background-color);
+    font-family: var(--default-font-family);
+    color: var(--text-color);
     cursor: default;
 }
 
-a {
-    color: black;
-}
+/* TEXT ELEMENTS */
 
-section {
-    margin: 3rem 1rem 3rem 1rem;
+h1, h2, h3, h4 {
+  text-align:center;
+  font-weight:normal;
+  color: var(--text-color);
 }
 
 h1 {
-  text-align:center;
   font-size:2rem;
-  font-weight:normal;
 }
 
 h2 {
-    text-align: center;
     margin: 1rem 0rem;
     font-size: 1.5rem;
-    font-weight: normal;
 }
 
 h3 {
-    text-align: center;
-    color:#1d1c12;
     margin-bottom: 0.75rem;
     font-size:1.375rem;
-    font-weight: normal;
 }
 
 h4 {
-    text-align: center;
-    color:#1d1c12;
     font-size:1.25rem;
-    font-weight: normal;
+}
+
+small,label, select, option, .no-data-message {
+  font-size: var(--font-size);
+}
+
+a {
+    color: var(--text-color);
 }
 
 /* HEADER NAV */
 
 .title {
-  padding: 2rem 0 1rem 0;
+  margin: 2rem 0 1rem 0;
   justify-self:center;
   width:100%;
 }
 
 header {
-  background: #e7e4bb;
-  /* overflow:hidden; */
+  background: var(--primary-color);
   position: fixed !important;
   bottom: 0 !important;
   width: 100%;
   padding-top:0.125rem;
   padding-bottom:0.125rem;
-  z-index: 5; /* Ensure content is above other elements */
+  z-index: 5;
 }
 
 .navigation-layout {
@@ -125,7 +137,6 @@ header {
 
 .nav-link {
     position:relative;
-    font-family: "Lora", sans-serif;
     text-decoration: none;
 }
 
@@ -163,6 +174,11 @@ ul {
 }
 
 /* GRID */
+
+section {
+    margin: 3rem 1rem 3rem 1rem;
+}
+
 .calendar-grid {
     display:grid;
     grid-template-columns: 2fr 1.75fr 1.25fr;
@@ -182,7 +198,7 @@ ul {
   flex-direction: column;
   grid-area: 1 / 2 / 1 / 3;
   padding: 0 1.5rem 1.5rem 1.5rem;
-  border-left: solid 0.125rem #e7e4bb;
+  border-left: solid 0.125rem var(--primary-color);
 }
 
 .active-holidays{
@@ -190,7 +206,7 @@ ul {
   flex-direction: column;
   grid-area: 1 / 3 / 1 / last-line;
   padding: 0 0 1.5rem 1.5rem;
-  border-left: solid 0.125rem #e7e4bb;
+  border-left: solid 0.125rem var(--primary-color);
 }
 
 /* TABLES */
@@ -198,8 +214,8 @@ ul {
 .table-container {
   margin-bottom:1rem;
   box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.1);
-  border-radius:0.5rem;
-  outline: 0.05rem solid #e7e4bb;
+  border-radius: var(--standard-border-radius);
+  outline: 0.05rem solid var(--primary-color);
   padding:0.125rem 0.25rem;
   overflow-x:auto;
 }
@@ -210,13 +226,13 @@ table {
 }
 
 th, td { 
-  border-left: 0.065rem solid #e7e4bb;
+  border-left: 0.065rem solid var(--primary-color);
   padding: 0.33rem; 
   text-align: center; 
 }
 
 td {
-  font-size: 1rem;
+  font-size: var(--font-size);
 }
 
 th, td:first-child { border-left: none; }
@@ -251,21 +267,21 @@ tr:hover {
 }
 
 button { 
-    background: #e7e4bb;
-    color: #333;
+    background: var(--primary-color);
+    color: var(--text-color);
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     padding: 0.3rem 0.5rem;
-    font-size: 1.1rem;
-    font-family: 'Lora', sans-serif;
+    font-size: var(--font-size);
+    font-family: var(--default-font-family);
     font-weight: 300;
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
 }
 
 button:hover { 
-  background: #f0a500;
-  color: #fff;
+  background: var(--active-color);
+  color: var(--default-background-color);
 }
 
 .approve-btn, .reject-btn {
@@ -287,11 +303,8 @@ button:hover {
 }
 
 .remove-btn, .add-holiday-btn, .cancel-btn, .add-booking-btn {
-  font-size: 1rem;
-}
-
-small {
-  font-size:1.125rem;
+  font-size: var(--font-size);
+  padding: 0.25rem 0.5rem;
 }
 
 /* Manual entry form */
@@ -315,10 +328,10 @@ small {
     left: 50%;
     transform: translate(-50%, -50%) scale(0.7);
     z-index: 1000;
-    background-color: white;
+    background-color: var(--default-background-color);
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: var(--standard-border-radius);
+    box-shadow: var(--default-box-shadow);
     opacity: 0;
     transition: all 0.3s ease;
     max-width: 90%;
@@ -342,24 +355,22 @@ small {
 }
 
 label {
-    display: block;
-    margin-top: 0.5rem;
-    font-weight: bold;
+    margin-top: 0.25rem;
 }
 
 .requestServices input,
 .requestServices select {
     width: 100%;
-    padding: 0.33rem;
+    padding: 0.375rem 1rem;
     margin-top: 0.25rem;
-    border-radius: 0.25rem;
-    border: 1px solid #e7e4bb;
-    font-size: 1rem;
+    border-radius: var(--standard-border-radius);
+    border: 1px solid var(--primary-color);
+    font-size: var(--font-size)
 }
 
 .booking-hint {
   color: #666;
-  font-size: 0.9em;
+  font-size: var(--mobile-font-size);
   margin-top: 0.5rem;
   display: block;
 }
@@ -375,26 +386,20 @@ label {
 }
 
 .requestServices button {
-    margin-top: 1rem;
-    padding: 0.5rem 1.5rem;
-    border-radius: 0.25rem;
-    border: none;
-    background: #e7e4bb;
-    color: #333;
-    font-size: 1rem;
-    cursor: pointer;
+    margin-top: 0.5rem;
+    font-size: var(--font-size);
 }
 .requestServices button:hover {
-    background: #f0a500;
-    color: #fff;
+    background: var(--active-color);
+    color: var(--default-background-color);
 }
 
 /* Minimalistic calendar styles */
 .calendar-wrap{
   padding: 1rem;
-  background-color: #fff;
-  border-radius: 0.5rem;
-  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
+  background-color: var(--default-background-color);
+  border-radius: var(--standard-border-radius);
+  box-shadow: var(--default-box-shadow);
 }
 
 #admin-calendar {
@@ -415,19 +420,19 @@ label {
 }
 .calendar-day-col {
     flex: 1;
-    background: #ffffff;
+    background: var(--default-background-color);
     min-width: 3rem;
     max-width: 5rem;
 }
 
 .calendar-day-col.today-highlight {
-    outline: 0.125rem solid #f0a500;
+    outline: 0.125rem solid var(--active-color);
     border-radius: 0.25rem;
     z-index:1;
 }
 
 .calendar-day-header {
-    font-size: 1.1rem;
+    font-size: var(--font-size);
     text-align: center;
     box-shadow: #d6f5d6 0.125rem 0 0.25rem;
     border-radius:0.25rem;
@@ -456,13 +461,13 @@ label {
 }
 
 .slot {
-    font-family: 'Lora', sans-serif;
+    font-family: var(--default-font-family);
     border: none;
     border-radius: 0.25rem;
     padding: 0.25rem 0.5rem;
     margin: 0.125rem 0.05rem 0rem 0.05rem;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: var(--font-size);
     transition: background 0.2s;
 }
 
@@ -514,7 +519,7 @@ label {
 .slot.week {
   background:transparent;
   color: black;
-  outline: 0.125rem solid #f0a500;
+  outline: 0.125rem solid var(--active-color);
 }
 
 .slot.selected {
@@ -526,7 +531,7 @@ label {
 .hint {
     margin-top:0.5rem;
     text-align:center;
-    font-size:1.125rem;
+    font-size: var(--font-size);
     scroll-margin-top:5rem;
 }
 
@@ -538,23 +543,19 @@ label {
 }
 
 .week-nav-btn {
-    background: #e7e4bb;
-    color: #333;
+    background: var(--primary-color);
+    color: var(--text-color);
     border: none;
-    border-radius: 0.66rem;
+    border-radius: var(--standard-border-radius);
     padding: 0.625rem 1rem;
-    font-size: 1rem;
-    font-family: 'Lora', sans-serif;
+    font-size: var(--font-size);
+    font-family: var(--default-font-family);
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
 }
 .week-nav-btn:hover {
-  background: #f0a500;
-  color: #fff;
-}
-
-.add-holiday-btn {
-  padding: 0.3rem 2rem;
+  background: var(--active-color);
+  color: var(--default-background-color);
 }
 
 /* History filters */
@@ -569,14 +570,9 @@ label {
 
 .no-data-message {
     text-align: center;
-    font-size:1rem;
+    font-size: var(--font-size);
     padding: 1rem;
-    color: #666;
-}
-
-/* Footer */
-footer {
-  margin-bottom:5rem;
+    color: var(--text-secondary-color);
 }
 
 .website-signature{
@@ -585,13 +581,14 @@ footer {
     flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
+    font-size: var(--mobile-font-size);
     gap: 0.25rem;
     margin-bottom:1rem;
 }
 
 .links {
     position:relative;
-    font-family: "Lora", sans-serif;
+    font-family: var(--default-font-family);
     text-decoration: none;
     color: #18004c;
 }
@@ -612,7 +609,7 @@ footer {
 
 .pagination-btn {
     padding: 0.5rem 1rem;
-    background: #e7e4bb;
+    background: var(--primary-color);
     border: none;
     border-radius: 0.66rem;
     cursor: pointer;
@@ -626,8 +623,8 @@ footer {
 }
 
 .pagination-btn.active {
-    background: #f0a500;
-    color: white;
+    background: var(--active-color);
+    color: var(--default-background-color);
     font-weight: bold;
 }
 
@@ -643,27 +640,26 @@ footer {
 @media (max-width: 768px) {
 
 h1 {
-  font-size:1.3rem;
-  font-weight:normal;
+  font-size:1.5rem;
 }
 
 h2 {
-  font-size: 1rem;
+  font-size: var(--font-size);
   font-weight:bold;
   margin: 0.5rem 0;
 }
 
-small {
-  font-size:0.85rem;
+small,label, select, option, .no-data-message {
+  font-size: var(--mobile-font-size);
+  font-family: var(--default-font-family);
 }
 
 .no-data-message {
-  font-size: 0.9rem;
   padding:0.5rem;
 }
 
 section {
-  margin: 0 1rem;
+  margin: 0 1rem 4.5rem 1rem
 }
 
 .table-container {
@@ -686,7 +682,7 @@ section {
 }
 
 .pendingBookings {
-  margin-bottom:0.33rem;
+  margin-bottom:1rem;
 }
 
 .approvedBookings {
@@ -703,8 +699,8 @@ section {
 
 /* GRID SECTIONS */
 .pendApprove {
+  border:0;
   padding:0;
-  border:0
 }
 .adminCalendar {
   padding:0;
@@ -714,13 +710,14 @@ section {
 .active-holidays {
   padding:0;
   margin-bottom:0.5rem;
-  border:0
+  border:0;
+  width:100%;
 }
 
 /* test */
 /* Table adjustments */
 table {
-  font-size: 0.85rem;
+  font-size: var(--mobile-font-size);
 }
 
 th {
@@ -729,17 +726,17 @@ th {
 }
 
 td {
-  font-size:0.65rem;
+  font-size: var(--mobile-font-size);
 }
 
 th, td {
-  border-left: 1px solid #e7e4bb;
+  border-left: 1px solid var(--primary-color);
 }
 
 th, td:first-child { border-left: none; }
 
 button {
-  font-size: 0.85rem;
+  font-size: var(--mobile-font-size);
   padding: 0.25rem 0.4rem;
   margin: 0.2rem;
 }
@@ -798,7 +795,7 @@ button {
 }
 
 .week-nav-btn{
-  font-size:0.9rem;
+  font-size: var(--mobile-font-size);
   padding: 0.33rem 0.66rem;
   border-radius:0.66rem;
 }
@@ -810,7 +807,7 @@ button {
 }
 
 .calendar-day-header{
-  font-size: 0.9rem;
+  font-size: var(--mobile-font-size);
 }
 
 .slot {
@@ -821,10 +818,6 @@ button {
 
 .pagination-btn {
     padding: 0.3rem 0.7rem;
-    font-size: 0.9rem;
-}
-
-footer {
-  margin-bottom:3.5rem
+    font-size: var(--mobile-font-size);
 }
 }

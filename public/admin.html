@@ -75,6 +75,7 @@
           </div>
           <div class="modal-overlay" id="modalOverlay"></div>
           <div class="modal" id="bookingModal">
+            <h2>Добави тренировка</h2>
             <div class="requestServices" id="requestServices">
               <form id="booking-form">
                 <label for="booking-type">Вид тренировка*</label>
@@ -105,8 +106,8 @@
                   Абониране за имейл известия
                 </label>
                 <div class="form-buttons" style="align-items:center;">
-                  <button type="submit" id="confirm-booking">Потвърди</button>
-                  <button type="button" id="cancel-booking">Откажи</button>
+                  <button type="submit" id="confirm-booking">Добави</button>
+                  <button type="button" id="cancel-booking">Затвори</button>
                 </div>
               </form>
             </div>
@@ -149,41 +150,14 @@
           </div>
         </div>
     </div>
-  </div>
-</section>
-
-<section class="bookings-history">
-  <div class="container">
-    <h2>История на заявки</h2>
-    <div class="table-container">
-        <table id="bookingHistoryTable">
-          <th>Имена</th>
-          <th>Тип</th>
-          <th>Дата</th>
-          <th>Час</th>
-          <th>Заявена на</th>
-        </table>
-        <div class="pagination" id="historyPagination"></div>
-    </div>
-    <div class="history-filters">
-      <div class="by-status">
-        <button class="slot pending">Чакащи</button>
-        <button class="slot available">Одобрени</button>
-        <button class="slot rejected">Отказани</button>
-        <button class="slot canceled">Отменени</button>
+    <div class="container">
+    <div class="website-signature">
+        <p>Website by <a href="https://www.vasilapostolov.tech/" class="links hover-underline">VA</a></p>
       </div>
     </div>
   </div>
 </section>
 
-<footer>
-  <div class="container">
-    <div class="website-signature">
-      <p>Website by <a href="https://www.vasilapostolov.tech/" class="links hover-underline">VA</a></p>
-    </div>
-  </div>
-</footer>
-
-    <script src="admin.js"></script>
+<script src="admin.js"></script>
 </body>
 </html>
