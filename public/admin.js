@@ -8,12 +8,26 @@ document.addEventListener('touchend', function(event) {
   lastTouchEnd = now;
 }, false);
 
+function getCurrentPage() {
+    const path = window.location.pathname;
+    if (path.includes('admin.html')) return 'admin';
+    if (path.includes('clients.html')) return 'clients';
+    if (path.includes('subscriptions.html')) return 'subscriptions';
+    return null;
+}
+
 
 document.addEventListener('DOMContentLoaded', function() {
-    loadPending();
-    loadBookings();
-    loadHistory();
-    loadHolidays();
+    const currentPage = getCurrentPage();
+
+    ///////////////////////////////////
+    // Admin page functions ///////////
+    ///////////////////////////////////
+
+    if (currentPage === 'admin') {
+        loadPending();
+        loadBookings();
+        loadHolidays();
 
     // Add bookings manually via btn
     const addBookingBtn = document.querySelector('.add-booking-btn');
@@ -496,90 +510,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Automatically deactivate past holidays
         await fetch('/api/auto-deactivate-past-holidays', { method: 'POST' });
-}
-
-        async function loadHistory() {
-            const response = await fetch('/api/bookings-history');
-            const bookings = await response.json();
-            const bookingHistoryTable = document.getElementById('bookingHistoryTable');
-            const paginationContainer = document.getElementById('historyPagination');
-            
-            // Pagination settings
-            const recordsPerPage = 5;
-            const totalPages = Math.ceil(bookings.length / recordsPerPage);
-            let currentPage = 1;
-
-            function displayBookings(page) {
-                // Clear existing rows
-                while (bookingHistoryTable.rows.length > 1) bookingHistoryTable.deleteRow(1);
-                
-                // Calculate start and end indices
-                const start = (page - 1) * recordsPerPage;
-                const end = start + recordsPerPage;
-                const paginatedBookings = bookings.slice(start, end);
-
-                // Display bookings for current page
-                paginatedBookings.forEach(booking => {
-                    const row = bookingHistoryTable.insertRow();
-                    row.style.opacity = '0';
-                    row.style.transform = 'translateY(-10px)';
-                    booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
-                    row.innerHTML = `
-                        <td>${booking.client_name}</td>
-                        <td>${booking.booking_type}</td>
-                        <td>${booking.date}</td>
-                        <td>${booking.time}</td>
-                        <td>${booking.stamp_created}</td>
-                    `;
-
-                    switch (booking.status) {
-                        case 3:
-                            row.classList.add('row-canceled');
-                            break;
-                        case 4:
-                            row.classList.add('row-rejected');
-                            break;
-                        case 2:
-                            row.classList.add('row-approved');
-                            break;
-                        default:
-                            row.classList.add('row-pending');
-                    }
-
-                    // Animate row appearance
-                    setTimeout(() => {
-                        row.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
-                        row.style.opacity = '1';
-                        row.style.transform = 'translateY(0)';
-                    }, 50 * bookingHistoryTable.rows.length);
-                });
-
-                // Update pagination UI
-                updatePagination();
-            }
-
-            function updatePagination() {
-                paginationContainer.innerHTML = '';
-                
-                // Create pagination buttons
-                for (let i = 1; i <= totalPages; i++) {
-                    const button = document.createElement('button');
-                    button.innerText = i;
-                    button.classList.add('pagination-btn');
-                    if (i === currentPage) {
-                        button.classList.add('active');
-                    }
-                    button.addEventListener('click', () => {
-                        currentPage = i;
-                        displayBookings(currentPage);
-                    });
-                    paginationContainer.appendChild(button);
-                }
-            }
-
-            // Initial display
-            displayBookings(currentPage);
-        }
+    }
 
     // Remove holiday
     async function deleteHoliday(id) {
@@ -594,5 +525,159 @@ document.addEventListener('DOMContentLoaded', function() {
                 await loadHolidays();
                 location.reload();
             }
-    } 
+    }
+
+}
+
+    ///////////////////////////////////
+    // Clients page functions /////////
+    ///////////////////////////////////
+
+    if (getCurrentPage() === 'clients') {
+        loadHistory();
+        loadClients();
+    }
+
+    async function loadClients() {
+        const response = await fetch('/api/clients');
+        const clients = await response.json();
+        const clientsTable = document.getElementById('clientsTable');
+
+        if (clients.length < 1) {
+            clientsTable.parentElement.innerHTML = '<p class="no-data-message">Няма регистрирани клиенти</p>';
+        return;
+        }
+
+        while (clientsTable.rows.length > 1) clientsTable.deleteRow(1);
+        clients.forEach(client => {
+            const row = clientsTable.insertRow();
+            row.innerHTML = `
+                <td>${client.foreName} ${client.lastName}</td>
+                <td>${client.client_phone}</td>
+                <td>${client.client_email}</td>
+                <td>${client.stamp_created}</td>
+            `;
+        });
+    }
+
+    async function loadHistory() {
+        const response = await fetch('/api/bookings-history');
+        const bookings = await response.json();
+        const bookingHistoryTable = document.getElementById('bookingHistoryTable');
+        const paginationContainer = document.getElementById('historyPagination');
+        
+        // Add filter functionality
+        const filterButtons = document.querySelectorAll('.by-status .slot');
+        let filteredBookings = [...bookings]; // Create a copy of all bookings
+        
+        // Pagination settings
+        const recordsPerPage = 5;
+        let currentPage = 1;
+
+        // Add click handlers for filter buttons
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (button.classList.contains('active')) {
+                    button.classList.remove('active');
+                    filteredBookings = [...bookings];
+                    activeFilter = null;
+                    currentPage = 1;
+                    displayBookings(currentPage);
+                    return;
+                }
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                // Filter bookings based on button class
+                if (button.classList.contains('pending')) {
+                    filteredBookings = bookings.filter(booking => booking.status === 1);
+                } else if (button.classList.contains('available')) {
+                    filteredBookings = bookings.filter(booking => booking.status === 2);
+                } else if (button.classList.contains('rejected')) {
+                    filteredBookings = bookings.filter(booking => booking.status === 4);
+                } else if (button.classList.contains('canceled')) {
+                    filteredBookings = bookings.filter(booking => booking.status === 3);
+                } else {
+                    filteredBookings = [...bookings]; // Reset to show all
+                }
+                
+                // Reset to first page and update display
+                currentPage = 1;
+                displayBookings(currentPage);
+            });
+        });
+
+        function displayBookings(page) {
+            // Clear existing rows
+            while (bookingHistoryTable.rows.length > 1) bookingHistoryTable.deleteRow(1);
+            
+            // Calculate start and end indices based on filtered bookings
+            const start = (page - 1) * recordsPerPage;
+            const end = start + recordsPerPage;
+            const paginatedBookings = filteredBookings.slice(start, end);
+
+            // Display bookings for current page
+            paginatedBookings.forEach(booking => {
+                const row = bookingHistoryTable.insertRow();
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(-10px)';
+                booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
+                row.innerHTML = `
+                    <td>${booking.client_name}</td>
+                    <td>${booking.booking_type}</td>
+                    <td>${booking.date}</td>
+                    <td>${booking.time}</td>
+                    <td>${booking.stamp_created}</td>
+                `;
+
+                // Add appropriate class based on status
+                switch (booking.status) {
+                    case 3:
+                        row.classList.add('row-canceled');
+                        break;
+                    case 4:
+                        row.classList.add('row-rejected');
+                        break;
+                    case 2:
+                        row.classList.add('row-approved');
+                        break;
+                    default:
+                        row.classList.add('row-pending');
+                }
+
+                // Animate row appearance
+                setTimeout(() => {
+                    row.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
+                    row.style.opacity = '1';
+                    row.style.transform = 'translateY(0)';
+                }, 50 * bookingHistoryTable.rows.length);
+            });
+
+            updatePagination();
+        }
+
+        function updatePagination() {
+            paginationContainer.innerHTML = '';
+            const totalPages = Math.ceil(filteredBookings.length / recordsPerPage);
+            
+            // Create pagination buttons
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.innerText = i;
+                button.classList.add('pagination-btn');
+                if (i === currentPage) {
+                    button.classList.add('active');
+                }
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    displayBookings(currentPage);
+                });
+                paginationContainer.appendChild(button);
+            }
+        }
+
+        // Initial display of all bookings
+        displayBookings(currentPage);
+    }
 });

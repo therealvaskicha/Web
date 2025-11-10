@@ -68,6 +68,10 @@ body {
     cursor: default;
 }
 
+section {
+    margin: 3rem 1rem 3rem 1rem;
+}
+
 /* TEXT ELEMENTS */
 
 h1, h2, h3, h4 {
@@ -173,41 +177,52 @@ ul {
     margin: 0;
 }
 
-/* GRID */
+/* GRIDS */
 
-section {
-    margin: 3rem 1rem 3rem 1rem;
-}
+  /* Admin page grid */
 
-.calendar-grid {
-    display:grid;
-    grid-template-columns: 2fr 1.75fr 1.25fr;
-}
+    .calendar-grid {
+      display:grid;
+      grid-template-columns: 2fr 1.75fr 1.25fr;
+    }
 
-.pendApprove{
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch;
-  grid-area: 1 / 1 / 1 / 2;
-  padding: 0 1.5rem 1.5rem 0;
-}
+    .pendApprove{
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
+      grid-area: 1 / 1 / 1 / 2;
+      padding: 0 1.5rem 1.5rem 0;
+    }
 
-.adminCalendar {
-  display:flex;
-  flex-direction: column;
-  grid-area: 1 / 2 / 1 / 3;
-  padding: 0 1.5rem 1.5rem 1.5rem;
-  border-left: solid 0.125rem var(--primary-color);
-}
+    .adminCalendar {
+      display:flex;
+      flex-direction: column;
+      grid-area: 1 / 2 / 1 / 3;
+      padding: 0 1.5rem 1.5rem 1.5rem;
+      border-left: solid 0.125rem var(--primary-color);
+    }
 
-.active-holidays{
-  display: flex;
-  flex-direction: column;
-  grid-area: 1 / 3 / 1 / last-line;
-  padding: 0 0 1.5rem 1.5rem;
-  border-left: solid 0.125rem var(--primary-color);
-}
+    .active-holidays{
+      display: flex;
+      flex-direction: column;
+      grid-area: 1 / 3 / 1 / last-line;
+      padding: 0 0 1.5rem 1.5rem;
+      border-left: solid 0.125rem var(--primary-color);
+    }
+
+  /* Clients page grid */
+
+    .clients-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+  /* Subscriptions page grid */
+    .subscriptions-grid {
+
+    }
 
 /* TABLES */
 
@@ -528,6 +543,13 @@ label {
   transition: 0.05s;
 }
 
+.slot.available.active,
+.slot.canceled.active,
+.slot.pending.active,
+.slot.rejected.active {
+    outline: 0.125rem solid var(--active-color);
+}
+
 .hint {
     margin-top:0.5rem;
     text-align:center;
@@ -556,6 +578,11 @@ label {
 .week-nav-btn:hover {
   background: var(--active-color);
   color: var(--default-background-color);
+}
+
+/* History section */
+.bookings-history {
+  width:50vw;
 }
 
 /* History filters */
