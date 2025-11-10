@@ -69,8 +69,8 @@ const nextMonth = formatDate(addMonths(new Date(), 1));
 ///    QUERIES            ///
 /////////////////////////////
 
-const sql_get_pending_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, status FROM bookings WHERE status = 1`;
-
+// Booking related queries
+const sql_get_pending_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, status FROM bookings WHERE status = 1`
 const sql_get_pending_booking = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, 
             client_phone, client_email, subscribe_email, 
             strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, 
@@ -85,12 +85,14 @@ const sql_get_approved_bookings = `SELECT id, booking_type, date, time, booking_
          ORDER BY id desc;`;
 const sql_get_historically_approved_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created FROM bookings WHERE status = 2 and date <= date('now')`;
 const sql_get_bookings_history = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created, status FROM bookings ORDER BY id desc`;
-
 const sql_approve_or_reject_booking = `UPDATE bookings SET status = ? WHERE id = ?`;
 
+// Holiday related queries
 const sql_get_holidys = `SELECT date, time, description FROM holidays;`;
 const sql_get_upcoming_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
 
+// Client related queries
+const sql_get_clients = `SELECT foreName, lastName, client_phone, client_email, stamp_created FROM client;`;
 const sql_check_existing_client = `SELECT client_id FROM client WHERE client_phone = ? OR client_email = ? LIMIT 1`;
 const sql_insert_client = `INSERT INTO client (foreName, lastName, client_phone, client_email) VALUES (?, ?, ?, ?)`;
 const sql_insert_mailing_list = `INSERT INTO  mailing_list (client_id, date_subscribed) VALUES (?, date(?))`;
@@ -440,6 +442,21 @@ app.post('/api/add-holiday', async (req, res) => {
         });
     }
 });
+
+////////////////////////
+///   CLIENT APIs   ///
+////////////////////////
+
+app.get('/api/clients', (req, res) => {
+    db.all(sql_get_clients, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+////////////////////////
+///  START SERVER   ///
+////////////////////////
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

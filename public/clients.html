@@ -11,79 +11,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   </head>
 <body>
-<header>
-  <div class="container">
-    <div class="navigation-layout">
-      <nav class="navbar">
-        <ul class="nav-menu">
-          <li class="nav-item">
-            <a class="nav-link hover-underline" href="clients.html">Клиенти</a>
-          </li>
-        </ul>
-      </nav>
-          <img src="Images/icon-inverted.png" alt="Pilates Reformer Studio by Dilona Logo" onclick="window.location.href = 'admin.html'" class="logo"></img>
-      <nav class="navbar">
-        <ul class="nav-menu">
-          <li class="nav-item">
-            <a class="nav-link hover-underline" href="subscriptions.html">Абонаменти</a>
-          </li>
-        </ul>
-      </nav>
+  <header>
+    <div class="container">
+      <div class="navigation-layout">
+        <nav class="navbar">
+          <ul class="nav-menu">
+            <li class="nav-item">
+              <a class="nav-link hover-underline" href="clients.html">Клиенти</a>
+            </li>
+          </ul>
+        </nav>
+            <img src="Images/icon-inverted.png" alt="Pilates Reformer Studio by Dilona Logo" onclick="window.location.href = 'admin.html'" class="logo"></img>
+        <nav class="navbar">
+          <ul class="nav-menu">
+            <li class="nav-item">
+              <a class="nav-link hover-underline" href="subscriptions.html">Абонаменти</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
-  </div>
-</header>
-<div class="title">
-  <h1>Клиенти</h1>
-</div>
-    <section class="admin-control">
-        <div class="container">
-            <h2>Управление на клиенти</h2>
-            <div class="table-container">
-                <table id="clientsTable">
-                    <tr>
-                        <th>Имена</th>
-                        <th>Телефон</th>
-                        <th>Имейл</th>
-                    </tr>
-                </table>
-                <div class="pagination" id="clientsPagination"></div>
-            </div>
-        </div>
-    </section>
+  </header>
 
-    <section class="bookings-history">
-  <div class="container">
-    <h2>История на заявки</h2>
-    <div class="table-container">
-        <table id="bookingHistoryTable">
-          <th>Имена</th>
-          <th>Тип</th>
-          <th>Дата</th>
-          <th>Час</th>
-          <th>Заявена на</th>
-        </table>
-        <div class="pagination" id="historyPagination"></div>
+    <div class="title">
+      <h1>Клиенти</h1>
     </div>
-    <div class="history-filters">
-      <div class="by-status">
-        <button class="slot pending">Чакащи</button>
-        <button class="slot available">Одобрени</button>
-        <button class="slot rejected">Отказани</button>
-        <button class="slot canceled">Отменени</button>
+
+<section class="admin-control">
+  <div class="container">
+    <div class="clients-grid">
+      <div class="client-list">
+        <h2>Управление на клиенти</h2>
+        <div class="table-container">
+            <table id="clientsTable">
+                <tr>
+                    <th>Имена</th>
+                    <th>Телефон</th>
+                    <th>Имейл</th>
+                </tr>
+            </table>
+            <div class="pagination" id="clientsPagination"></div>
+        </div>
+      </div>
+
+      <div class="bookings-history">
+        <h2>История на заявки</h2>
+        <div class="table-container">
+            <table id="bookingHistoryTable">
+              <th>Имена</th>
+              <th>Тип</th>
+              <th>Дата</th>
+              <th>Час</th>
+              <th>Заявена на</th>
+            </table>
+            <div class="pagination" id="historyPagination"></div>
+        </div>
+        <div class="history-filters">
+          <div class="by-status">
+            <button class="slot pending">Чакащи</button>
+            <button class="slot available">Одобрени</button>
+            <button class="slot rejected">Отказани</button>
+            <button class="slot canceled">Отменени</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+  <div class="website-signature">
+    <p>Website by <a href="https://www.vasilapostolov.tech/" class="links hover-underline">VA</a></p>
+    <i class="fab fa-github"></i>
+  </div>
 </section>
 
-    <footer>
-        <div class="container">
-            <div class="website-signature">
-                <p>Website by <a href="https://www.vasilapostolov.tech/" class="links hover-underline">VA</a></p>
-                <i class="fab fa-github"></i>
-            </div>
-        </div>
-    </footer>
-    
-<script src="admin.js"></script>
+  <script src="admin.js"></script>
 </body>
 </html>
