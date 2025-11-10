@@ -7,6 +7,7 @@
     --default-background-color: #f9f9f9;
     --default-box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
     --mobile-font-size: 0.9rem;
+    --mobile-table-font-size: 0.75rem;
     --font-size: 1rem;
     --default-font-family: 'Lora', sans-serif;
     --standard-border-radius: 1rem;
@@ -215,8 +216,22 @@ ul {
 
     .clients-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 0.25fr 0.25fr 0.5fr 0.5fr;
       gap: 2rem;
+    }
+
+    .client-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--default-box-shadow);
+    }
+
+    .analytics-dashboard {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--default-box-shadow);
     }
 
   /* Subscriptions page grid */
@@ -418,7 +433,6 @@ label {
 }
 
 #admin-calendar {
-  overflow:auto;
   min-height:27rem;
 }
 
@@ -580,17 +594,12 @@ label {
   color: var(--default-background-color);
 }
 
-/* History section */
-.bookings-history {
-  width:50vw;
-}
-
 /* History filters */
 .history-filters {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1rem;
+    gap: 0.25rem;
     margin: 1rem 0;
     flex-wrap: wrap;
 }
@@ -741,6 +750,17 @@ section {
   width:100%;
 }
 
+.calendar-grid, .clients-grid, .subscriptions-grid {
+    display: flex;
+    justify-content: space-around;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    flex-direction: row;
+    align-items: flex-start;
+    gap:0.33rem;
+}
+
+
 /* test */
 /* Table adjustments */
 table {
@@ -753,7 +773,7 @@ th {
 }
 
 td {
-  font-size: var(--mobile-font-size);
+  font-size: var(--mobile-table-font-size);
 }
 
 th, td {
@@ -788,17 +808,6 @@ button {
 #admin-calendar {
   min-height:23rem;
 }
-
-.calendar-grid {
-    display: flex;
-    justify-content: space-around;
-    align-content: flex-start;
-    flex-wrap: wrap;
-    flex-direction: row;
-    align-items: flex-start;
-    gap:0.33rem;
-}
-
 .calendar-wrap {
   position: static;
   transform: none;

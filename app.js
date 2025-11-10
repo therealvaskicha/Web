@@ -92,7 +92,7 @@ const sql_get_holidys = `SELECT date, time, description FROM holidays;`;
 const sql_get_upcoming_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
 
 // Client related queries
-const sql_get_clients = `SELECT foreName, lastName, client_phone, client_email, stamp_created FROM client;`;
+const sql_get_clients = `SELECT foreName, lastName, client_phone, client_email, stamp_created FROM client order by foreName;`;
 const sql_check_existing_client = `SELECT client_id FROM client WHERE client_phone = ? OR client_email = ? LIMIT 1`;
 const sql_insert_client = `INSERT INTO client (foreName, lastName, client_phone, client_email) VALUES (?, ?, ?, ?)`;
 const sql_insert_mailing_list = `INSERT INTO  mailing_list (client_id, date_subscribed) VALUES (?, date(?))`;

@@ -553,10 +553,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = clientsTable.insertRow();
             row.innerHTML = `
                 <td>${client.foreName} ${client.lastName}</td>
-                <td>${client.client_phone}</td>
-                <td>${client.client_email}</td>
-                <td>${client.stamp_created}</td>
             `;
+            row.style.cursor = 'pointer';
         });
     }
 
@@ -571,7 +569,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let filteredBookings = [...bookings]; // Create a copy of all bookings
         
         // Pagination settings
-        const recordsPerPage = 5;
+        const recordsPerPage = 15;
         let currentPage = 1;
 
         // Add click handlers for filter buttons
