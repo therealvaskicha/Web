@@ -244,7 +244,7 @@ db.run(v_sql_create_check_credits, (err) => {
 });
 
 // One-off queries for testing or resetting the database
-    // db.run(`DELETE FROM bookings where id=3;`);
+    // db.run(`DELETE FROM bookings where id in (14,15);`);
 
 
     // drop all tables

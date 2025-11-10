@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Админ - Заявки за резервация</title>
+    <title>Клиенти</title>
     <link rel="stylesheet" href="admin.css">
     <link rel="icon" href="Images/icon-inverted.png" type="image/jpeg">
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
@@ -41,21 +41,45 @@
   <div class="container">
     <div class="clients-grid">
       <div class="client-list">
-        <h2>Управление на клиенти</h2>
+        <h2>Твоите клиенти</h2>
         <div class="table-container">
             <table id="clientsTable">
                 <tr>
-                    <th>Имена</th>
-                    <th>Телефон</th>
-                    <th>Имейл</th>
+                    <th>А - Я</th>
                 </tr>
             </table>
             <div class="pagination" id="clientsPagination"></div>
         </div>
       </div>
 
+      <div class="client-page">
+        <h2>статистика на клиентите / клиентска страница</h2>
+        <!-- Default: Топ 3 клиенти по брой посещения. -->
+        <!-- Active: при избиране на клиент от левия списък се появява страница на клиента с неговата информация с бутон за редакция-->
+        <!-- отдясно се покават всичките заявки на клиента -->
+      </div>
+
+      <div class="analytics-dashboard">
+        <h2>dashboard за анализи</h2>
+        <!-- dashboard където показва по месеци (избираемо) нови клиенти / нови заявки -->
+      </div>
+
       <div class="bookings-history">
         <h2>История на заявки</h2>
+          <div class="history-filters">
+            <small>Филтрирай по:</small>
+            <select name="filters" id="historyFilters">
+              <option value="all">Всички</option>
+              <option value="type-booking">Тип заявка</option>
+              <option value="date">Дата</option>
+            </select>
+            <div class="by-status">
+              <button class="slot pending">Чакащи</button>
+              <button class="slot available">Одобрени</button>
+              <button class="slot rejected">Отказани</button>
+              <button class="slot canceled">Отменени</button>
+            </div>
+          </div>
         <div class="table-container">
             <table id="bookingHistoryTable">
               <th>Имена</th>
@@ -66,20 +90,15 @@
             </table>
             <div class="pagination" id="historyPagination"></div>
         </div>
-        <div class="history-filters">
-          <div class="by-status">
-            <button class="slot pending">Чакащи</button>
-            <button class="slot available">Одобрени</button>
-            <button class="slot rejected">Отказани</button>
-            <button class="slot canceled">Отменени</button>
-          </div>
-        </div>
       </div>
     </div>
-  </div>
-  <div class="website-signature">
-    <p>Website by <a href="https://www.vasilapostolov.tech/" class="links hover-underline">VA</a></p>
-    <i class="fab fa-github"></i>
+
+    <div class="container">
+      <div class="website-signature">
+        <p>Website by <a href="https://www.vasilapostolov.tech/" class="links hover-underline">VA</a></p>
+        <i class="fab fa-github"></i>
+      </div>
+    </div>
   </div>
 </section>
 
