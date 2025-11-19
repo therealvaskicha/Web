@@ -425,6 +425,90 @@ h5 {
         padding: 0rem 1.25rem;
     }
 
+/* Modal for Terms of Use */
+#disclaimer-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    overflow: auto;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+#disclaimer-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#disclaimer-modal .modal-content {
+    background-color: #f9f9f9;
+    margin: 5% auto;
+    padding: 2rem;
+    border: 1px solid #e7e4bb;
+    width: 90%;
+    max-width: 800px;
+    border-radius: 0.5rem;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideDown 0.3s ease-in-out;
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.2);
+}
+
+#disclaimer-modal .close-disclaimer {
+    position: absolute;
+    right: 1.5rem;
+    top: 1rem;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+    z-index: 1001;
+}
+
+#disclaimer-modal .close-disclaimer:hover {
+    color: #f0a500;
+}
+
+#disclaimer-modal .disclaimer {
+    width: 100%;
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555;
+    background: none;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    border-left: none;
+    border-right: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 /* Price Cards */
 
 .price-cards {
@@ -462,7 +546,7 @@ h5 {
 .price-card:hover {
   box-shadow: 0rem 0.5rem 2rem rgba(0,0,0,0.1);
   transform: translateY(-0.1rem);
-    transition: transform 0.3s ease-in-out, box-shadow 0.2s;
+  transition: transform 0.3s ease-in-out;
 }
 
 .price-card.popular {
@@ -1462,6 +1546,19 @@ top: 0rem;
             width: 100%;
             height: auto;
             max-width: 100%;
+        }
+
+        #disclaimer-modal .modal-content {
+            width: 95%;
+            margin: 10% auto;
+            padding: 1.5rem;
+            max-height: 90vh;
+        }
+
+        #disclaimer-modal .close-disclaimer {
+            font-size: 1.5rem;
+            right: 1rem;
+            top: 0.5rem;
         }
 
         .price-cards {

@@ -173,6 +173,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeBtn = document.querySelector('.modal-close');
     const prevBtn = document.querySelector('.modal-nav.prev-btn');
     const nextBtn = document.querySelector('.modal-nav.next-btn');
+    const disclaimerLink = document.getElementById('terms-and-conditions-link');
+    const disclaimerModal = document.getElementById('disclaimer-modal');
+    const closeDisclaimerBtn = document.querySelector('.close-disclaimer');
+
     // Add intersection observer for fade-in sections
     const fadeElements = document.querySelectorAll('.fade-in-section');
 
@@ -228,6 +232,38 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (currentIndex > 0) openModal(currentIndex - 1);
             } else if (e.key === 'ArrowRight' && modal.style.display === 'flex') {
                 if (currentIndex < galleryImages.length - 1) openModal(currentIndex + 1);
+            }
+        });
+    }
+
+    // Check if elements exist before adding listeners
+    if (disclaimerLink && disclaimerModal && closeDisclaimerBtn) {
+        // Open modal when link is clicked
+        disclaimerLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            disclaimerModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+    
+        // Close modal when X is clicked
+        closeDisclaimerBtn.addEventListener('click', () => {
+            disclaimerModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    
+        // Close modal when clicking outside the modal content
+        disclaimerModal.addEventListener('click', (e) => {
+            if (e.target === disclaimerModal) {
+                disclaimerModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    
+        // Close modal when pressing Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && disclaimerModal.classList.contains('active')) {
+                disclaimerModal.classList.remove('active');
+                document.body.style.overflow = '';
             }
         });
     }
