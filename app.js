@@ -92,15 +92,29 @@ const sql_get_holidys = `SELECT date, time, description FROM holidays;`;
 const sql_get_upcoming_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
 
 // Client related queries
-const sql_get_clients = `SELECT foreName, lastName, client_phone, client_email, stamp_created FROM client order by foreName;`;
+const sql_get_clients = `SELECT client_id, foreName, lastName, client_phone, client_email, stamp_created FROM client order by foreName;`;
+const sql_get_client_by_id = `SELECT foreName, lastName, client_phone, client_email, stamp_created, stamp_modified FROM client WHERE client_id = ? LIMIT 1`;
+const sql_get_client_mailing_list = `SELECT is_subscribed, date_subscribed, date_unsubscribed FROM mailing_list WHERE client_id = ? LIMIT 1`;
+const sql_get_client_card_info = `SELECT 
+            cc.card_id,
+            s.name as service_name,
+            sub.credits_balance,
+            sub.start_date,
+            sub.expiration_date,
+            sub.status as subscription_status,
+            sub.stamp_created
+        FROM client_card cc
+        JOIN services s ON cc.service_id = s.service_id
+        LEFT JOIN subscriptions sub ON cc.card_id = sub.card_id
+        WHERE cc.client_id = ?`;
 const sql_check_existing_client = `SELECT client_id FROM client WHERE client_phone = ? OR client_email = ? LIMIT 1`;
 const sql_insert_client = `INSERT INTO client (foreName, lastName, client_phone, client_email) VALUES (?, ?, ?, ?)`;
 const sql_insert_mailing_list = `INSERT INTO  mailing_list (client_id, date_subscribed) VALUES (?, date(?))`;
 const sql_insert_client_card = `INSERT INTO client_card (client_id, service_id) VALUES (?, ?)`;
-const sql_insert_subscription = `INSERT INTO subscriptions (service_id, card_id, credits_balance, start_date, expiration_date, status) VALUES (?, ?, ?, date(?), date(?), ?)`;
+const sql_insert_subscription = `INSERT INTO subscriptions (service_id, card_id, client_id, credits_balance, start_date, expiration_date, status) VALUES (?, ?, ?, ?, date(?), date(?), ?)`;
 const sql_select_service = `SELECT service_id, nr_credits FROM services WHERE name = ? LIMIT 1`;
 const sql_subtract_credits = `UPDATE subscriptions 
-SET credits_balance = credits_balance - 1,
+SET credits_balance = credits_balance - 1, stamp_modified = CURRENT_TIMESTAMP,
      status = CASE 
         WHEN credits_balance - 1 = 0 THEN 9 
         WHEN expiration_date < date('now') THEN 7
@@ -109,11 +123,11 @@ SET credits_balance = credits_balance - 1,
         WHERE sub_id = ?;`;
 const sql_sync_sub_status = `UPDATE subscriptions 
     SET status = CASE 
-        WHEN credits_balance > 0 AND date('now') =< expiration_date THEN    6
+        WHEN credits_balance > 0 AND date('now') =< expiration_date THEN 6
         WHEN date('now') > expiration_date THEN 7
         WHEN status = 8 THEN 8
         WHEN credits_balance = 0 THEN 9 
-    END`
+    END, stamp_modified = CURRENT_TIMESTAMP;`;
 
 const sql_sync_client_card_status = `UPDATE client_card 
     SET is_active = CASE 
@@ -124,6 +138,7 @@ const sql_sync_client_card_status = `UPDATE client_card
         ELSE 0
     END`
 const sql_update_client_card_status = `UPDATE client_card SET is_active = ? WHERE card_id = ?`;
+
 
 ////////////////////////
 ///   BOOKING APIs   ///
@@ -193,9 +208,8 @@ app.post('/api/approve', async (req, res) => {
         // Handle email subscription
         if (booking.subscribe_email) {
             await new Promise ((resolve, reject) => {
-                const subscriptionDate = formatDate(new Date());
                 db.run(sql_insert_mailing_list, 
-                    [clientId, subscriptionDate],
+                    [clientId, booking.date], // Use booking date instead of current date
                     function(err) {
                         if (err) reject(err);
                         else resolve(this);
@@ -213,30 +227,77 @@ app.post('/api/approve', async (req, res) => {
                 });
             });
 
-            // Create card
-            const cardResult = await new Promise ((resolve, reject) => {
-                db.run(sql_insert_client_card, 
-                    [clientId, serviceType.service_id],
-                    function(err) {
-                    if (err) reject(err);
-                    else resolve(this);
+            if (serviceType) {
+                // Create subscription FIRST with status 5 (pending)
+                const startDate = booking.date;
+                const expirationDate = formatDate(addMonths(new Date(booking.date), 1));
+
+                const subResult = await new Promise ((resolve, reject) => {
+                    db.run(sql_insert_subscription, 
+                        [serviceType.service_id, null, clientId, serviceType.nr_credits, startDate, expirationDate, 5],
+                        function(err) {
+                            if (err) reject(err);
+                            else resolve(this);
+                        });
                 });
-            })
 
-            // Create subscritpion
-            await new Promise ((resolve,reject) => {
-                const startDate = formatDate(new Date());
-                const expirationDate = formatDate(addMonths(new Date(), 1));
+                const subscriptionId = subResult.lastID;
 
-                db.run(sql_insert_subscription, 
-                    [serviceType.service_id, cardResult.lastID, serviceType.nr_credits, startDate, expirationDate, 5],
-                    function(err) {
-                        if (err) reject(err);
-                        else resolve(this);
+                // Check if subscription should be active (status 6)
+                // A subscription is active if start_date <= today AND expiration_date >= today AND credits_balance > 0
+                const today = formatDate(new Date());
+                let subscriptionStatus = 5; // Default to pending
+                let cardId = null;
+
+                if (startDate <= today && expirationDate >= today) {
+                    // Update subscription status to 6 (active)
+                    subscriptionStatus = 6;
+
+                    // Only create client card if subscription is active (status 6)
+                    const cardResult = await new Promise ((resolve, reject) => {
+                        db.run(sql_insert_client_card, 
+                            [clientId, serviceType.service_id],
+                            function(err) {
+                                if (err) reject(err);
+                                else resolve(this);
+                            });
                     });
-            });
+
+                    cardId = cardResult.lastID;
+
+                    // Update subscription with card_id and status 6
+                    await new Promise ((resolve, reject) => {
+                        db.run(`UPDATE subscriptions SET card_id = ?, status = 6, is_active = 1 WHERE sub_id = ?`,
+                            [cardId, subscriptionId],
+                            function(err) {
+                                if (err) reject(err);
+                                else resolve(this);
+                            });
+                    });
+
+                    // Set client_card to active
+                    await new Promise ((resolve, reject) => {
+                        db.run(`UPDATE client_card SET is_active = 1 WHERE card_id = ?`,
+                            [cardId],
+                            function(err) {
+                                if (err) reject(err);
+                                else resolve(this);
+                            });
+                    });
+                } else {
+                    // Keep status as 5 (pending) - do NOT create client_card yet
+                    await new Promise ((resolve, reject) => {
+                        db.run(`UPDATE subscriptions SET status = 5 WHERE sub_id = ?`,
+                            [subscriptionId],
+                            function(err) {
+                                if (err) reject(err);
+                                else resolve(this);
+                            });
+                    });
+                }
             }
         }
+    }
     }
 
     // Commit transaction
@@ -451,6 +512,33 @@ app.get('/api/clients', (req, res) => {
     db.all(sql_get_clients, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
+    });
+});
+
+app.get('/api/client/:id', (req, res) => {
+    const clientId = req.params.id;
+    db.get(sql_get_client_by_id, [clientId], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: 'Client not found' });
+        res.json(row);
+    });
+});
+
+app.get('/api/client/:id/mailing-list', (req, res) => {
+    const clientId = req.params.id;
+    
+    db.get(sql_get_client_mailing_list, [clientId], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(row || {});
+    });
+});
+
+app.get('/api/client/:id/cards', (req, res) => {
+    const clientId = req.params.id;
+    
+    db.all(sql_get_client_card_info, [clientId], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows || []);
     });
 });
 

@@ -66,14 +66,18 @@ const sql_create_services_table = `CREATE TABLE IF NOT EXISTS services (
 const sql_create_subscriptions_table = `CREATE TABLE IF NOT EXISTS subscriptions (
     sub_id INTEGER PRIMARY KEY AUTOINCREMENT,
     service_id INTEGER NOT NULL,
-    card_id INTEGER NOT NULL,
+    card_id INTEGER DEFAULT 0,
+    client_id INTEGER NOT NULL,
     credits_balance INTEGER NOT NULL,
-    start_date DATETIME NOT NULL,
-    expiration_date DATETIME NOT NULL,
+    start_date DATE NOT NULL,
+    expiration_date DATE NOT NULL,
     status INTEGER NOT NULL DEFAULT 5,
+    stamp_created DATETIME DEFAULT CURRENT_TIMESTAMP,
+    stamp_modified DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(card_id) REFERENCES client_card(card_id),
     FOREIGN KEY(service_id) REFERENCES services(service_id),
-    FOREIGN KEY(status) REFERENCES enum(id)
+    FOREIGN KEY(status) REFERENCES enum(id),
+    FOREIGN KEY(client_id) REFERENCES client(client_id)
 );`
 
 const sql_create_enum_table = `CREATE TABLE IF NOT EXISTS enum (
@@ -169,22 +173,22 @@ db.serialize(() => {
     });
 
     // Client card table
-        db.run(sql_create_client_card_table, (err) => {
-        (err) => {
+    db.run(sql_create_client_card_table, (err) => {
+        if (err) {
             console.error("Error creating client_card table:", err.message);
         }
     });
 
     // Services table
-        db.run(sql_create_services_table, (err) => {
-        (err) => {
+    db.run(sql_create_services_table, (err) => {
+        if (err) {
             console.error("Error creating services table:", err.message);
         }
     });
 
     // Subscriptions table
-        db.run(sql_create_subscriptions_table, (err) => {
-        (err) => {
+    db.run(sql_create_subscriptions_table, (err) => {
+        if (err) {
             console.error("Error creating subscriptions table:", err.message);
         }
     });
@@ -225,7 +229,7 @@ WHERE is_active = 1`;
 // view for checking credits balance and expiration date
 const v_sql_create_check_credits = `
 CREATE VIEW IF NOT EXISTS v_check_credits AS
-SELECT card_id, credits_balance, expiration_date
+SELECT card_id, credits_balance, start_date, expiration_date
     FROM subscriptions
     LIMIT 1
     `;
@@ -244,12 +248,10 @@ db.run(v_sql_create_check_credits, (err) => {
 });
 
 // One-off queries for testing or resetting the database
-    // db.run(`DELETE FROM bookings where id in (14,15);`);
-
+    // db.run(`INSERT INTO client_card (client_id, service_id, is_active) VALUES (0, 6, 0);`);
 
     // drop all tables
     // db.run (`DROP TABLE IF EXISTS bookings;`);
-    // db.run (`DROP TABLE IF EXISTS holidays;`);
     // db.run (`DROP TABLE IF EXISTS client;`);
     // db.run (`DROP TABLE IF EXISTS mailing_list;`);
     // db.run (`DROP TABLE IF EXISTS client_card;`);

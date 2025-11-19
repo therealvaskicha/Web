@@ -216,7 +216,7 @@ ul {
 
     .clients-grid {
       display: grid;
-      grid-template-columns: 0.25fr 0.25fr 0.5fr 0.5fr;
+      grid-template-columns: 2fr 3fr 5fr 5fr;
       gap: 2rem;
     }
 
@@ -225,6 +225,7 @@ ul {
       align-items: center;
       justify-content: center;
       box-shadow: var(--default-box-shadow);
+      padding:0.5rem;
     }
 
     .analytics-dashboard {
@@ -386,6 +387,29 @@ button:hover {
 
 label {
     margin-top: 0.25rem;
+}
+
+.history-filters input {
+    padding: 0.25rem 0.5rem;
+    margin-top: 0.125rem;
+    border-radius: var(--standard-border-radius);
+    border: 1px solid var(--primary-color);
+    font-size: var(--font-size);
+    font-family: var(--default-font-family);
+}
+
+.history-filters .clear-filter {
+    position: absolute;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+    z-index: 1001;
+}
+
+.history-filters .clear-filter:hover {
+    color: #f0a500;
 }
 
 .requestServices input,
@@ -597,11 +621,15 @@ label {
 /* History filters */
 .history-filters {
     display: flex;
-    justify-content: center;
-    align-items: center;
     gap: 0.25rem;
-    margin: 1rem 0;
-    flex-wrap: wrap;
+    margin: 0.5rem 0;
+    flex-direction: column;
+    align-items: center;
+}
+
+.by-date {
+  display:flex;
+  gap:0.25rem;
 }
 
 .no-data-message {
@@ -619,7 +647,7 @@ label {
     align-items: center;
     font-size: var(--mobile-font-size);
     gap: 0.25rem;
-    margin-bottom:1rem;
+    margin:1rem;
 }
 
 .links {
@@ -633,8 +661,6 @@ label {
     color: #18004c99;
     transition: 0.15s ease-in-out;
 } 
-
-/* Add these styles at the end of your CSS file */
 
 .pagination {
     display: flex;
@@ -664,9 +690,136 @@ label {
     font-weight: bold;
 }
 
-/* Add transition styles for table rows */
 #bookingHistoryTable tr {
     transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* /////////////////  */
+/* Client Page Styles */
+/* /////////////////  */
+
+.topClients {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 25rem;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.clientInfo {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    animation: slideIn 0.3s ease-in-out;
+}
+
+.client-info-content {
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.close-client-info {
+    position: absolute;
+    right: 1rem;
+    top: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.close-client-info:hover {
+    color: var(--active-color);
+}
+
+.info-section {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background: #f5f5f5;
+    border-radius: 0.5rem;
+    border-left: 0.125rem solid var(--primary-color);
+    width:100%;
+}
+
+.info-section h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    border-bottom: 0.05rem solid var(--primary-color);
+    align-items: center;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-right: 1rem;
+}
+
+#clientCards {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-item {
+    cursor:pointer;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: var(--standard-border-radius);
+    box-shadow: var(--default-box-shadow);
+}
+
+.card-item:hover {
+  transform: translateY(-0.1rem);
+  transition: transform 0.3s ease-in-out, box-shadow 0.2s;
+}
+
+.card-item h5 {
+    text-align:center;
+    color: var(--active-color);
+}
+
+.card-item-detail {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--mobile-font-size);
+    align-items: center;
+    padding:0.125rem;
+}
+
+.card-item-detail label {
+    font-weight: 600;
+    margin-top:0;
+    font-size: var(--mobile-font-size);
+}
+
+.edit-client-btn {
+    margin-top: 0.5rem;
+    font-size: var(--font-size);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ///////////////// */
@@ -760,8 +913,6 @@ section {
     gap:0.33rem;
 }
 
-
-/* test */
 /* Table adjustments */
 table {
   font-size: var(--mobile-font-size);
@@ -802,6 +953,16 @@ button {
 
 .hint { 
   margin:0.33rem 0;
+}
+
+.by-date {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#startDate, #endDate {
+  font-size: var(--mobile-font-size);
 }
 
 /* Calendar adjustments for mobile */
@@ -856,4 +1017,38 @@ button {
     padding: 0.3rem 0.7rem;
     font-size: var(--mobile-font-size);
 }
+
+/* Client page adjustments */
+    .client-page {
+        min-height: 20rem;
+        padding: 1rem;
+    }
+
+    .topClients {
+        min-height: 15rem;
+    }
+
+    .close-client-info {
+        font-size: 1.5rem;
+        right: 0.5rem;
+        top: -0.5rem;
+    }
+
+    .info-section {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .info-item {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .info-item label {
+        margin-right: 0;
+    }
+
+    .client-info-content h3 {
+        font-size: 1.25rem;
+    }
 }

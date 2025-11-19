@@ -536,6 +536,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (getCurrentPage() === 'clients') {
         loadHistory();
         loadClients();
+        clearDateFilter();
+    }
+
+    async function clearDateFilter() {
+        const clearDateFilter = document.getElementById('clearFilters');
+        clearDateFilter.addEventListener('click', () => {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+        });
     }
 
     async function loadClients() {
@@ -555,7 +564,114 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${client.foreName} ${client.lastName}</td>
             `;
             row.style.cursor = 'pointer';
+
+            row.addEventListener('click', async () => {
+            await showClientInfo(client.client_id); 
         });
+        })
+        
+
+    }
+
+    async function showClientInfo(clientId) {
+    try {
+        const response = await fetch(`/api/client/${clientId}`);
+        const client = await response.json();
+
+        // Get client elements
+        const topClients = document.querySelector('.topClients');
+        const clientInfo = document.querySelector('.clientInfo');
+        const closeBtn = document.querySelector('.close-client-info');
+
+        // Populate client info
+        document.getElementById('clientName').textContent = `${client.foreName} ${client.lastName}`;
+        document.getElementById('clientPhone').textContent = client.client_phone || 'N/A';
+        document.getElementById('clientEmail').textContent = client.client_email || 'N/A';
+        document.getElementById('clientCreated').textContent = formatClientDate(client.stamp_created);
+
+        // Fetch additional data (mailing list, cards, subscriptions)
+        const mailingListResponse = await fetch(`/api/client/${clientId}/mailing-list`);
+        const mailingList = await mailingListResponse.json();
+
+        const cardsResponse = await fetch(`/api/client/${clientId}/cards`);
+        const cards = await cardsResponse.json();
+
+        // Show/hide mailing list section
+        const mailingListSection = document.getElementById('mailingListSection');
+        if (mailingList && mailingList.date_subscribed) {
+            document.getElementById('mailingListDate').textContent = formatClientDate(mailingList.date_subscribed);
+            mailingListSection.style.display = 'block';
+        } else {
+            mailingListSection.style.display = 'none';
+        }
+
+        // Show/hide cards section
+        const cardSection = document.getElementById('cardSection');
+        const clientCards = document.getElementById('clientCards');
+        if (cards && cards.length > 0) {
+            clientCards.innerHTML = '';
+            cards.forEach(card => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card-item';
+                cardDiv.innerHTML = `
+                    <h5>${card.service_name}</h5>
+                    <div class="card-item-detail">
+                        <label>Статус:</label>
+                        <span>${getSubscriptionStatus(card.subscription_status)}</span>
+                    </div>
+                    <div class="card-item-detail">
+                        <label>Кредити:</label>
+                        <span>${card.credits_balance}</span>
+                    </div>
+                    <div class="card-item-detail">
+                        <label>Заявена на:</label>
+                        <span>${(card.stamp_created)}</span>
+                    </div>
+                    <div class="card-item-detail">
+                        <label>За период:</label>
+                        <span>${formatClientDate(card.start_date)} - ${formatClientDate(card.end_date)}</span>
+                    </div>
+                `;
+                clientCards.appendChild(cardDiv);
+            });
+            cardSection.style.display = 'block';
+        } else {
+            cardSection.style.display = 'none';
+        }
+
+        // Show client info, hide top clients
+        topClients.style.display = 'none';
+        clientInfo.style.display = 'block';
+
+        // Close button functionality
+        closeBtn.onclick = () => {
+            clientInfo.style.display = 'none';
+            topClients.style.display = 'flex';
+        };
+
+    } catch (error) {
+        console.error('Error loading client info:', error);
+        alert('Грешка при зареждане на информацията на клиента');
+    }
+    }
+
+    // Helper function to format dates
+    function formatClientDate(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('bg-BG');
+    }
+    
+    // Helper function to get subscription status name
+    function getSubscriptionStatus(status) {
+        const statusMap = {
+            5: 'Чакащ',
+            6: 'Активен',
+            7: 'Изтекъл',
+            8: 'Суспендиран',
+            9: 'Използван'
+        };
+        return statusMap[status] || 'Неизвестен';
     }
 
     async function loadHistory() {
@@ -569,7 +685,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let filteredBookings = [...bookings]; // Create a copy of all bookings
         
         // Pagination settings
-        const recordsPerPage = 15;
+        const recordsPerPage = 10;
         let currentPage = 1;
 
         // Add click handlers for filter buttons
@@ -628,6 +744,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${booking.time}</td>
                     <td>${booking.stamp_created}</td>
                 `;
+                row.style.cursor = 'pointer';
 
                 // Add appropriate class based on status
                 switch (booking.status) {

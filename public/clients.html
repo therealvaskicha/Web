@@ -53,26 +53,74 @@
       </div>
 
       <div class="client-page">
-        <h2>статистика на клиентите / клиентска страница</h2>
-        <!-- Default: Топ 3 клиенти по брой посещения. -->
+        <div class="topClients">
+            <p class="no-data-message">Топ 3 клиенти</p>
+            <!-- d3.js visualization -->
+             <!-- Default: Топ 3 клиенти по брой посещения. -->
+        </div>
         <!-- Active: при избиране на клиент от левия списък се появява страница на клиента с неговата информация с бутон за редакция-->
         <!-- отдясно се покават всичките заявки на клиента -->
+        <div class="clientInfo" style="display: none;">
+          <span class="close-client-info">&times;</span>
+
+          <div class="client-info-content">
+            <h3 id="clientName"></h3>
+
+            <div class="info-section">
+                <h4>Лична информация</h4>
+                <div class="info-item">
+                    <label>Телефон:</label>
+                    <span id="clientPhone"></span>
+                </div>
+                <div class="info-item">
+                    <label>Имейл:</label>
+                    <span id="clientEmail"></span>
+                </div>
+                <div class="info-item">
+                    <label>Регистриран:</label>
+                    <span id="clientCreated"></span>
+                </div>
+            </div>
+          
+            <div class="info-section" id="mailingListSection" style="display: none;">
+                <h4>Имейл абонамент</h4>
+                <div class="info-item">
+                    <label>Дата на абонамент:</label>
+                    <span id="mailingListDate"></span>
+                </div>
+            </div>
+          
+            <div class="info-section" id="cardSection" style="display: none;">
+                <h4>Абонаментни карти</h4>
+                <div id="clientCards">
+                    <!-- Client cards will be populated here -->
+                </div>
+            </div>
+          
+            <button class="edit-client-btn" id="editClientBtn">Редактирай</button>
+          </div>
+        </div>
       </div>
 
       <div class="analytics-dashboard">
-        <h2>dashboard за анализи</h2>
+        <p class="no-data-message">dashboard за анализи / информация за заявката</h2>
         <!-- dashboard където показва по месеци (избираемо) нови клиенти / нови заявки -->
       </div>
 
       <div class="bookings-history">
         <h2>История на заявки</h2>
           <div class="history-filters">
-            <small>Филтрирай по:</small>
-            <select name="filters" id="historyFilters">
-              <option value="all">Всички</option>
-              <option value="type-booking">Тип заявка</option>
-              <option value="date">Дата</option>
-            </select>
+            <div class="by-date">
+              <div class="date-from">
+                <small>От:</small>
+                  <input type="date" id="startDate">
+              </div>
+              <div class="date-to">
+                <small>До:</small>
+                  <input type="date" id="endDate">
+                <span class="clear-filter" id="clearFilters">&times;</span>
+              </div>
+            </div>
             <div class="by-status">
               <button class="slot pending">Чакащи</button>
               <button class="slot available">Одобрени</button>
