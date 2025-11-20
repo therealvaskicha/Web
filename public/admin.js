@@ -558,6 +558,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const endDateInput = document.getElementById('endDate');
                 if (startDateInput) startDateInput.value = '';
                 if (endDateInput) endDateInput.value = '';
+                
+                // Trigger applyFilters to refresh the table
+                if (historyFilterController) {
+                    historyFilterController.clearClientFilter();
+                }
             });
         }
     }
