@@ -20,6 +20,9 @@ function getCurrentPage() {
 document.addEventListener('DOMContentLoaded', function() {
     const currentPage = getCurrentPage();
 
+    // Common controllers
+    let historyFilterController = null;
+
     ///////////////////////////////////
     // Admin page functions ///////////
     ///////////////////////////////////
@@ -402,11 +405,6 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         });
 
-        // <td>
-        //     <button class="approve-btn" data-id="${booking.id}">Одобри</button>
-        //     <button class="reject-btn" data-id="${booking.id}">Откажи</button>
-        // </td>
-
         // Add event listeners for approve/reject
         pendingBookingsTable.querySelectorAll('.approve-btn').forEach(btn => {
             btn.onclick = async () => {
@@ -534,27 +532,46 @@ document.addEventListener('DOMContentLoaded', function() {
     ///////////////////////////////////
 
     if (getCurrentPage() === 'clients') {
-        loadHistory();
-        loadClients();
-        clearDateFilter();
+        // Only initialize if the necessary elements exist
+        const bookingHistoryTable = document.getElementById('bookingHistoryTable');
+        const clientsTable = document.getElementById('clientsTable');
+        
+        if (bookingHistoryTable && clientsTable) {
+            // Initialize async functions
+            (async () => {
+                historyFilterController = await loadHistory();
+                loadClients();
+                
+                const clearDateFilterBtn = document.getElementById('clearFilters');
+                if (clearDateFilterBtn) {
+                    clearDateFilter();
+                }
+            })();
+        }
     }
 
     async function clearDateFilter() {
-        const clearDateFilter = document.getElementById('clearFilters');
-        clearDateFilter.addEventListener('click', () => {
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
-        });
+        const clearDateFilterBtn = document.getElementById('clearFilters');
+        if (clearDateFilterBtn) {
+            clearDateFilterBtn.addEventListener('click', () => {
+                const startDateInput = document.getElementById('startDate');
+                const endDateInput = document.getElementById('endDate');
+                if (startDateInput) startDateInput.value = '';
+                if (endDateInput) endDateInput.value = '';
+            });
+        }
     }
 
     async function loadClients() {
+        const clientsTable = document.getElementById('clientsTable');
+        if (!clientsTable) return;
+        
         const response = await fetch('/api/clients');
         const clients = await response.json();
-        const clientsTable = document.getElementById('clientsTable');
 
         if (clients.length < 1) {
             clientsTable.parentElement.innerHTML = '<p class="no-data-message">Няма регистрирани клиенти</p>';
-        return;
+            return;
         }
 
         while (clientsTable.rows.length > 1) clientsTable.deleteRow(1);
@@ -566,11 +583,9 @@ document.addEventListener('DOMContentLoaded', function() {
             row.style.cursor = 'pointer';
 
             row.addEventListener('click', async () => {
-            await showClientInfo(client.client_id); 
-        });
+                await showClientInfo(client.client_id); 
+            });
         })
-        
-
     }
 
     async function showClientInfo(clientId) {
@@ -578,25 +593,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const response = await fetch(`/api/client/${clientId}`);
         const client = await response.json();
 
-        // Get client elements
         const topClients = document.querySelector('.topClients');
         const clientInfo = document.querySelector('.clientInfo');
         const closeBtn = document.querySelector('.close-client-info');
 
-        // Populate client info
         document.getElementById('clientName').textContent = `${client.foreName} ${client.lastName}`;
         document.getElementById('clientPhone').textContent = client.client_phone || 'N/A';
+        if (client.client_phone) document.getElementById('clientPhone').href = 'tel:' + client.client_phone;
         document.getElementById('clientEmail').textContent = client.client_email || 'N/A';
+        if (client.client_email) document.getElementById('clientEmail').href = 'mailto:' + client.client_email;
         document.getElementById('clientCreated').textContent = formatClientDate(client.stamp_created);
 
-        // Fetch additional data (mailing list, cards, subscriptions)
         const mailingListResponse = await fetch(`/api/client/${clientId}/mailing-list`);
         const mailingList = await mailingListResponse.json();
 
         const cardsResponse = await fetch(`/api/client/${clientId}/cards`);
         const cards = await cardsResponse.json();
 
-        // Show/hide mailing list section
         const mailingListSection = document.getElementById('mailingListSection');
         if (mailingList && mailingList.date_subscribed) {
             document.getElementById('mailingListDate').textContent = formatClientDate(mailingList.date_subscribed);
@@ -605,7 +618,6 @@ document.addEventListener('DOMContentLoaded', function() {
             mailingListSection.style.display = 'none';
         }
 
-        // Show/hide cards section
         const cardSection = document.getElementById('cardSection');
         const clientCards = document.getElementById('clientCards');
         if (cards && cards.length > 0) {
@@ -639,20 +651,36 @@ document.addEventListener('DOMContentLoaded', function() {
             cardSection.style.display = 'none';
         }
 
-        // Show client info, hide top clients
         topClients.style.display = 'none';
         clientInfo.style.display = 'block';
 
-        // Close button functionality
+        filterBookingHistoryByClient(client.foreName, client.lastName);
+
         closeBtn.onclick = () => {
             clientInfo.style.display = 'none';
             topClients.style.display = 'flex';
+            
+            resetBookingHistoryFilter();
         };
 
     } catch (error) {
         console.error('Error loading client info:', error);
         alert('Грешка при зареждане на информацията на клиента');
     }
+    }
+
+    function filterBookingHistoryByClient(foreName, lastName) {
+        const clientName = `${foreName} ${lastName}`;
+
+        if (historyFilterController) {
+            historyFilterController.setClientFilter(clientName);
+        }
+    }
+
+    function resetBookingHistoryFilter() {
+        if (historyFilterController) {
+            historyFilterController.clearClientFilter();
+        }
     }
 
     // Helper function to format dates
@@ -666,133 +694,203 @@ document.addEventListener('DOMContentLoaded', function() {
     function getSubscriptionStatus(status) {
         const statusMap = {
             5: 'Чакащ',
-            6: 'Активен',
-            7: 'Изтекъл',
-            8: 'Суспендиран',
-            9: 'Използван'
+            6: 'Активна',
+            7: 'Изтекла',
+            8: 'Анулирана',
+            9: 'Използвана'
         };
         return statusMap[status] || 'Неизвестен';
     }
 
     async function loadHistory() {
-        const response = await fetch('/api/bookings-history');
-        const bookings = await response.json();
         const bookingHistoryTable = document.getElementById('bookingHistoryTable');
         const paginationContainer = document.getElementById('historyPagination');
-        
-        // Add filter functionality
         const filterButtons = document.querySelectorAll('.by-status .slot');
-        let filteredBookings = [...bookings]; // Create a copy of all bookings
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
         
-        // Pagination settings
-        const recordsPerPage = 10;
-        let currentPage = 1;
+        // Return early if elements don't exist
+        if (!bookingHistoryTable || !paginationContainer || !startDateInput || !endDateInput) {
+            console.warn('Required history filter elements not found');
+            return {
+                setClientFilter: () => {},
+                clearClientFilter: () => {}
+            };
+        }
 
-        // Add click handlers for filter buttons
-        filterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                if (button.classList.contains('active')) {
-                    button.classList.remove('active');
-                    filteredBookings = [...bookings];
-                    activeFilter = null;
-                    currentPage = 1;
-                    displayBookings(currentPage);
-                    return;
+        try {
+            const response = await fetch('/api/bookings-history');
+            const bookings = await response.json();
+            
+            let filteredBookings = [...bookings];
+            let selectedClient = null;
+            let activeStatusFilter = null;
+            
+            const recordsPerPage = 10;
+            let currentPage = 1;
+
+            // Apply all filters
+            function applyFilters() {
+                filteredBookings = [...bookings];
+
+                // Apply client filter
+                if (selectedClient) {
+                    filteredBookings = filteredBookings.filter(booking => {
+                        const clientName = `${booking.client_forename} ${booking.client_lastname}`;
+                        return clientName === selectedClient;
+                    });
                 }
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                // Add active class to clicked button
-                button.classList.add('active');
-                
-                // Filter bookings based on button class
-                if (button.classList.contains('pending')) {
-                    filteredBookings = bookings.filter(booking => booking.status === 1);
-                } else if (button.classList.contains('available')) {
-                    filteredBookings = bookings.filter(booking => booking.status === 2);
-                } else if (button.classList.contains('rejected')) {
-                    filteredBookings = bookings.filter(booking => booking.status === 4);
-                } else if (button.classList.contains('canceled')) {
-                    filteredBookings = bookings.filter(booking => booking.status === 3);
-                } else {
-                    filteredBookings = [...bookings]; // Reset to show all
+
+                // Apply status filter
+                if (activeStatusFilter) {
+                    filteredBookings = filteredBookings.filter(booking => booking.status === activeStatusFilter);
                 }
-                
-                // Reset to first page and update display
+
+                // Apply date range filter
+                if (startDateInput.value || endDateInput.value) {
+                    filteredBookings = filteredBookings.filter(booking => {
+                        const bookingDate = new Date(booking.date);
+                        const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+                        const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+
+                        if (startDate && bookingDate < startDate) return false;
+                        if (endDate && bookingDate > endDate) return false;
+                        return true;
+                    });
+                }
+
                 currentPage = 1;
                 displayBookings(currentPage);
-            });
-        });
-
-        function displayBookings(page) {
-            // Clear existing rows
-            while (bookingHistoryTable.rows.length > 1) bookingHistoryTable.deleteRow(1);
-            
-            // Calculate start and end indices based on filtered bookings
-            const start = (page - 1) * recordsPerPage;
-            const end = start + recordsPerPage;
-            const paginatedBookings = filteredBookings.slice(start, end);
-
-            // Display bookings for current page
-            paginatedBookings.forEach(booking => {
-                const row = bookingHistoryTable.insertRow();
-                row.style.opacity = '0';
-                row.style.transform = 'translateY(-10px)';
-                booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
-                row.innerHTML = `
-                    <td>${booking.client_name}</td>
-                    <td>${booking.booking_type}</td>
-                    <td>${booking.date}</td>
-                    <td>${booking.time}</td>
-                    <td>${booking.stamp_created}</td>
-                `;
-                row.style.cursor = 'pointer';
-
-                // Add appropriate class based on status
-                switch (booking.status) {
-                    case 3:
-                        row.classList.add('row-canceled');
-                        break;
-                    case 4:
-                        row.classList.add('row-rejected');
-                        break;
-                    case 2:
-                        row.classList.add('row-approved');
-                        break;
-                    default:
-                        row.classList.add('row-pending');
-                }
-
-                // Animate row appearance
-                setTimeout(() => {
-                    row.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
-                    row.style.opacity = '1';
-                    row.style.transform = 'translateY(0)';
-                }, 50 * bookingHistoryTable.rows.length);
-            });
-
-            updatePagination();
-        }
-
-        function updatePagination() {
-            paginationContainer.innerHTML = '';
-            const totalPages = Math.ceil(filteredBookings.length / recordsPerPage);
-            
-            // Create pagination buttons
-            for (let i = 1; i <= totalPages; i++) {
-                const button = document.createElement('button');
-                button.innerText = i;
-                button.classList.add('pagination-btn');
-                if (i === currentPage) {
-                    button.classList.add('active');
-                }
-                button.addEventListener('click', () => {
-                    currentPage = i;
-                    displayBookings(currentPage);
-                });
-                paginationContainer.appendChild(button);
             }
-        }
 
-        // Initial display of all bookings
-        displayBookings(currentPage);
+            // Status filter buttons
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (button.classList.contains('active')) {
+                        button.classList.remove('active');
+                        activeStatusFilter = null;
+                    } else {
+                        filterButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+
+                        if (button.classList.contains('pending')) {
+                            activeStatusFilter = 1;
+                        } else if (button.classList.contains('available')) {
+                            activeStatusFilter = 2;
+                        } else if (button.classList.contains('rejected')) {
+                            activeStatusFilter = 4;
+                        } else if (button.classList.contains('canceled')) {
+                            activeStatusFilter = 3;
+                        }
+                    }
+                    applyFilters();
+                });
+            });
+
+            // Date range filters
+            startDateInput.addEventListener('change', applyFilters);
+            endDateInput.addEventListener('change', applyFilters);
+
+            function displayBookings(page) {
+                const tableContainer = bookingHistoryTable.parentElement;
+                const existingMsg = tableContainer.querySelector('.no-data-message');
+                if (existingMsg) existingMsg.remove();
+                
+                while (bookingHistoryTable.rows.length > 1) bookingHistoryTable.deleteRow(1);
+
+                const start = (page - 1) * recordsPerPage;
+                const end = start + recordsPerPage;
+                const paginatedBookings = filteredBookings.slice(start, end);
+
+                if (paginatedBookings.length === 0) {
+                    const noDataMsg = document.createElement('p');
+                    noDataMsg.className = 'no-data-message';
+                    noDataMsg.textContent = 'Няма заявки, отговарящи на избраните филтри';
+                    tableContainer.appendChild(noDataMsg);
+                    paginationContainer.innerHTML = '';
+                    return;
+                }
+
+                paginatedBookings.forEach(booking => {
+                    const row = bookingHistoryTable.insertRow();
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateY(-10px)';
+                    booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
+                    row.innerHTML = `
+                        <td>${booking.client_name}</td>
+                        <td>${booking.booking_type}</td>
+                        <td>${booking.date}</td>
+                        <td>${booking.time}</td>
+                        <td>${booking.stamp_created}</td>
+                    `;
+
+                    switch (booking.status) {
+                        case 3:
+                            row.classList.add('row-canceled');
+                            break;
+                        case 4:
+                            row.classList.add('row-rejected');
+                            break;
+                        case 2:
+                            row.classList.add('row-approved');
+                            break;
+                        default:
+                            row.classList.add('row-pending');
+                    }
+
+                    setTimeout(() => {
+                        row.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
+                        row.style.opacity = '1';
+                        row.style.transform = 'translateY(0)';
+                    }, 50 * bookingHistoryTable.rows.length);
+                });
+
+                updatePagination();
+            }
+
+            function updatePagination() {
+                paginationContainer.innerHTML = '';
+                const totalPages = Math.ceil(filteredBookings.length / recordsPerPage);
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const button = document.createElement('button');
+                    button.innerText = i;
+                    button.classList.add('pagination-btn');
+                    if (i === currentPage) {
+                        button.classList.add('active');
+                    }
+                    button.addEventListener('click', () => {
+                        currentPage = i;
+                        displayBookings(currentPage);
+                    });
+                    paginationContainer.appendChild(button);
+                }
+            }
+
+            // Display initial bookings
+            displayBookings(currentPage);
+
+            // Return object with methods for external control
+            return {
+                setClientFilter: (clientName) => {
+                    selectedClient = clientName;
+                    applyFilters();
+                },
+                clearClientFilter: () => {
+                    selectedClient = null;
+                    startDateInput.value = '';
+                    endDateInput.value = '';
+                    activeStatusFilter = null;
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    applyFilters();
+                }
+            };
+        } catch (error) {
+            console.error('Error loading history:', error);
+            return {
+                setClientFilter: () => {},
+                clearClientFilter: () => {}
+            };
+        }
     }
 });
