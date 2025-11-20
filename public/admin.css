@@ -768,6 +768,16 @@ label {
     margin-right: 1rem;
 }
 
+.phone-link {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.phone-link:hover {
+    color: #f0a500;
+}
+
 #clientCards {
     display: flex;
     flex-direction: column;
