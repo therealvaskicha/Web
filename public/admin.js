@@ -575,7 +575,7 @@ let historyFilterController = null;
             }
         
             // Initialize pagination controller for pending bookings
-            const pendingPagination = new PaginationController('pendingBookingsTable', 'pendingPagination', 10);
+            const pendingPagination = new PaginationController('pendingBookingsTable', 'pendingPagination', 2);
         
             function displayPendingBookings() {
                 // Clear existing rows
@@ -676,7 +676,7 @@ let historyFilterController = null;
             }
         
             // Initialize pagination controller for approved bookings
-            const approvedPagination = new PaginationController('approvedBookingsTable', 'approvedPagination', 10);
+            const approvedPagination = new PaginationController('approvedBookingsTable', 'approvedPagination', 5);
         
             function displayApprovedBookings() {
                 // Clear existing rows
@@ -982,7 +982,7 @@ let historyFilterController = null;
                 let selectedClient = null;
                 let activeStatusFilter = null;
 
-                const paginationController = new PaginationController('bookingHistoryTable', 'historyPagination', 5);
+                const paginationController = new PaginationController('bookingHistoryTable', 'historyPagination', 10);
 
                 function applyFilters() {
                     filteredBookings = [...bookings];

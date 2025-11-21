@@ -70,7 +70,7 @@ const nextMonth = formatDate(addMonths(new Date(), 1));
 /////////////////////////////
 
 // Booking related queries
-const sql_get_pending_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, status FROM bookings WHERE status = 1`
+const sql_get_pending_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, status FROM bookings WHERE status = 1 order by date, time asc;`
 const sql_get_pending_booking = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, 
             client_phone, client_email, subscribe_email, 
             strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, 
@@ -82,7 +82,7 @@ const sql_get_approved_bookings = `SELECT id, booking_type, date, time, booking_
         WHERE status = 2
          and date >= date('now') 
          and (date > date('now') OR (date = date('now') AND time > strftime('%H:%M', 'now', '-1 hour'))) 
-         ORDER BY id desc;`;
+         ORDER BY date, time asc;`;
 const sql_get_historically_approved_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created FROM bookings WHERE status = 2 and date <= date('now')`;
 const sql_get_bookings_history = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created, status FROM bookings ORDER BY id desc`;
 const sql_approve_or_reject_booking = `UPDATE bookings SET status = ? WHERE id = ?`;
