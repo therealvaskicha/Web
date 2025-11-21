@@ -1,5 +1,3 @@
-// const { createElement } = require("react");
-
 // Add this at the top of your script.js file
 function debounce(func, wait) {
     let timeout;
@@ -166,6 +164,8 @@ document.getElementById('contact-form').addEventListener('submit', async functio
 
 // DOMContentLoaded event listener
 document.addEventListener('DOMContentLoaded', function () {
+    // const disclaimerModal = new ModalController('disclaimer-modal', '#terms-and-conditions-link', '.close-disclaimer');
+    
     // Modal configs
     const modal = document.getElementById('gallery-modal');
     const modalImg = document.getElementById('modal-image');

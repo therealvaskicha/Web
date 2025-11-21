@@ -1,4 +1,6 @@
-// Centralized API calls
+///////////////////////////
+// Centralized API calls //
+///////////////////////////
 class APIService {
     async approveBooking(id) { /* ... */ }
     async getClients() { /* ... */ }
@@ -7,8 +9,9 @@ class APIService {
     // Central error handling
 }
 
-
-// ModalController // 
+//////////////////
+// Controllers ///
+//////////////////
 class ModalController {
     constructor(modalId, triggerId = null, closeId = null) {
         this.modal = document.getElementById(modalId);
@@ -70,7 +73,94 @@ class ModalController {
     }
 }
 
+class PaginationController {
+    constructor(tableId, paginationContainerId, recordsPerPage = 10) {
+        this.table = document.getElementById(tableId);
+        this.paginationContainer = document.getElementById(paginationContainerId);
+        this.recordsPerPage = recordsPerPage;
+        this.currentPage = 1;
+        this.totalRecords = 0;
+
+        if (!this.table || !this.paginationContainer) {
+            console.warn(`Pagination: Missing table (${tableId}) or pagination container (${paginationContainerId})`);
+        }
+    }
+
+        /**
+     * Render pagination buttons
+     * @param {number} totalRecords - Total number of records
+     * @param {function} onPageChange - Callback when page changes
+     */
+    render(totalRecords, onPageChange) {
+        if (!this.paginationContainer) return;
+
+        this.totalRecords = totalRecords;
+        this.paginationContainer.innerHTML = '';
+
+        const totalPages = Math.ceil(totalRecords / this.recordsPerPage);
+
+        if (totalPages <= 1) {
+            this.currentPage = 1;
+            return;
+        }
+
+        for (let i = 1; i <= totalPages; i++) {
+            const button = document.createElement('button');
+            button.innerText = i;
+            button.classList.add('pagination-btn');
+            
+            if (i === this.currentPage) {
+                button.classList.add('active');
+            }
+
+            button.addEventListener('click', () => {
+                this.currentPage = i;
+                if (onPageChange) {
+                    onPageChange(i);
+                }
+                this.render(totalRecords, onPageChange);
+            });
+
+            this.paginationContainer.appendChild(button);
+        }
+    }
+    /**
+     * Get start and end indices for current page
+     * @returns {object} { start, end }
+     */
+    getPageRange() {
+        const start = (this.currentPage - 1) * this.recordsPerPage;
+        const end = start + this.recordsPerPage;
+        return { start, end };
+    }
+
+    /**
+     * Reset pagination to first page
+     */
+    reset() {
+        this.currentPage = 1;
+    }
+
+    /**
+     * Get current page number
+     */
+    getCurrentPage() {
+        return this.currentPage;
+    }
+
+    /**
+     * Set records per page
+     */
+    setRecordsPerPage(count) {
+        this.recordsPerPage = count;
+        this.reset();
+    }
+
+}
+
+///////////////////////
 // Utility Functions //
+///////////////////////
     function getCurrentPage() {
         const path = window.location.pathname;
         if (path.includes('admin.html')) return 'admin';
@@ -111,19 +201,18 @@ class ModalController {
       lastTouchEnd = now;
     }, false);
 
+/////////////////////
 // Main App Logic //
+///////////////////
 
 document.addEventListener('DOMContentLoaded', function() {
-    const currentPage = getCurrentPage();
+let historyFilterController = null;
 
-    // const disclaimerModal = new ModalController('disclaimer-modal', '#terms-and-conditions-link', '.close-disclaimer');
-    let historyFilterController = null;
+///////////////////////////////////
+// Admin page /////////////////////
+///////////////////////////////////
 
-    ///////////////////////////////////
-    // Admin page functions ///////////
-    ///////////////////////////////////
-
-    if (currentPage === 'admin') {
+    if (getCurrentPage() === 'admin') {
         loadPending();
         loadBookings();
         loadHolidays();
@@ -132,40 +221,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         bookingModal.onSubmit(handleBookingFormSubmit);
 
-        // Add bookings manually via btn
-        // const addBookingBtn = document.querySelector('.add-booking-btn');
-        // const cancelBookingBtn = document.querySelector('#cancel-booking');
-        // const bookingModal = document.querySelector('#bookingModal');
-        // const modalOverlay = document.querySelector('#modalOverlay');
-        
-        //     addBookingBtn.addEventListener('click', () => {
-        //     bookingModal.classList.add('active');
-        //     modalOverlay.classList.add('active');
-        //     document.body.style.overflow = 'hidden'; // Prevent background scrolling
-        // });
-
-        // const hideModal = () => {
-        //     bookingModal.classList.remove('active');
-        //     modalOverlay.classList.remove('active');
-        //     document.body.style.overflow = ''; // Restore scrolling
-        // };
-
-        // cancelBookingBtn.addEventListener('click', hideModal);
-        // modalOverlay.addEventListener('click', hideModal);
-
-        // // Close modal when clicking outside the form
-        // bookingModal.addEventListener('click', (e) => {
-        //     e.stopPropagation();
-        // });
-
         // Holidays calendar setup
         const calendarEl = document.getElementById('admin-calendar');
-        const requestServices = document.getElementById('requestServices');
+        // const requestServices = document.getElementById('requestServices');
         const bookingForm = document.getElementById('booking-form');
-        let selectedDate = null;
-        let selectedTime = null;
 
-            if (calendarEl) {
+        // let selectedDate = null;
+        // let selectedTime = null;
+
+        // Render calendar
+        if (calendarEl) {
             const times = [];
             for (let h = 8; h <= 20; h++) {
                 times.push((h < 10 ? '0' : '') + h + ':00');
@@ -430,6 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Handle booking form submission
         async function handleBookingFormSubmit(e) {
             const booking_type = document.getElementById('booking-type').value;
             const client_forename = document.getElementById('client-forename').value;
@@ -487,61 +553,84 @@ document.addEventListener('DOMContentLoaded', function() {
                 errorHandler(error, 'Грешка при създаване на резервация');
             }
         }
+        
 
         // Load pending bookings
         async function loadPending() {
             const pendingBookingsTable = document.getElementById('pendingBookingsTable');
             if (!pendingBookingsTable) return;
-
+        
             const response = await fetch('/api/pending');
             const bookings = await response.json();
             const container = pendingBookingsTable.parentElement;
-
-                if (bookings.length < 1) {
+        
+            if (bookings.length < 1) {
+                container.innerHTML = '<p class="no-data-message">Няма нови заявки</p>';
+                return;
+            }
+        
+            if (!bookings) {
+                container.innerHTML = '<p class="no-data-message">Грешка при зареждане на заявките</p>';
+                return;
+            }
+        
+            // Initialize pagination controller for pending bookings
+            const pendingPagination = new PaginationController('pendingBookingsTable', 'pendingPagination', 10);
+        
+            function displayPendingBookings() {
+                // Clear existing rows
+                while (pendingBookingsTable.rows.length > 1) pendingBookingsTable.deleteRow(1);
+            
+                const { start, end } = pendingPagination.getPageRange();
+                const paginatedBookings = bookings.slice(start, end);
+            
+                if (paginatedBookings.length === 0) {
                     container.innerHTML = '<p class="no-data-message">Няма нови заявки</p>';
                     return;
                 }
-
-                if (!bookings) {
-                    container.innerHTML = '<p class="no-data-message">Грешка при зареждане на заявките</p>';
-                    return;
-                }
-
-            while (pendingBookingsTable.rows.length > 1) pendingBookingsTable.deleteRow(1);
-            bookings.forEach(booking => {
-                const row = pendingBookingsTable.insertRow();
-                booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
-                row.innerHTML = `
-                    <td>${booking.client_name}</td>
-                    <td>${booking.booking_type}</td> 
-                    <td>${booking.date}</td>
-                    <td>${booking.time}</td>
-                    <td>${booking.booking_note || '-'}</td>
-                    <td>
-                        <img src="Images/btn-yes-test.png" class="approve-btn" data-id="${booking.id}"></img>
-                        <img src="Images/btn-no-test.png" class="reject-btn" data-id="${booking.id}"></img>
-                    </td>
-                `;
-            });
-
-            pendingBookingsTable.addEventListener('click', handlePendingAction);
-
-        }
-        function handlePendingAction(e) {
+            
+                paginatedBookings.forEach(booking => {
+                    const row = pendingBookingsTable.insertRow();
+                    booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
+                    row.innerHTML = `
+                        <td>${booking.client_name}</td>
+                        <td>${booking.booking_type}</td> 
+                        <td>${booking.date}</td>
+                        <td>${booking.time}</td>
+                        <td>${booking.booking_note || '-'}</td>
+                        <td>
+                            <img src="Images/btn-yes-test.png" class="approve-btn" data-id="${booking.id}">
+                            <img src="Images/btn-no-test.png" class="reject-btn" data-id="${booking.id}">
+                        </td>
+                    `;
+                });
+            
+                // Render pagination with callback
+                pendingPagination.render(bookings.length, () => {
+                    displayPendingBookings();
+                });
+            }
+        
+            // Add event delegation for approve/reject buttons
+            pendingBookingsTable.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('approve-btn')) {
                     if (confirm('Сигурни ли сте, че искате да одобрите този час?')) {
                         const id = e.target.dataset.id;
-                        updateBooking(id, 2);
+                        await updateBooking(id, 2);
                         document.getElementById('booking-date-hour').value = '';
                     }
+                }
                 if (e.target.classList.contains('reject-btn')) {             
                     if (confirm('Сигурни ли сте, че искате да откажете този час?')) {
                         const id = e.target.dataset.id;
-                        updateBooking(id, 4);
+                        await updateBooking(id, 4);
                     }   
-                }}
-            }
-        };
+                }
+            });
+        
+            // Initial display
+            displayPendingBookings();
+        }
 
         // Approve or reject booking
         async function updateBooking(id, status) {
@@ -567,7 +656,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Load approve bookings
+        // Load approved bookings
         async function loadBookings() {
             const approvedBookingsTable = document.getElementById('approvedBookingsTable');
             if (!approvedBookingsTable) return;
@@ -576,40 +665,64 @@ document.addEventListener('DOMContentLoaded', function() {
             const bookings = await response.json();
             const container = approvedBookingsTable.parentElement;
 
-                if (bookings.length < 1) {
+            if (bookings.length < 1) {
+                container.innerHTML = '<p class="no-data-message">Няма предстоящи тренировки.</p>';
+                return;
+            }
+        
+            if (!bookings) {
+                container.innerHTML = '<p class="no-data-message">Грешка при зареждане на тренировките</p>';
+                return;
+            }
+        
+            // Initialize pagination controller for approved bookings
+            const approvedPagination = new PaginationController('approvedBookingsTable', 'approvedPagination', 10);
+        
+            function displayApprovedBookings() {
+                // Clear existing rows
+                while (approvedBookingsTable.rows.length > 1) approvedBookingsTable.deleteRow(1);
+            
+                const { start, end } = approvedPagination.getPageRange();
+                const paginatedBookings = bookings.slice(start, end);
+            
+                if (paginatedBookings.length === 0) {
                     container.innerHTML = '<p class="no-data-message">Няма предстоящи тренировки.</p>';
                     return;
                 }
-
-                if (!bookings) {
-                    container.innerHTML = '<p class="no-data-message">Грешка при зареждане на тренировките</p>';
-                    return;
-                }
-
-            while (approvedBookingsTable.rows.length > 1) approvedBookingsTable.deleteRow(1);
-            bookings.forEach(booking => {
-                const row = approvedBookingsTable.insertRow();
-                booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
-                row.innerHTML = `
-                    <td>${booking.client_name}</td>
-                    <td>${booking.booking_type}</td>
-                    <td>${booking.date}</td>
-                    <td>${booking.time}</td>
-                    <td>${booking.booking_note || '-'}</td>
-                    <td>
-                        <button class="cancel-btn" data-id="${booking.id}">Отмени</button>
-                    </td>
-                `;
-            });
-
-            // Add event listeners for cancel booking
+            
+                paginatedBookings.forEach(booking => {
+                    const row = approvedBookingsTable.insertRow();
+                    booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
+                    row.innerHTML = `
+                        <td>${booking.client_name}</td>
+                        <td>${booking.booking_type}</td>
+                        <td>${booking.date}</td>
+                        <td>${booking.time}</td>
+                        <td>${booking.booking_note || '-'}</td>
+                        <td>
+                            <button class="cancel-btn" data-id="${booking.id}">Отмени</button>
+                        </td>
+                    `;
+                });
+            
+                // Render pagination with callback
+                approvedPagination.render(bookings.length, () => {
+                    displayApprovedBookings();
+                });
+            }
+        
+            // Add event delegation for cancel button
             approvedBookingsTable.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('cancel-btn')) {
                     if (confirm('Сигурни ли сте, че искате да отмените този час?')) {
-                        await updateBooking(btn.dataset.id, 3);
+                        const id = e.target.dataset.id;
+                        await updateBooking(id, 3);
                     }
                 }
             });
+        
+            // Initial display
+            displayApprovedBookings();
         }
 
         // Load holidays
@@ -679,28 +792,31 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        ///////////////////////////////////
-        // Clients page functions /////////
-        ///////////////////////////////////
+    }
 
-        if (getCurrentPage() === 'clients') {
-            const bookingHistoryTable = document.getElementById('bookingHistoryTable');
-            const clientsTable = document.getElementById('clientsTable');
+///////////////////////////////////
+// Clients page ///////////////////
+///////////////////////////////////
 
-            if (bookingHistoryTable && clientsTable) {
-                // Initialize async functions
-                (async () => {
-                    historyFilterController = await loadHistory();
-                    loadClients();
+    if (getCurrentPage() === 'clients') {
+        const bookingHistoryTable = document.getElementById('bookingHistoryTable');
+        const clientsTable = document.getElementById('clientsTable');
 
-                    const clearDateFilterBtn = document.getElementById('clearFilters');
-                    if (clearDateFilterBtn) {
-                        clearDateFilter();
-                    }
-                })();
-            }
+        if (bookingHistoryTable && clientsTable) {
+            // Initialize async functions
+            (async () => {
+                historyFilterController = await loadHistory();
+                loadClients();
+
+                const clearDateFilterBtn = document.getElementById('clearFilters');
+                if (clearDateFilterBtn) {
+                    clearDateFilter();
+                }
+            })();
         }
+    
 
+        // Clear date filter
         async function clearDateFilter() {
             const clearDateFilterBtn = document.getElementById('clearFilters');
             if (clearDateFilterBtn) {
@@ -717,6 +833,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Load clients from API
         async function loadClients() {
             const clientsTable = document.getElementById('clientsTable');
             if (!clientsTable) return;
@@ -746,6 +863,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
         }
 
+        // Show client info
         async function showClientInfo(clientId) {
         try {
             const response = await fetch(`/api/client/${clientId}`);
@@ -825,6 +943,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         }
 
+        // Filter by client
         function filterBookingHistoryByClient(foreName, lastName) {
             const clientName = `${foreName} ${lastName}`;
             if (historyFilterController) {
@@ -832,12 +951,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Reset booking history filter
         function resetBookingHistoryFilter() {
             if (historyFilterController) {
                 historyFilterController.clearClientFilter();
             }
         }
 
+        // Load booking history with filters
         async function loadHistory() {
             const bookingHistoryTable = document.getElementById('bookingHistoryTable');
             const paginationContainer = document.getElementById('historyPagination');
@@ -861,8 +982,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 let selectedClient = null;
                 let activeStatusFilter = null;
 
-                const recordsPerPage = 10;
-                let currentPage = 1;
+                const paginationController = new PaginationController('bookingHistoryTable', 'historyPagination', 5);
 
                 function applyFilters() {
                     filteredBookings = [...bookings];
@@ -890,8 +1010,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                     }
 
-                    currentPage = 1;
-                    displayBookings(currentPage);
+                    paginationController.reset();
+                    displayBookings(paginationController.getCurrentPage());
                 }
 
                 // Status filter buttons
@@ -928,8 +1048,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     while (bookingHistoryTable.rows.length > 1) bookingHistoryTable.deleteRow(1);
 
-                    const start = (page - 1) * recordsPerPage;
-                    const end = start + recordsPerPage;
+                    const { start, end } = paginationController.getPageRange();
                     const paginatedBookings = filteredBookings.slice(start, end);
 
                     if (paginatedBookings.length === 0) {
@@ -975,29 +1094,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         }, 50 * bookingHistoryTable.rows.length);
                     });
 
-                    updatePagination();
+                    paginationController.render(filteredBookings.length, (page) => {
+                        displayBookings(page);
+                    });
                 }
 
-                function updatePagination() {
-                    paginationContainer.innerHTML = '';
-                    const totalPages = Math.ceil(filteredBookings.length / recordsPerPage);
-
-                    for (let i = 1; i <= totalPages; i++) {
-                        const button = document.createElement('button');
-                        button.innerText = i;
-                        button.classList.add('pagination-btn');
-                        if (i === currentPage) {
-                            button.classList.add('active');
-                        }
-                        button.addEventListener('click', () => {
-                            currentPage = i;
-                            displayBookings(currentPage);
-                        });
-                        paginationContainer.appendChild(button);
-                    }
-                }
-
-                displayBookings(currentPage);
+                displayBookings(paginationController.getCurrentPage());
 
                 return {
                     setClientFilter: (clientName) => {
@@ -1013,7 +1115,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         applyFilters();
                     }
                 };
-            } catch (error) {
+
+             } catch (error) {
                 console.error('Error loading history:', error);
                 return {
                     setClientFilter: () => {},
@@ -1021,6 +1124,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
             }
         }
+    }
+
+///////////////////////////////////
+// Subscriptions page  ////////////
+///////////////////////////////////
+
+    if (getCurrentPage() === 'subscriptions') {
+    
+    }
+
 });
 
 // 3. TableFilterController - Reusable filter logic
