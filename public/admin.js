@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadHolidays();
 
         const bookingModal = new ModalController('bookingModal', '.add-booking-btn', '#cancel-booking');
-        
+
         bookingModal.onSubmit(handleBookingFormSubmit);
 
         // Add bookings manually via btn
@@ -169,6 +169,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const times = [];
             for (let h = 8; h <= 20; h++) {
                 times.push((h < 10 ? '0' : '') + h + ':00');
+            }
+
+            function handleDayHeaderClick(header) {
+                header.classList.toggle('selected');
+                const slotsCol = header.nextElementSibling;
+                const slots = slotsCol.querySelectorAll('.slot');
+                if (header.classList.contains('selected')) {
+                    slots.forEach(slot => {
+                        slot.classList.remove('selected');
+                        slot.disabled = true;
+                    });
+                } else {
+                    slots.forEach(slot => {
+                        slot.disabled = false;
+                    });
+                }
             }
 
             function renderWeek(startDate) {
@@ -307,22 +323,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const addHolidayBtn = document.querySelector('.add-holiday-btn');
             if (addHolidayBtn) {
                 addHolidayBtn.addEventListener('click', handleAddHoliday);
-            }
-
-            function handleDayHeaderClick(header) {
-                header.classList.toggle('selected');
-                const slotsCol = header.nextElementSibling;
-                const slots = slotsCol.querySelectorAll('.slot');
-                if (header.classList.contains('selected')) {
-                    slots.forEach(slot => {
-                        slot.classList.remove('selected');
-                        slot.disabled = true;
-                    });
-                } else {
-                    slots.forEach(slot => {
-                        slot.disabled = false;
-                    });
-                }
             }
 
             async function handleAddHoliday() {
