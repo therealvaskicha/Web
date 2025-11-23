@@ -7,7 +7,7 @@
     --default-background-color: #f9f9f9;
     --default-box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
     --mobile-font-size: 0.9rem;
-    --mobile-table-font-size: 0.75rem;
+    --mobile-table-font-size: 0.65rem;
     --font-size: 1rem;
     --default-font-family: 'Lora', sans-serif;
     --standard-border-radius: 1rem;
@@ -110,7 +110,7 @@ a {
 /* HEADER NAV */
 
 .title {
-  margin: 2rem 0 1rem 0;
+  margin: 1rem 0 0.5rem 0;
   justify-self:center;
   width:100%;
 }
@@ -315,7 +315,7 @@ button:hover {
   color: var(--default-background-color);
 }
 
-.approve-btn, .reject-btn {
+.approve-btn, .reject-btn, .cancel-btn {
   margin:0 0.125rem;
   cursor:pointer;
   width: 2.5rem;
@@ -328,12 +328,12 @@ button:hover {
   transition:0.2s
 }
 
-.reject-btn:hover {
+.reject-btn:hover, .cancel-btn:hover {
   filter:drop-shadow(0 0 0.25rem #db4f4f);
   transition:0.2s
 }
 
-.remove-btn, .add-holiday-btn, .cancel-btn, .add-booking-btn {
+.remove-btn, .add-holiday-btn, .add-booking-btn {
   font-size: var(--font-size);
   padding: 0.25rem 0.5rem;
 }
@@ -892,7 +892,7 @@ section {
   font-size: 0.9rem;
 }
 
-.remove-btn, .cancel-btn {
+.remove-btn{
   font-size: 0.65rem;
 }
 
@@ -929,12 +929,13 @@ table {
 }
 
 th {
-  padding: 0.15rem;
-  font-size: 0.75rem;
+  padding: 0.35rem;
+  font-size: 0.7rem;
 }
 
 td {
   font-size: var(--mobile-table-font-size);
+  padding:0.05rem;
 }
 
 th, td {
@@ -949,7 +950,7 @@ button {
   margin: 0.2rem;
 }
 
-.approve-btn, .reject-btn {
+.approve-btn, .reject-btn, .cancel-btn {
   width:1.3rem;
 }
 
@@ -957,7 +958,7 @@ button {
   filter:drop-shadow(0 0 0.125rem #79dd68);
 }
 
-.reject-btn {
+.reject-btn, .cancel-btn {
   filter:drop-shadow(0 0 0.125rem #db4f4f);
 }
 
