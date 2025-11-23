@@ -595,8 +595,7 @@ let historyFilterController = null;
                     row.innerHTML = `
                         <td>${booking.client_name}</td>
                         <td>${booking.booking_type}</td> 
-                        <td>${booking.date}</td>
-                        <td>${booking.time}</td>
+                        <td>${booking.date} ${booking.time}</td>
                         <td>${booking.booking_note || '-'}</td>
                         <td>
                             <img src="Images/btn-yes-test.png" class="approve-btn" data-id="${booking.id}">
@@ -696,11 +695,10 @@ let historyFilterController = null;
                     row.innerHTML = `
                         <td>${booking.client_name}</td>
                         <td>${booking.booking_type}</td>
-                        <td>${booking.date}</td>
-                        <td>${booking.time}</td>
+                        <td>${booking.date} ${booking.time}</td>
                         <td>${booking.booking_note || '-'}</td>
                         <td>
-                            <button class="cancel-btn" data-id="${booking.id}">Отмени</button>
+                            <img src="Images/btn-no-test.png" class="cancel-btn" data-id="${booking.id}">
                         </td>
                     `;
                 });
