@@ -742,19 +742,37 @@ let historyFilterController = null;
                     return;
                 }
 
-            while (holidaysTable.rows.length > 1) holidaysTable.deleteRow(1);
-            holidays.forEach(holiday => {
-                const row = holidaysTable.insertRow();
-                row.innerHTML = `
-                    <td>${holiday.date}</td>
-                    <td>${holiday.time || 'Цял ден'}</td>
-                    <td>${holiday.description || ''}</td>
-                    <td>
-                        <button class="remove-btn" data-id="${holiday.id}">Премахни</button>
-                    </td>
-                `;
+            // Initialize pagination controller for holidays
+            const holidayPagination = new PaginationController('holidaysTable', 'holidayPagination', 5);
 
-            });
+            function displayHolidays() {
+                while (holidaysTable.rows.length > 1) holidaysTable.deleteRow(1);
+
+                const { start, end } = holidayPagination.getPageRange();
+                const paginatedHolidays = holidays.slice(start, end);
+
+                if (paginatedHolidays.length === 0) {
+                    container.innerHTML = '<p class="no-data-message">Няма предстоящи почивни дни/часове</p>';
+                    return;
+                }
+
+                paginatedHolidays.forEach(holiday => {
+                    const row = holidaysTable.insertRow();
+                    row.innerHTML = `
+                        <td>${holiday.date}</td>
+                        <td>${holiday.time || 'Цял ден'}</td>
+                        <td>${holiday.description || ''}</td>
+                        <td>
+                            <button class="remove-btn" data-id="${holiday.id}">Отмени</button>
+                        </td>
+                    `;
+                });
+
+                // Render pagination with callback
+                holidayPagination.render(holidays.length, () => {
+                    displayHolidays();
+                });
+            }
 
             // Use event delegation for remove button
             holidaysTable.addEventListener('click', async (e) => {
@@ -766,6 +784,7 @@ let historyFilterController = null;
                     }
                 }
             });
+            displayHolidays();
 
             // Automatically deactivate past holidays
             await fetch('/api/auto-deactivate-past-holidays', { method: 'POST' });

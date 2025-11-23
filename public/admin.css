@@ -243,7 +243,6 @@ ul {
 /* TABLES */
 
 .table-container {
-  margin-bottom:1rem;
   box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.1);
   border-radius: var(--standard-border-radius);
   outline: 0.05rem solid var(--primary-color);
@@ -335,7 +334,7 @@ button:hover {
 
 .remove-btn, .add-holiday-btn, .add-booking-btn {
   font-size: var(--font-size);
-  padding: 0.25rem 0.5rem;
+  padding: 0.33rem 1rem;
 }
 
 /* Manual entry form */
@@ -607,7 +606,7 @@ label {
     color: var(--text-color);
     border: none;
     border-radius: var(--standard-border-radius);
-    padding: 0.625rem 1rem;
+    padding: 0.33rem 1rem;
     font-size: var(--font-size);
     font-family: var(--default-font-family);
     cursor: pointer;
@@ -665,12 +664,11 @@ label {
 .pagination {
     display: flex;
     justify-content: center;
-    gap: 0.5rem;
     flex-wrap: wrap;
 }
 
 .pagination-btn {
-    padding: 0.5rem 1rem;
+    padding: 0.25rem 1rem;
     background: var(--primary-color);
     border: none;
     border-radius: 0.66rem;
