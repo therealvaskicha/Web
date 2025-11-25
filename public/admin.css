@@ -6,7 +6,7 @@
     --text-secondary-color: #666;
     --default-background-color: #f9f9f9;
     --default-box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
-    --mobile-font-size: 0.9rem;
+    --mobile-font-size: 0.8rem;
     --mobile-table-font-size: 0.65rem;
     --font-size: 1rem;
     --default-font-family: 'Lora', sans-serif;
@@ -70,7 +70,7 @@ body {
 }
 
 section {
-    margin: 3rem 1rem 3rem 1rem;
+    margin: 3rem 1rem 8vh 1rem;
 }
 
 /* TEXT ELEMENTS */
@@ -113,6 +113,7 @@ a {
   margin: 1rem 0 0.5rem 0;
   justify-self:center;
   width:100%;
+  min-height:5vh;
 }
 
 header {
@@ -122,7 +123,7 @@ header {
   width: 100%;
   padding-top:0.125rem;
   padding-bottom:0.125rem;
-  z-index: 5;
+  z-index: 1000;
 }
 
 .navigation-layout {
@@ -218,6 +219,7 @@ ul {
       display: grid;
       grid-template-columns: 2fr 3fr 5fr 5fr;
       gap: 2rem;
+      margin-bottom:0.5rem;
     }
 
     .client-page {
@@ -404,7 +406,7 @@ label {
     color: #333;
     cursor: pointer;
     transition: color 0.2s ease-in-out;
-    z-index: 1001;
+    z-index: 5;
 }
 
 .history-filters .clear-filter:hover {
@@ -646,7 +648,7 @@ label {
     align-items: center;
     font-size: var(--mobile-font-size);
     gap: 0.25rem;
-    margin:1rem;
+    margin:0 1rem 1rem 1rem;
 }
 
 .links {
@@ -835,6 +837,10 @@ label {
 /* ///////////////// */
 
 @media (max-width: 768px) {
+/* 
+.title {
+  min-height: 5vh;
+} */
 
 h1 {
   font-size:1.5rem;
@@ -856,7 +862,7 @@ small,label, select, option, .no-data-message {
 }
 
 section {
-  margin: 0 1rem 4.5rem 1rem
+  margin: 0 0.5rem 7vh 0.5rem
 }
 
 .table-container {
@@ -869,8 +875,8 @@ section {
 
 .logo {
     margin:0 2rem;
-    height: 3rem;
     width: 3rem;
+    height: 3rem;
 }
 
 /* Navigation */
@@ -906,19 +912,17 @@ section {
 }
 .active-holidays {
   padding:0;
-  margin-bottom:0.5rem;
   border:0;
   width:100%;
 }
 
-.calendar-grid, .clients-grid, .subscriptions-grid {
+.calendar-grid, .clients-grid {
     display: flex;
-    justify-content: space-around;
-    align-content: flex-start;
     flex-wrap: wrap;
-    flex-direction: row;
-    align-items: flex-start;
     gap:0.33rem;
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom:0.5rem;
 }
 
 /* Table adjustments */
@@ -946,6 +950,11 @@ button {
   font-size: var(--mobile-font-size);
   padding: 0.25rem 0.4rem;
   margin: 0.2rem;
+}
+
+button:hover {
+  color: var(--text-color);
+  background-color:var(--primary-color);
 }
 
 .approve-btn, .reject-btn, .cancel-btn {
@@ -1027,37 +1036,124 @@ button {
     font-size: var(--mobile-font-size);
 }
 
+
+/***************************/
 /* Client page adjustments */
-    .client-page {
-        min-height: 20rem;
-        padding: 1rem;
+/***************************/
+
+
+  /* Main elements */
+  /* .client-list {
+  } */
+
+    .mobile-only {
+      display:flex;
+      align-items:center;
+    }
+      .mobile-only .container {
+        position: fixed;
+        top: 50vh;
+        right: -40vw;
+        padding: 0.5rem;
+        background-color: var(--primary-color);
+        box-shadow: var(--default-box-shadow);
+        border-radius: 1.5rem;
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+        z-index: 49;
+        transition: right 0.3s ease, opacity 0.3s ease;
+        pointer-events: none;
+        overflow-y: auto;
+        max-height: 100vh;
+        width: 40vw;
+        touch-action: auto;
+      }
+
+      .mobile-only .container:active {
+        right: 0;
+        pointer-events: auto;
+      }
+      .mobile-only .showhide {
+        top: 50vh;
+        height: 4.2rem;
+        width: 2.25rem;
+        border-radius: 1.5rem;
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+        margin-right:0;
+        margin-top:1.75rem;
+        z-index: 50;
+        position: fixed;
+        right: 0;
+        cursor: grab;
+        transition: background 0.2s ease;
+        transition: right 0.3s ease;
+        user-select: none;
+        touch-action: none;
+      }
+
+      .mobile-only .showhide:active {
+        cursor: grabbing;
+        background-color: var(--primary-color);
+      }
+
+  .client-page {
+    min-height: 25vh;
+    padding: 1rem;
+    grid-column:1 / span 2;
+    grid-row: 1;
+  }
+
+    .client-list .table-container {
+      overflow-y:auto;
+      overflow-x:hidden;
+      border-radius:0;
+      box-shadow:none;
+
     }
 
-    .topClients {
-        min-height: 15rem;
-    }
+  .analytics-dashboard {
+    grid-column: 1 / span 2;
+    grid-row:2;
+    min-height: 50vh;
+  }
+  
+  .bookings-history {
+    grid-row:3;
+    grid-column:1 / span 2;
+  }
 
-    .close-client-info {
-        font-size: 1.5rem;
-        right: 0.5rem;
-        top: -0.5rem;
-    }
+  /* Client info adjustments */
+  .topClients {
+      min-height: 20%;
+  }
 
-    .info-section {
-        padding: 0.75rem;
-        margin-bottom: 1rem;
-    }
+  .close-client-info {
+      font-size: 1.5rem;
+      right: 0.5rem;
+      top: -0.5rem;
+  }
 
-    .info-item {
-        flex-direction: column;
-        gap: 0.25rem;
-    }
+  .clientInfo {
+    max-height: 10rem;
+    max-width: 10rem;
+  }
 
-    .info-item label {
-        margin-right: 0;
-    }
+  .info-section {
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+  }
 
-    .client-info-content h3 {
-        font-size: 1.25rem;
-    }
+  .info-item {
+      flex-direction: column;
+      gap: 0.25rem;
+  }
+
+  .info-item label {
+      margin-right: 0;
+  }
+
+  .client-info-content h3 {
+      font-size: 1.25rem;
+  }
 }
