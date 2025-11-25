@@ -265,7 +265,7 @@ let historyFilterController = null;
                     const dayName = ['нд','пн','вт','ср','чт','пт','сб'][date.getDay() === 0 ? 0 : date.getDay() - 0];
                     const dayCol = document.createElement('div');
                     dayCol.className = 'calendar-day-col';
-                    dayCol.innerHTML = `<div class="calendar-day-header">${dayName} ${dateStr.slice(8,10)}.${dateStr.slice(5,7)}</div>`;
+                    dayCol.innerHTML = `<div class="calendar-day-header">${dayName} <br> ${dateStr.slice(8,10)}.${dateStr.slice(5,7)}</div>`;
                     
                     const header = dayCol.querySelector('.calendar-day-header');
                     header.addEventListener('click', () => handleDayHeaderClick(header));
@@ -832,6 +832,133 @@ let historyFilterController = null;
             })();
         }
     
+        // Mobile drawer functionality
+        if (window.innerWidth <= 768) {
+            const showHideBtn = document.querySelector('.mobile-only .showhide');
+            const container = document.querySelector('.mobile-only .container');
+            
+            if (showHideBtn && container) {
+                let isOpen = false;
+                let isDragging = false;
+                let startY = 0;
+                let currentY = 0;
+                
+                // Initialize button position
+                showHideBtn.style.right = '0';
+                currentY = window.innerHeight / 2;
+                showHideBtn.style.top = currentY + 'px';
+                container.style.top = currentY + 'px';
+                
+                // Toggle drawer on button click
+                showHideBtn.addEventListener('click', (e) => {
+                    if (!isDragging) {
+                        isOpen = !isOpen;
+                        updateDrawerPosition();
+                    }
+                });
+                
+                // Mouse down - start dragging
+                showHideBtn.addEventListener('mousedown', (e) => {
+                    isDragging = false;
+                    startY = e.clientY;
+                    currentY = parseInt(window.getComputedStyle(showHideBtn).top) || window.innerHeight / 2;
+                });
+                
+                // Touch start - for mobile devices
+                showHideBtn.addEventListener('touchstart', (e) => {
+                    isDragging = false;
+                    startY = e.touches[0].clientY;
+                    currentY = parseInt(window.getComputedStyle(showHideBtn).top) || window.innerHeight / 2;
+                }, { passive: false });
+                
+                // Mouse move - drag the button and container
+                document.addEventListener('mousemove', (e) => {
+                    if (e.buttons === 1 && Math.abs(e.clientY - startY) > 10) {
+                        isDragging = true;
+                        const diff = e.clientY - startY;
+                        let newY = currentY + diff;
+                        
+                        // Constrain button within viewport
+                        newY = Math.max(0, Math.min(newY, window.innerHeight - showHideBtn.offsetHeight));
+                        
+                        showHideBtn.style.top = newY + 'px';
+                        // Make container follow the button
+                        container.style.top = newY + 'px';
+                    }
+                });
+                
+                // Touch move - drag the button and container on mobile
+                document.addEventListener('touchmove', (e) => {
+                    if (isDragging) {
+                        e.preventDefault(); // Prevent scrolling while dragging
+                        const diff = e.touches[0].clientY - startY;
+                        let newY = currentY + diff;
+                        
+                        // Constrain button within viewport
+                        newY = Math.max(0, Math.min(newY, window.innerHeight - showHideBtn.offsetHeight));
+                        
+                        showHideBtn.style.top = newY + 'px';
+                        // Make container follow the button
+                        container.style.top = newY + 'px';
+                    }
+                }, { passive: false });
+                
+                // Mouse up - stop dragging
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                    }
+                });
+                
+                // Touch end - stop dragging on mobile
+                document.addEventListener('touchend', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                    }
+                });
+                
+                // Detect drag start on touch to prevent scroll
+                showHideBtn.addEventListener('touchstart', (e) => {
+                    startY = e.touches[0].clientY;
+                    currentY = parseInt(window.getComputedStyle(showHideBtn).top) || window.innerHeight / 2;
+                }, { passive: false });
+                
+                showHideBtn.addEventListener('touchmove', (e) => {
+                    const diff = Math.abs(e.touches[0].clientY - startY);
+                    // If user is dragging vertically, mark as dragging and prevent scroll
+                    if (diff > 10) {
+                        isDragging = true;
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+                
+                // Update drawer position
+                function updateDrawerPosition() {
+                    if (isOpen) {
+                        container.style.right = '0';
+                        container.style.pointerEvents = 'auto';
+                        showHideBtn.style.right = '40vw';
+                    } else {
+                        container.style.right = '-40vw';
+                        container.style.pointerEvents = 'none';
+                        showHideBtn.style.right = '0';
+                    }
+                }
+                
+                // Handle window resize
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth > 768) {
+                        // Reset to desktop view
+                        isOpen = false;
+                        showHideBtn.style.display = 'none';
+                    }
+                });
+            }
+        }
+        else {
+            const showHideBtn = document.querySelector('.mobile-only .showhide');
+            showHideBtn.style.display = 'none';
+        }
 
         // Clear date filter
         async function clearDateFilter() {
