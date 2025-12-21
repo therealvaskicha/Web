@@ -218,6 +218,7 @@ ul {
     .clients-grid {
       display: grid;
       grid-template-columns: 2fr 3fr 5fr 5fr;
+      grid-template-rows: 25rem 25rem 55rem 25rem;
       gap: 2rem;
       margin-bottom:0.5rem;
     }
