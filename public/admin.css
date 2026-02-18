@@ -1,13 +1,24 @@
 /* GLOBAL VARIABLES */
 :root {
+  /* colors */
     --primary-color: #e7e4bb;
+    --lighter-primary-color: rgba(245, 245, 240, 0.705);
     --active-color: #f0a500;
+    --lighter-active-color: rgba(240, 164, 0, 0.066);
     --text-color: #333;
     --text-secondary-color: #666;
     --default-background-color: #f9f9f9;
+    --darker-background-color: #ebe7e7;
+    --approve-color: #d6f5d6;
+    --rejected-color: #ffcccc;
+    --pending-color: #79dd68;
+    --canceled-color: #c9a0a0;
+    --holiday-color: #f3b3d6;
+
     --default-box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
     --mobile-font-size: 0.8rem;
-    --mobile-table-font-size: 0.65rem;
+    --mobile-table-font-size: 0.75rem;
+    --font-size-small: 0.875rem;
     --font-size: 1rem;
     --font-size-large: 1.25rem;
     --default-font-family: 'Lora', sans-serif;
@@ -73,7 +84,7 @@ body {
 }
 
 section {
-    margin: 3rem 1rem 8vh 1rem;
+    margin: 0 1rem;
 }
 
 /* TEXT ELEMENTS */
@@ -85,21 +96,21 @@ h1, h2, h3, h4 {
 }
 
 h1 {
-  font-size:2rem;
+  font-size:1.75rem;
 }
 
 h2 {
-    margin: 1rem 0rem;
-    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
 }
 
 h3 {
     margin-bottom: 0.75rem;
-    font-size:1.375rem;
+    font-size:1.1255rem;
 }
 
 h4 {
-    font-size:1.25rem;
+    font-size:1rem;
 }
 
 small,label, select, option, .no-data-message {
@@ -113,10 +124,9 @@ a {
 /* HEADER NAV */
 
 .title {
-  margin: 1rem 0 0.5rem 0;
+  margin: 0.75rem 0;
   justify-self:center;
   width:100%;
-  min-height:5vh;
 }
 
 header {
@@ -139,8 +149,8 @@ header {
 
 .logo {
   margin:0.125rem auto;
-  height: 4.5rem;
-  width:4.5rem;
+  height: 3rem;
+  width:3rem;
   cursor: pointer;  
 }
 
@@ -154,7 +164,7 @@ header {
     position:absolute;
     bottom: -0.125rem;
     left: 50%;
-    height: 0.125rem;
+    height: 0.066rem;
     width:0;
     background: #3d3c33;
     transition: 0.15s;
@@ -170,7 +180,7 @@ header {
 }
 
 .nav-item{
-  font-size:1.625rem;
+  font-size:1.25rem;
 }
 
 li {
@@ -188,7 +198,8 @@ ul {
 
     .calendar-grid {
       display:grid;
-      grid-template-columns: 2fr 1.75fr 1.25fr;
+      grid-template-columns: 1.5fr 1.75fr 1.25fr;
+      margin-bottom:0.5rem;
     }
 
     .pendApprove{
@@ -197,14 +208,18 @@ ul {
       justify-content: flex-start;
       align-items: stretch;
       grid-area: 1 / 1 / 1 / 2;
-      padding: 0 1.5rem 1.5rem 0;
+      padding-right: 1rem;
     }
+
+        .pendingBookings {
+          margin-bottom:1rem;
+        }
 
     .adminCalendar {
       display:flex;
       flex-direction: column;
       grid-area: 1 / 2 / 1 / 3;
-      padding: 0 1.5rem 1.5rem 1.5rem;
+      padding: 0 1rem;
       border-left: solid 0.125rem var(--primary-color);
     }
 
@@ -212,7 +227,7 @@ ul {
       display: flex;
       flex-direction: column;
       grid-area: 1 / 3 / 1 / last-line;
-      padding: 0 0 1.5rem 1.5rem;
+      padding-left: 1rem;
       border-left: solid 0.125rem var(--primary-color);
     }
 
@@ -221,7 +236,7 @@ ul {
     .clients-grid {
       display: grid;
       grid-template-columns: 2fr 3fr 5fr 5fr;
-      grid-template-rows: 25rem 25rem 55rem 25rem;
+      /* grid-template-rows: 1rem 1em 1.5em 1em; */
       gap: 2rem;
       margin-bottom:0.5rem;
     }
@@ -230,8 +245,6 @@ ul {
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: var(--default-box-shadow);
-      padding:0.5rem;
     }
 
     .analytics-dashboard {
@@ -263,19 +276,19 @@ table {
 
 th, td { 
   border-left: 0.065rem solid var(--primary-color);
-  padding: 0.33rem; 
+  padding: 0.125rem; 
   text-align: center; 
 }
 
 td {
-  font-size: var(--font-size);
+  font-size: var(--font-size-small);
 }
 
 th, td:first-child { border-left: none; }
 
 th {
   font-weight: 600;
-  font-size:1.125rem;
+  font-size:var(--font-size);
   margin-bottom:0.125rem;
 }
 
@@ -323,7 +336,7 @@ button:hover {
 .approve-btn, .reject-btn, .cancel-btn {
   margin:0 0.125rem;
   cursor:pointer;
-  width: 2.5rem;
+  width: 2.25rem;
   mix-blend-mode:darken;
   /* outline: 0.25rem transparent; */
 }
@@ -355,9 +368,9 @@ button:hover {
 
 .logout-btn {
   position:fixed;
-  max-height: 2rem;
-  bottom: 1.25rem;
-  right: 1.5rem;
+  max-height: 1.5rem;
+  bottom: 1em;
+  right: 1.5em;
   cursor: pointer;
   z-index:1001;
 }
@@ -412,10 +425,6 @@ button:hover {
 .requestServices {
     max-height: 80vh;
     overflow-y: auto;
-}
-
-label {
-    margin-top: 0.25rem;
 }
 
 .history-filters input {
@@ -479,15 +488,15 @@ select {
 
 /* Minimalistic calendar styles */
 .calendar-wrap{
-  padding: 1rem;
+  padding: 0.5rem;
   background-color: var(--default-background-color);
   border-radius: var(--standard-border-radius);
   box-shadow: var(--default-box-shadow);
 }
 
-#admin-calendar {
+/* #admin-calendar {
   min-height:27rem;
-}
+} */
 
 #user-calendar {
     margin: 1rem auto;
@@ -549,7 +558,7 @@ select {
     padding: 0.25rem 0.5rem;
     margin: 0.125rem 0.05rem 0rem 0.05rem;
     cursor: pointer;
-    font-size: var(--font-size);
+    font-size: var(--font-size-small);
     transition: background 0.2s;
 }
 
@@ -676,7 +685,7 @@ select {
     align-items: center;
     font-size: var(--mobile-font-size);
     gap: 0.25rem;
-    margin:0 1rem 1rem 1rem;
+    margin-bottom:5em;
 }
 
 .links {
@@ -746,6 +755,9 @@ select {
   display:flex;
   flex-direction: column;
   align-items: center;
+  outline: 0.125rem solid var(--lighter-active-color);
+  border-radius: var(--standard-border-radius);
+  padding: 0.5rem;
 }
 
 .close-client-info {
@@ -766,7 +778,7 @@ select {
 .info-section {
     margin-bottom: 0.5rem;
     padding: 0.5rem;
-    background: #f5f5f5;
+    background: var(--lighter-primary-color);
     border-radius: 0.5rem;
     border-left: 0.125rem solid var(--primary-color);
     width:100%;
@@ -784,6 +796,7 @@ select {
     padding: 0.25rem 0;
     border-bottom: 0.05rem solid var(--primary-color);
     align-items: center;
+    font-size: var(--font-size-small);
 }
 
 .info-item:last-child {
@@ -793,7 +806,7 @@ select {
 .info-item label {
     font-weight: 600;
     color: var(--text-color);
-    margin-right: 1rem;
+    margin-right: 0.125rem;
 }
 
 .phone-link {
@@ -890,7 +903,7 @@ small,label, select, option, .no-data-message {
 }
 
 section {
-  margin: 0 0.5rem 7vh 0.5rem
+  margin: 0 0.5rem;
 }
 
 .table-container {
@@ -910,10 +923,6 @@ section {
 /* Navigation */
 .navigation-layout {
   grid-template-columns: 1.5fr 1fr 1.5fr;
-}
-
-.pendingBookings {
-  margin-bottom:1rem;
 }
 
 .approvedBookings {
@@ -998,13 +1007,13 @@ table {
 }
 
 th {
-  padding: 0.35rem;
-  font-size: 0.7rem;
+  padding: 0.125rem;
+  font-size: var(--mobile-table-font-size);
 }
 
 td {
   font-size: var(--mobile-table-font-size);
-  padding:0.05rem;
+  /* padding:0.05rem; */
 }
 
 th, td {
@@ -1051,9 +1060,9 @@ button:hover {
 }
 
 /* Calendar adjustments for mobile */
-#admin-calendar {
+/* #admin-calendar {
   min-height:23rem;
-}
+} */
 .calendar-wrap {
   position: static;
   transform: none;
@@ -1103,6 +1112,9 @@ button:hover {
     font-size: var(--mobile-font-size);
 }
 
+.website-signature {
+  margin-bottom:5em;
+}
 
 /***************************/
 /* Client page adjustments */
