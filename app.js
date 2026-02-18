@@ -6,7 +6,15 @@ const session = require('express-session');
 const app = express();
 
 // Middleware setup
-app.use(express.static('public'));
+// Protect admin files from direct static serving - they must go through auth routes
+app.use((req, res, next) => {
+    const protectedFiles = ['/admin.html', '/admin.js', '/admin.css', '/clients.html', '/subscriptions.html'];
+    if (protectedFiles.includes(req.path)) {
+        return next(); // Skip static middleware for protected files
+    }
+    express.static('public')(req, res, next);
+});
+
 app.use(express.json());
 app.use(session({
     secret: 'your-secret-key',
@@ -27,7 +35,7 @@ function requireAuth(req, res, next) {
 // Login endpoint
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
-    if (username === 'admin' && password === 'admin') {
+    if (username === 'admin' && password === 'vaskicha420') {
         req.session.authenticated = true;
         res.json({ success: true });
     } else {
@@ -38,6 +46,14 @@ app.post('/api/login', (req, res) => {
 // Protect admin routes
 app.get('/admin.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.get('/clients.html', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'clients.html'));
+});
+
+app.get('/subscriptions.html', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'subscriptions.html'));
 });
 
 // Protect admin API endpoints - fix the route pattern
