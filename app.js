@@ -6,21 +6,26 @@ const session = require('express-session');
 const app = express();
 
 // Middleware setup
-// Protect admin files from direct static serving - they must go through auth routes
+// Protect admin HTML files from direct static serving - they must go through auth routes
+// But allow CSS, JS, and other assets to be served normally
 app.use((req, res, next) => {
-    const protectedFiles = ['/admin.html', '/admin.js', '/admin.css', '/clients.html', '/subscriptions.html'];
-    if (protectedFiles.includes(req.path)) {
-        return next(); // Skip static middleware for protected files
+    const protectedHtmlFiles = ['/admin.html', '/clients.html', '/subscriptions.html'];
+    if (protectedHtmlFiles.includes(req.path)) {
+        return next(); // Skip static middleware only for protected HTML files
     }
     express.static('public')(req, res, next);
 });
 
 app.use(express.json());
 app.use(session({
-    secret: 'your-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false }
+    secret: 'durjavna_taina11',
+    resave: true,
+    saveUninitialized: true,
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 15 * 60 * 1000 // 15 minutes
+    }
 }));
 
 // Middleware to check authentication
@@ -41,6 +46,17 @@ app.post('/api/login', (req, res) => {
     } else {
         res.status(401).json({ error: 'Invalid credentials' });
     }
+});
+
+// Logout endpoint
+app.post('/api/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            res.status(500).json({ error: 'Logout failed' });
+        } else {
+            res.json({ success: true });
+        }
+    });
 });
 
 // Protect admin routes

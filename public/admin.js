@@ -208,6 +208,27 @@ class PaginationController {
 document.addEventListener('DOMContentLoaded', function() {
 let historyFilterController = null;
 
+// Logout button handler
+const logoutBtn = document.getElementById('logout-btn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                window.location.href = '/login.html';
+            } else {
+                alert('Logout failed');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Error during logout');
+        }
+    });
+}
+
 ///////////////////////////////////
 // Admin page /////////////////////
 ///////////////////////////////////
@@ -809,6 +830,22 @@ let historyFilterController = null;
             }
         }
 
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                window.location.href = '/login.html';
+            } else {
+                alert('Logout failed');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Error during logout');
+        }
+        });
     }
 
 ///////////////////////////////////
@@ -1268,6 +1305,23 @@ let historyFilterController = null;
                 };
             }
         }
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                window.location.href = '/login.html';
+            } else {
+                alert('Logout failed');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Error during logout');
+        }
+        });
     }
 
 ///////////////////////////////////
@@ -1275,7 +1329,24 @@ let historyFilterController = null;
 ///////////////////////////////////
 
     if (getCurrentPage() === 'subscriptions') {
-    
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                window.location.href = '/login.html';
+            } else {
+                alert('Logout failed');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Error during logout');
+        }
+        });
+
     }
 
 });
