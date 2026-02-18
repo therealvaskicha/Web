@@ -30,6 +30,12 @@ app.use(session({
 
 // Middleware to check authentication
 function requireAuth(req, res, next) {
+    // Skip auth in development/test mode (localhost)
+    if (process.env.NODE_ENV !== 'production') {
+        return next();
+    }
+    
+    // Production: require authentication
     if (req.session.authenticated) {
         next();
     } else {

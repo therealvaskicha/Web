@@ -613,11 +613,11 @@ if (logoutBtn) {
                 paginatedBookings.forEach(booking => {
                     const row = pendingBookingsTable.insertRow();
                     booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
+                    const noteCell = booking.booking_note ? `${booking.booking_type}<br>${booking.booking_note}` : booking.booking_type;
                     row.innerHTML = `
                         <td>${booking.client_name}</td>
-                        <td>${booking.booking_type}</td> 
                         <td>${booking.date} ${booking.time}</td>
-                        <td>${booking.booking_note || '-'}</td>
+                        <td>${noteCell}</td>
                         <td>
                             <img src="Images/btn-yes-test.png" class="approve-btn" data-id="${booking.id}">
                             <img src="Images/btn-no-test.png" class="reject-btn" data-id="${booking.id}">
@@ -713,11 +713,11 @@ if (logoutBtn) {
                 paginatedBookings.forEach(booking => {
                     const row = approvedBookingsTable.insertRow();
                     booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
+                    const noteCell = booking.booking_note ? `${booking.booking_type}<br>${booking.booking_note}` : booking.booking_type;
                     row.innerHTML = `
                         <td>${booking.client_name}</td>
-                        <td>${booking.booking_type}</td>
                         <td>${booking.date} ${booking.time}</td>
-                        <td>${booking.booking_note || '-'}</td>
+                        <td>${noteCell}</td>
                         <td>
                             <img src="Images/btn-no-test.png" class="cancel-btn" data-id="${booking.id}">
                         </td>
