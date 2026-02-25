@@ -1,5 +1,8 @@
 ///////////////////////////
 // Centralized API calls //
+
+// const { render } = require("@fullcalendar/core/preact.js");
+
 ///////////////////////////
 class APIService {
     async approveBooking(id) { /* ... */ }
@@ -569,6 +572,9 @@ if (logoutBtn) {
                     selectedSlot.classList.remove('selected');
                     document.getElementById('booking-date-hour').value = '';
                     bookingModal.close();
+                    renderWeek(weekStart);
+                    loadPending();
+                    loadBookings();
                 }
             } catch (error) {
                 errorHandler(error, 'Грешка при създаване на резервация');
@@ -669,7 +675,7 @@ if (logoutBtn) {
                 if (calendarEl) {
                     const weekStart = new Date();
                     weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
-                    // renderWeek(weekStart); - Would need to be refactored into accessible scope
+                    renderWeek(weekStart);
                 }
             } catch (error) {
                 errorHandler(error, 'Грешка при обработка на резервацията');
