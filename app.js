@@ -2,6 +2,11 @@ const express = require('express');
 const path = require('path');
 const db = require('./database');
 const session = require('express-session');
+const bcrypt = require('bcrypt');
+const rateLimit = require('express-rate-limit');
+const csrf = require('csurf');
+const cookieParser = require('cookie-parser');
+require('dotenv').config();
 
 const app = express();
 
@@ -17,16 +22,41 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+app.use(cookieParser());
+
+// Session configuration
 app.use(session({
-    secret: 'durjavna_taina11',
+    secret: process.env.SESSION_SECRET || 'durjavna_taina11',
     resave: true,
     saveUninitialized: true,
     cookie: { 
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        maxAge: 15 * 60 * 1000 // 15 minutes
+        sameSite: 'strict',
+        maxAge: parseInt(process.env.SESSION_TIMEOUT_MS) || 15 * 60 * 1000 // 15 minutes
     }
 }));
+
+// CSRF protection middleware
+const csrfProtection = csrf({ cookie: false });
+
+// Rate limiting configs
+const loginLimiter = rateLimit({
+    windowMs: parseInt(process.env.LOGIN_ATTEMPT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+    max: parseInt(process.env.MAX_LOGIN_ATTEMPTS) || 5, // 5 attempts
+    message: 'Твърде много опити за вход. Моля, опитайте отново и по-късно.',
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => process.env.NODE_ENV !== 'production', // Skip rate limiting in dev
+    keyGenerator: (req) => req.ip, // Use IP address as key
+});
+
+// General API rate limiter
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    skip: (req) => process.env.NODE_ENV !== 'production',
+});
 
 // Middleware to check authentication
 function requireAuth(req, res, next) {
@@ -43,14 +73,124 @@ function requireAuth(req, res, next) {
     }
 }
 
+// Check if account is locked
+function isAccountLocked(req, res, next) {
+    const username = req.body?.username;
+    if (!username) return next();
+    
+    db.get(
+        'SELECT locked_until FROM login_attempts WHERE username = ? AND locked_until IS NOT NULL ORDER BY locked_until DESC LIMIT 1',
+        [username],
+        (err, row) => {
+            if (err) {
+                console.error('Error checking account lock:', err);
+                return res.status(500).json({ error: 'Сървърна грешка' });
+            }
+            
+            if (row && new Date(row.locked_until) > new Date()) {
+                const remainingTime = Math.ceil((new Date(row.locked_until) - new Date()) / 1000 / 60);
+                return res.status(429).json({ 
+                    error: `Акаунтът е заключен. Опитайте отново за ${remainingTime} минути.` 
+                });
+            }
+            next();
+        }
+    );
+}
+
+// Record login attempt
+function recordLoginAttempt(username, ip, success) {
+    return new Promise((resolve) => {
+        const lockoutDuration = parseInt(process.env.ACCOUNT_LOCKOUT_DURATION_MS) || 30 * 60 * 1000; // 30 minutes
+        const now = new Date();
+        const lockedUntil = new Date(now.getTime() + lockoutDuration);
+        
+        const query = `
+            INSERT INTO login_attempts (username, ip_address, success, locked_until)
+            VALUES (?, ?, ?, ?)
+        `;
+        
+        const params = [username, ip, success ? 1 : 0, success ? null : lockedUntil.toISOString()];
+        
+        db.run(query, params, function(err) {
+            if (err) console.error('Error recording login attempt:', err);
+            resolve();
+        });
+    });
+}
+
+// Check failed login attempts
+function checkFailedAttempts(username) {
+    return new Promise((resolve) => {
+        const windowMs = parseInt(process.env.LOGIN_ATTEMPT_WINDOW_MS) || 15 * 60 * 1000;
+        const maxAttempts = parseInt(process.env.MAX_LOGIN_ATTEMPTS) || 5;
+        const cutoffTime = new Date(Date.now() - windowMs).toISOString();
+        
+        db.get(
+            `SELECT COUNT(*) as count FROM login_attempts 
+             WHERE username = ? AND success = 0 AND attempt_timestamp > ?`,
+            [username, cutoffTime],
+            (err, row) => {
+                if (err) {
+                    console.error('Error checking failed attempts:', err);
+                    resolve(0);
+                }
+                resolve(row?.count || 0);
+            }
+        );
+    });
+}
+
+// Get CSRF token for login form
+app.get('/api/csrf-token', csrfProtection, (req, res) => {
+    res.json({ token: req.csrfToken() });
+});
+
 // Login endpoint
-app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-    if (username === 'admin' && password === 'vaskicha420') {
+app.post('/api/login', loginLimiter, isAccountLocked, csrfProtection, async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const clientIp = req.ip || req.connection.remoteAddress;
+        
+        if (!username || !password) {
+            await recordLoginAttempt(username || 'unknown', clientIp, false);
+            return res.status(400).json({ error: 'Потребителско име и парола са задължителни' });
+        }
+        
+        const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+        const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+        
+        // Validate credentials
+        if (username !== adminUsername) {
+            await recordLoginAttempt(username, clientIp, false);
+            return res.status(401).json({ error: 'Неправилно потребителско име или парола' });
+        }
+        
+        // Verify password with bcrypt
+        const passwordMatch = await bcrypt.compare(password, adminPasswordHash);
+        if (!passwordMatch) {
+            await recordLoginAttempt(username, clientIp, false);
+            const failedAttempts = await checkFailedAttempts(username);
+            
+            if (failedAttempts >= (parseInt(process.env.MAX_LOGIN_ATTEMPTS) || 5)) {
+                return res.status(429).json({ 
+                    error: 'Твърде много неудачни опити. Акаунтът е заключен временно.' 
+                });
+            }
+            
+            return res.status(401).json({ error: 'Неправилно потребителско име или парола' });
+        }
+        
+        // Successful login
+        await recordLoginAttempt(username, clientIp, true);
         req.session.authenticated = true;
-        res.json({ success: true });
-    } else {
-        res.status(401).json({ error: 'Invalid credentials' });
+        req.session.username = username;
+        
+        res.json({ success: true, message: 'Успешно влизане' });
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: 'Сървърна грешка при вход' });
     }
 });
 
@@ -58,9 +198,11 @@ app.post('/api/login', (req, res) => {
 app.post('/api/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
-            res.status(500).json({ error: 'Logout failed' });
+            console.error('Logout error:', err);
+            res.status(500).json({ error: 'Грешка при излизане' });
         } else {
-            res.json({ success: true });
+            res.clearCookie('connect.sid');
+            res.json({ success: true, message: 'Успешно излизане' });
         }
     });
 });
@@ -80,10 +222,22 @@ app.get('/subscriptions.html', requireAuth, (req, res) => {
 
 // Protect admin API endpoints - fix the route pattern
 app.use('/api/admin', requireAuth);
+app.use('/api/', apiLimiter);
 
 //////////////////////
 // EVERYTHING ELSE ///
 //////////////////////
+
+// Error handling helper
+function handleError(res, error, defaultMessage = 'Грешка при обработка на заявката') {
+    console.error('API Error:', error);
+    
+    if (error.message.includes('UNIQUE')) {
+        return res.status(409).json({ error: 'Дублиран запис - този елемент вече съществува' });
+    }
+    
+    res.status(500).json({ error: defaultMessage });
+}
 
 // Serve the main page
 app.get('/', (req, res) => {
@@ -126,8 +280,7 @@ const sql_get_bookings_history = `SELECT id, booking_type, date, time, booking_n
 const sql_approve_or_reject_booking = `UPDATE bookings SET status = ? WHERE id = ?`;
 
 // Holiday related queries
-const sql_get_holidys = `SELECT date, time, description FROM holidays;`;
-const sql_get_upcoming_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
+const sql_get_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
 
 // Client related queries
 const sql_get_clients = `SELECT client_id, foreName, lastName, client_phone, client_email, stamp_created FROM client order by foreName;`;
@@ -443,17 +596,9 @@ app.post('/api/book', (req, res) => {
 ///   HOLIDAY APIs   ///
 ////////////////////////
 
-// Get all holidays
+// Get all active holidays
 app.get('/api/holidays', (req, res) => {
-    db.all(sql_get_holidys, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
-});
-
-// Get upcoming holidays
-app.get('/api/holidays-current', (req, res) => {
-    db.all(sql_get_upcoming_holidays, [], (err, rows) => {
+    db.all(sql_get_holidays, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });

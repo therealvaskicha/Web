@@ -86,6 +86,15 @@ const sql_create_enum_table = `CREATE TABLE IF NOT EXISTS enum (
     enum_value TEXT NOT NULL
 );`
 
+const sql_create_login_attempts_table = `CREATE TABLE IF NOT EXISTS login_attempts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    ip_address TEXT NOT NULL,
+    success BOOLEAN NOT NULL DEFAULT 0,
+    attempt_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    locked_until DATETIME DEFAULT NULL
+);`
+
 // Triggers to enforce unique constraints on holidays table
 // 1. Only one full-day holiday per date (time IS NULL)
 // 2. Only one time-specific holiday per date and time
@@ -197,6 +206,13 @@ db.serialize(() => {
     db.run(sql_create_enum_table, (err) => {
         if (err) {
             console.error("Error creating enum table:", err.message);
+        }
+    });
+
+    // Login attempts table
+    db.run(sql_create_login_attempts_table, (err) => {
+        if (err) {
+            console.error("Error creating login_attempts table:", err.message);
         }
     });
 

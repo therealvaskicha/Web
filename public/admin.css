@@ -731,6 +731,11 @@ select {
     transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
+.row-initial {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
 /* /////////////////  */
 /* Client Page Styles */
 /* /////////////////  */
@@ -873,9 +878,13 @@ select {
     }
 }
 
-/* ///////////////// */
+/* /////////////////////// */
+/* Notification Animations */
+/* /////////////////////// */
+
+/* /////////////////////// */
 /* Responsive Design */
-/* ///////////////// */
+/* /////////////////////// */
 
 @media (max-width: 768px) {
 /* 
