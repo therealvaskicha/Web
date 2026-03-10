@@ -85,7 +85,6 @@ Web/
 - Email notifications
 
 ### 2. Admin Dashboard (Protected)
-**Authentication**: Username: `admin` | Password: `vaskicha420`
 
 #### 2.1 Bookings Management
 - **Pending Bookings**: Review and approve/reject new booking requests
@@ -200,7 +199,7 @@ Web/
 ## Classes & Controllers (admin.js)
 
 ### APIService
-Centralized API call handler with error handling
+✅ Centralized API call handler with error handling
 
 ### ModalController
 Manages modal dialogs:
@@ -220,15 +219,43 @@ Placeholder for calendar rendering (expandable)
 
 ---
 
+## Security Implementation Details
+
+### Environment Variables (.env file)
+Create a `.env` file in the project root (use `.env.example` as template):
+```
+NODE_ENV=production
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD_HASH=<bcrypt-hashed-password>
+SESSION_SECRET=<your-strong-secret>
+MAX_LOGIN_ATTEMPTS=5
+LOGIN_ATTEMPT_WINDOW_MS=900000
+ACCOUNT_LOCKOUT_DURATION_MS=1800000
+```
+
+### Generating Admin Password Hash
+```bash
+# Install bcrypt-cli or use bcrypt-generator online
+# https://bcrypt-generator.com/
+# Generate hash for your password and add to .env
+```
+
+### Login Security Features
+- **Rate Limiting**: Max 5 failed attempts per 15 minutes per IP
+- **Account Lockout**: 30-minute lockout after exceeding max attempts
+- **Login Tracking**: DB table logs all login attempts (success/failure, IP, timestamp)
+- **CSRF Protection**: Tokens validated on login and form submissions
+- **Session Security**: HttpOnly, SameSite=strict cookies
+
 ## Known Issues & TODOs
 
-### High Priority
-- [ ] Move credentials and secrets to environment variables
-- [ ] Implement password hashing (bcrypt)
-- [ ] Add rate limiting on login attempts
-- [ ] Add CSRF token protection
-- [ ] Add account lockout after failed login attempts
-- [ ] Improve error handling and user feedback
+### High Priority ✅ COMPLETED
+- [x] Move credentials and secrets to environment variables
+- [x] Implement password hashing (bcrypt)
+- [x] Add rate limiting on login attempts
+- [x] Add CSRF token protection
+- [x] Add account lockout after failed login attempts
+- [x] Improve error handling and user feedback
 
 ### Medium Priority
 - [ ] Add email notifications for bookings
@@ -284,10 +311,12 @@ Placeholder for calendar rendering (expandable)
 - [x] Session management
 - [x] Login CAPTCHA
 - [x] Secure cookies (production)
-- [ ] Password hashing
-- [ ] Environment variables
-- [ ] CSRF protection
-- [ ] Rate limiting
+- [x] Password hashing (bcrypt)
+- [x] Environment variables for secrets
+- [x] CSRF protection
+- [x] Rate limiting on login
+- [x] Account lockout after failed attempts
+- [x] Login attempt tracking
 
 ---
 

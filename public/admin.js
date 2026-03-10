@@ -1,15 +1,120 @@
 ///////////////////////////
 // Centralized API calls //
-
-// const { render } = require("@fullcalendar/core/preact.js");
-
 ///////////////////////////
 class APIService {
-    async approveBooking(id) { /* ... */ }
-    async getClients() { /* ... */ }
-    async getBookingHistory() { /* ... */ }
-    async deleteHoliday(id) { /* ... */ }
-    // Central error handling
+    // Make a fetch request with error handling and JSON parsing
+    static async request(url, options = {}) {
+        try {
+            const response = await fetch(url, options);
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP Error: ${response.status}`);
+            }
+            
+            return data;
+        } catch (error) {
+            console.error(`API Error (${url}):`, error);
+            throw error;
+        }
+    }
+
+    // Logout user
+    static async logout() {
+        return this.request('/api/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Get approved bookings
+    static async getBookingsApproved() {
+        return this.request('/api/bookings-approved');
+    }
+
+    // Get historical approved bookings
+    static async getBookingsHistoryApproved() {
+        return this.request('/api/bookings-history-approved');
+    }
+
+    // Get pending bookings
+    static async getPending() {
+        return this.request('/api/pending');
+    }
+
+    // Get holidays
+    static async getHolidays() {
+        return this.request('/api/holidays');
+    }
+
+    // Add holiday(s)
+    static async addHoliday(holidays, description) {
+        return this.request('/api/add-holiday', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ holidays, description })
+        });
+    }
+
+    // Delete holiday
+    static async deleteHoliday(id) {
+        return this.request('/api/delete-holiday', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+    }
+
+    // Auto-deactivate past holidays
+    static async autoDeactivatePastHolidays() {
+        return this.request('/api/auto-deactivate-past-holidays', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Book an appointment
+    static async book(bookingData) {
+        return this.request('/api/book', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bookingData)
+        });
+    }
+
+    // Approve a booking
+    static async approveBooking(id, status) {
+        return this.request('/api/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, status })
+        });
+    }
+
+    // Get all clients
+    static async getClients() {
+        return this.request('/api/clients');
+    }
+
+    // Get booking history
+    static async getBookingHistory() {
+        return this.request('/api/bookings-history');
+    }
+
+    // Get client details by ID
+    static async getClient(clientId) {
+        return this.request(`/api/client/${clientId}`);
+    }
+
+    // Get client mailing list info
+    static async getClientMailingList(clientId) {
+        return this.request(`/api/client/${clientId}/mailing-list`);
+    }
+
+    // Get client subscription cards
+    static async getClientCards(clientId) {
+        return this.request(`/api/client/${clientId}/cards`);
+    }
 }
 
 //////////////////
@@ -216,15 +321,8 @@ const logoutBtn = document.getElementById('logout-btn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
         try {
-            const response = await fetch('/api/logout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (response.ok) {
-                window.location.href = '/login.html';
-            } else {
-                alert('Logout failed');
-            }
+            await APIService.logout();
+            window.location.href = '/login.html';
         } catch (error) {
             console.error('Logout error:', error);
             alert('Error during logout');
@@ -244,6 +342,28 @@ if (logoutBtn) {
         const bookingModal = new ModalController('bookingModal', '.add-booking-btn', '#cancel-booking');
 
         bookingModal.onSubmit(handleBookingFormSubmit);
+
+        // Attach holiday delete event listener once (event delegation)
+        const holidaysTable = document.getElementById('holidaysTable');
+        if (holidaysTable) {
+            holidaysTable.addEventListener('click', async (e) => {
+                if (e.target.classList.contains('remove-btn')) {
+                    const id = e.target.dataset.id;
+                    
+                    // Validate ID exists
+                    if (!id || id === 'undefined' || id === 'null') {
+                        alert('Грешка: не може да се получи ID на почивния ден. Опитайте да обновите страницата.');
+                        console.error('Invalid holiday ID:', id);
+                        return;
+                    }
+                    
+                    if (confirm('Сигурни ли сте, че искате да премахнете този почивен ден?')) {
+                        await deleteHoliday(id);
+                        await loadHolidays();
+                    }
+                }
+            });
+        }
 
         // Holidays calendar setup
         const calendarEl = document.getElementById('admin-calendar');
@@ -306,10 +426,10 @@ if (logoutBtn) {
 
                 // Fetch bookings and holidays
                 Promise.all([
-                    fetch('/api/bookings-approved').then(r => r.json()),
-                    fetch('/api/holidays').then(r => r.json()),
-                    fetch('/api/pending').then(r => r.json()),
-                    fetch('/api/bookings-history-approved').then(r => r.json())
+                    APIService.getBookingsApproved(),
+                    APIService.getHolidays(),
+                    APIService.getPending(),
+                    APIService.getBookingsHistoryApproved()
                 ]).then(([bookings, holidays, pendingBookings, historicalBookings]) => {
                     for (let d = 0; d < 7; d++) {
                         const date = new Date(startDate);
@@ -420,8 +540,7 @@ if (logoutBtn) {
                     const slots = document.querySelectorAll('.slot.selected');
                     const now = new Date();
                     
-                    const bookingsResponse = await fetch('/api/bookings-approved');
-                    const approvedBookings = await bookingsResponse.json();
+                    const approvedBookings = await APIService.getBookingsApproved();
                     const conflicts = [];
 
                     // Process headers (full days)
@@ -498,24 +617,45 @@ if (logoutBtn) {
                     const description = prompt('Добавете описание (по желание):');
                     if (description === null) return; // User clicked Cancel
 
-                    const response = await fetch('/api/add-holiday', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ holidays, description })
-                    });
-                    const result = await response.json();
+                    const result = await APIService.addHoliday(holidays, description);
 
-                    if (response.ok) {
+                    if (result && result.message) {
                         alert(result.message);
                         // Clear selections
                         headers.forEach(h => h.classList.remove('selected'));
                         slots.forEach(s => s.classList.remove('selected'));
                         renderWeek(weekStart);
-                        loadHolidays();
+                        // Wait for holidays to reload with fresh data from server
+                        await loadHolidays();
                     } else {
                         alert(result.error || 'Грешка при добавяне на почивка');
                     }
                 };
+            }
+        }
+
+        // Remove holiday
+        async function deleteHoliday(id) {
+            try {
+                if (!id || id === 'undefined' || id === 'null') {
+                    throw new Error('Invalid holiday ID provided to delete function');
+                }
+                const result = await APIService.deleteHoliday(id);
+                if (result && result.message) {
+                    alert(result.message);
+                    const weekStart = new Date();
+                    weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
+                    renderWeek(weekStart);
+                } else {
+                    alert(result.error || 'Грешка при изтриване');
+                }
+            } catch (error) {
+                // Check if it's a "holiday not found" error
+                if (error.message && error.message.includes('не е намерен')) {
+                    errorHandler(error, 'Този почивен ден не съществува или вече е изтрит. Опитайте да обновите страницата.');
+                } else {
+                    errorHandler(error, 'Грешка при изтриване на почивен ден');
+                }
             }
         }
 
@@ -547,23 +687,17 @@ if (logoutBtn) {
             const selectedTime = selectedSlot.textContent;
 
             try {
-                const res = await fetch('/api/book', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        booking_type, 
-                        date: selectedDate, 
-                        time: selectedTime,
-                        client_forename, 
-                        client_lastname, 
-                        client_phone, 
-                        client_email, 
-                        booking_note, 
-                        subscribe_email
-                    })
+                const result = await APIService.book({
+                    booking_type, 
+                    date: selectedDate, 
+                    time: selectedTime,
+                    client_forename, 
+                    client_lastname, 
+                    client_phone, 
+                    client_email, 
+                    booking_note, 
+                    subscribe_email
                 });
-            
-                const result = await res.json();
                 if (result.error) {
                     alert(result.error);
                 } else {
@@ -587,8 +721,7 @@ if (logoutBtn) {
             const pendingBookingsTable = document.getElementById('pendingBookingsTable');
             if (!pendingBookingsTable) return;
         
-            const response = await fetch('/api/pending');
-            const bookings = await response.json();
+            const bookings = await APIService.getPending();
             const container = pendingBookingsTable.parentElement;
         
             if (bookings.length < 1) {
@@ -661,12 +794,7 @@ if (logoutBtn) {
         // Approve or reject booking
         async function updateBooking(id, status) {
             try {
-                const response = await fetch('/api/approve', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id, status })
-                });
-                const result = await response.json();
+                const result = await APIService.approveBooking(id, status);
                 alert(result.message || result.error);
                 loadPending();
                 loadBookings();
@@ -687,8 +815,7 @@ if (logoutBtn) {
             const approvedBookingsTable = document.getElementById('approvedBookingsTable');
             if (!approvedBookingsTable) return;
 
-            const response = await fetch('/api/bookings-approved');
-            const bookings = await response.json();
+            const bookings = await APIService.getBookingsApproved();
             const container = approvedBookingsTable.parentElement;
 
             if (bookings.length < 1) {
@@ -755,8 +882,7 @@ if (logoutBtn) {
             const holidaysTable = document.getElementById('holidaysTable');
             if (!holidaysTable) return; 
 
-            const response = await fetch('/api/holidays-current');
-            const holidays = await response.json();
+            const holidays = await APIService.getHolidays();
             const container = holidaysTable.parentElement;
 
                 if (holidays.length < 1) {
@@ -784,6 +910,10 @@ if (logoutBtn) {
                 }
 
                 paginatedHolidays.forEach(holiday => {
+                    if (!holiday.id) {
+                        console.warn('Holiday missing ID:', holiday);
+                        return; // Skip holidays without IDs
+                    }
                     const row = holidaysTable.insertRow();
                     row.innerHTML = `
                         <td>${holiday.date}</td>
@@ -801,52 +931,16 @@ if (logoutBtn) {
                 });
             }
 
-            // Use event delegation for remove button
-            holidaysTable.addEventListener('click', async (e) => {
-                if (e.target.classList.contains('remove-btn')) {
-                    if (confirm('Сигурни ли сте, че искате да премахнете този почивен ден?')) {
-                        const id = e.target.dataset.id;
-                        await deleteHoliday(id);
-                        loadHolidays();
-                    }
-                }
-            });
             displayHolidays();
 
             // Automatically deactivate past holidays
-            await fetch('/api/auto-deactivate-past-holidays', { method: 'POST' });
-        }
-
-        // Remove holiday
-        async function deleteHoliday(id) {
-            try {
-                const response = await fetch('/api/delete-holiday', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
-                });
-                const result = await response.json();
-                if (response.ok) {
-                    alert(result.message);
-                } else {
-                    alert(result.error || 'Грешка при изтриване');
-                }
-            } catch (error) {
-                errorHandler(error, 'Грешка при изтриване на почивен ден');
-            }
+            await APIService.autoDeactivatePastHolidays();
         }
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
         try {
-            const response = await fetch('/api/logout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (response.ok) {
-                window.location.href = '/login.html';
-            } else {
-                alert('Logout failed');
-            }
+            await APIService.logout();
+            window.location.href = '/login.html';
         } catch (error) {
             console.error('Logout error:', error);
             alert('Error during logout');
@@ -1025,8 +1119,7 @@ if (logoutBtn) {
             const clientsTable = document.getElementById('clientsTable');
             if (!clientsTable) return;
 
-            const response = await fetch('/api/clients');
-            const clients = await response.json();
+            const clients = await APIService.getClients();
 
                 if (clients.length < 1) {
                     clientsTable.parentElement.innerHTML = '<p class="no-data-message">Няма регистрирани клиенти</p>';
@@ -1053,8 +1146,7 @@ if (logoutBtn) {
         // Show client info
         async function showClientInfo(clientId) {
         try {
-            const response = await fetch(`/api/client/${clientId}`);
-            const client = await response.json();
+            const client = await APIService.getClient(clientId);
 
             const topClients = document.querySelector('.topClients');
             const clientInfo = document.querySelector('.clientInfo');
@@ -1067,11 +1159,9 @@ if (logoutBtn) {
             if (client.client_email) document.getElementById('clientEmail').href = 'mailto:' + client.client_email;
             document.getElementById('clientCreated').textContent = formatClientDate(client.stamp_created);
 
-            const mailingListResponse = await fetch(`/api/client/${clientId}/mailing-list`);
-            const mailingList = await mailingListResponse.json();
+            const mailingList = await APIService.getClientMailingList(clientId);
 
-            const cardsResponse = await fetch(`/api/client/${clientId}/cards`);
-            const cards = await cardsResponse.json();
+            const cards = await APIService.getClientCards(clientId);
 
             const mailingListSection = document.getElementById('mailingListSection');
             if (mailingList && mailingList.date_subscribed) {
@@ -1162,8 +1252,7 @@ if (logoutBtn) {
             }
 
             try {
-                const response = await fetch('/api/bookings-history');
-                const bookings = await response.json();
+                const bookings = await APIService.getBookingHistory();
 
                 let filteredBookings = [...bookings];
                 let selectedClient = null;
@@ -1249,8 +1338,7 @@ if (logoutBtn) {
 
                     paginatedBookings.forEach(booking => {
                         const row = bookingHistoryTable.insertRow();
-                        row.style.opacity = '0';
-                        row.style.transform = 'translateY(-10px)';
+                        row.classList.add('row-initial');
                         booking.client_name = `${booking.client_forename} ${booking.client_lastname}`
                         row.innerHTML = `
                             <td>${booking.client_name}</td>
@@ -1275,9 +1363,7 @@ if (logoutBtn) {
                         }
 
                         setTimeout(() => {
-                            row.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
-                            row.style.opacity = '1';
-                            row.style.transform = 'translateY(0)';
+                            row.classList.remove('row-initial');
                         }, 50 * bookingHistoryTable.rows.length);
                     });
 
@@ -1314,15 +1400,8 @@ if (logoutBtn) {
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
         try {
-            const response = await fetch('/api/logout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (response.ok) {
-                window.location.href = '/login.html';
-            } else {
-                alert('Logout failed');
-            }
+            await APIService.logout();
+            window.location.href = '/login.html';
         } catch (error) {
             console.error('Logout error:', error);
             alert('Error during logout');
@@ -1335,47 +1414,30 @@ if (logoutBtn) {
 ///////////////////////////////////
 
     if (getCurrentPage() === 'subscriptions') {
-
         document.getElementById('logout-btn').addEventListener('click', async () => {
         try {
-            const response = await fetch('/api/logout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (response.ok) {
-                window.location.href = '/login.html';
-            } else {
-                alert('Logout failed');
-            }
+            await APIService.logout();
+            window.location.href = '/login.html';
         } catch (error) {
             console.error('Logout error:', error);
             alert('Error during logout');
         }
         });
-
     }
 
 });
 
-// 3. TableFilterController - Reusable filter logic
+// 3. TableFilterController - Skeleton for future use
 class TableFilterController {
-    constructor(tableId, paginationId) { /* ... */ }
-    addFilter(name, filterFn) { /* ... */ }
-    removeFilter(name) { /* ... */ }
-    applyFilters() { /* ... */ }
+    constructor(tableId, paginationId, recordsPerPage = 10) {
+        this.tableId = tableId;
+        this.paginationId = paginationId;
+        this.recordsPerPage = recordsPerPage;
+        // TODO: Implement filter logic when needed
+    }
 }
 
-// 4. CalendarController - Encapsulate calendar logic
-class CalendarController {
-    constructor(elementId) { /* ... */ }
-    renderWeek(startDate) { /* ... */ }
-    nextWeek() { /* ... */ }
-    previousWeek() { /* ... */ }
-}
-
-// 5. NotificationService - Handle alerts/toasts
+// 4. NotificationService - for future
 class NotificationService {
-    success(message) { /* ... */ }
-    error(message) { /* ... */ }
-    confirm(message) { /* ... */ }
+    // TODO: Implement notification system
 }
