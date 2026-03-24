@@ -18,9 +18,7 @@ node_modules/ws/
 .env.example
 *.md
 !README.md
-database_bk.js
-database_dump.sql
-database.js
+database*
 
 # Logs
 *.log
