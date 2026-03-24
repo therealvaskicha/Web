@@ -74,71 +74,65 @@ function requireAuth(req, res, next) {
 }
 
 // Check if account is locked
-function isAccountLocked(req, res, next) {
+async function isAccountLocked(req, res, next) {
     const username = req.body?.username;
     if (!username) return next();
     
-    db.get(
-        'SELECT locked_until FROM login_attempts WHERE username = ? AND locked_until IS NOT NULL ORDER BY locked_until DESC LIMIT 1',
-        [username],
-        (err, row) => {
-            if (err) {
-                console.error('Error checking account lock:', err);
-                return res.status(500).json({ error: 'Сървърна грешка' });
-            }
-            
-            if (row && new Date(row.locked_until) > new Date()) {
-                const remainingTime = Math.ceil((new Date(row.locked_until) - new Date()) / 1000 / 60);
-                return res.status(429).json({ 
-                    error: `Акаунтът е заключен. Опитайте отново за ${remainingTime} минути.` 
-                });
-            }
-            next();
+    try {
+        const [rows] = await db.query(
+            'SELECT locked_until FROM login_attempts WHERE username = ? AND locked_until IS NOT NULL ORDER BY locked_until DESC LIMIT 1',
+            [username]
+        );
+        
+        if (rows.length > 0 && new Date(rows[0].locked_until) > new Date()) {
+            const remainingTime = Math.ceil((new Date(rows[0].locked_until) - new Date()) / 1000 / 60);
+            return res.status(429).json({ 
+                error: `Акаунтът е заключен. Опитайте отново за ${remainingTime} минути.` 
+            });
         }
-    );
+        next();
+    } catch (err) {
+        console.error('Error checking account lock:', err);
+        return res.status(500).json({ error: 'Сървърна грешка' });
+    }
 }
 
 // Record login attempt
-function recordLoginAttempt(username, ip, success) {
-    return new Promise((resolve) => {
-        const lockoutDuration = parseInt(process.env.ACCOUNT_LOCKOUT_DURATION_MS) || 30 * 60 * 1000; // 30 minutes
-        const now = new Date();
-        const lockedUntil = new Date(now.getTime() + lockoutDuration);
-        
-        const query = `
-            INSERT INTO login_attempts (username, ip_address, success, locked_until)
-            VALUES (?, ?, ?, ?)
-        `;
-        
-        const params = [username, ip, success ? 1 : 0, success ? null : lockedUntil.toISOString()];
-        
-        db.run(query, params, function(err) {
-            if (err) console.error('Error recording login attempt:', err);
-            resolve();
-        });
-    });
+async function recordLoginAttempt(username, ip, success) {
+    const lockoutDuration = parseInt(process.env.ACCOUNT_LOCKOUT_DURATION_MS) || 30 * 60 * 1000; // 30 minutes
+    const now = new Date();
+    const lockedUntil = new Date(now.getTime() + lockoutDuration);
+    
+    const query = `
+        INSERT INTO login_attempts (username, ip_address, success, locked_until)
+        VALUES (?, ?, ?, ?)
+    `;
+    
+    const params = [username, ip, success ? 1 : 0, success ? null : lockedUntil.toISOString()];
+    
+    try {
+        await db.execute(query, params);
+    } catch (err) {
+        console.error('Error recording login attempt:', err);
+    }
 }
 
 // Check failed login attempts
-function checkFailedAttempts(username) {
-    return new Promise((resolve) => {
-        const windowMs = parseInt(process.env.LOGIN_ATTEMPT_WINDOW_MS) || 15 * 60 * 1000;
-        const maxAttempts = parseInt(process.env.MAX_LOGIN_ATTEMPTS) || 5;
-        const cutoffTime = new Date(Date.now() - windowMs).toISOString();
-        
-        db.get(
+async function checkFailedAttempts(username) {
+    const windowMs = parseInt(process.env.LOGIN_ATTEMPT_WINDOW_MS) || 15 * 60 * 1000;
+    const cutoffTime = new Date(Date.now() - windowMs).toISOString();
+    
+    try {
+        const [rows] = await db.query(
             `SELECT COUNT(*) as count FROM login_attempts 
              WHERE username = ? AND success = 0 AND attempt_timestamp > ?`,
-            [username, cutoffTime],
-            (err, row) => {
-                if (err) {
-                    console.error('Error checking failed attempts:', err);
-                    resolve(0);
-                }
-                resolve(row?.count || 0);
-            }
+            [username, cutoffTime]
         );
-    });
+        return rows[0]?.count || 0;
+    } catch (err) {
+        console.error('Error checking failed attempts:', err);
+        return 0;
+    }
 }
 
 // Get CSRF token for login form
@@ -262,272 +256,124 @@ const nextMonth = formatDate(addMonths(new Date(), 1));
 /////////////////////////////
 
 // Booking related queries
-const sql_get_pending_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, status FROM bookings WHERE status = 1 order by date, time asc;`
-const sql_get_pending_booking = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, 
-            client_phone, client_email, subscribe_email, 
-            strftime('%Y-%m-%d %H:%M:%S', stamp_created) as stamp_created, 
-            status 
-            FROM bookings WHERE id = ?`
-const sql_get_approved_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, 
-        subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created 
-        FROM bookings 
-        WHERE status = 2
-         and date >= date('now') 
-         and (date > date('now') OR (date = date('now') AND time > strftime('%H:%M', 'now', '-1 hour'))) 
-         ORDER BY date, time asc;`;
-const sql_get_historically_approved_bookings = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created FROM bookings WHERE status = 2 and date <= date('now')`;
-const sql_get_bookings_history = `SELECT id, booking_type, date, time, booking_note, client_forename, client_lastname, client_phone, client_email, subscribe_email, strftime('%Y-%m-%d %H:%M:%S', stamp_created) AS stamp_created, status FROM bookings ORDER BY id desc`;
-const sql_approve_or_reject_booking = `UPDATE bookings SET status = ? WHERE id = ?`;
+const sql_get_pending_bookings = `SELECT id, booking_type, date, time, booking_note, firstName, lastname, phone, email, subscribe_email, stamp_created, status FROM booking WHERE status = 1 ORDER BY date, time ASC;`
+const sql_get_pending_booking = `SELECT id, booking_type, date, time, booking_note, firstName, lastname, phone, email, subscribe_email, stamp_created, status FROM booking WHERE id = ?`
+const sql_get_approved_bookings = `SELECT id, booking_type, date, time, booking_note, firstName, lastname, phone, email, subscribe_email, stamp_created FROM booking WHERE status = 2 AND date >= CURDATE() AND (date > CURDATE() OR (date = CURDATE() AND time > DATE_SUB(CURTIME(), INTERVAL 1 HOUR))) ORDER BY date, time ASC;`;
+const sql_get_historically_approved_bookings = `SELECT id, booking_type, date, time, booking_note, firstName, lastname, phone, email, subscribe_email, stamp_created FROM booking WHERE status = 2 AND date <= CURDATE()`;
+const sql_get_bookings_history = `SELECT id, booking_type, date, time, booking_note, firstName, lastname, phone, email, subscribe_email, stamp_created, status FROM booking ORDER BY id DESC`;
+const sql_approve_or_reject_booking = `UPDATE booking SET status = ? WHERE id = ?`;
 
 // Holiday related queries
 const sql_get_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
 
 // Client related queries
-const sql_get_clients = `SELECT client_id, foreName, lastName, client_phone, client_email, stamp_created FROM client order by foreName;`;
-const sql_get_client_by_id = `SELECT foreName, lastName, client_phone, client_email, stamp_created, stamp_modified FROM client WHERE client_id = ? LIMIT 1`;
-const sql_get_client_mailing_list = `SELECT is_subscribed, date_subscribed, date_unsubscribed FROM mailing_list WHERE client_id = ? LIMIT 1`;
-const sql_get_client_card_info = `SELECT 
-            cc.card_id,
-            s.name as service_name,
-            sub.credits_balance,
-            sub.start_date,
-            sub.expiration_date,
-            sub.status as subscription_status,
-            sub.stamp_created
-        FROM client_card cc
-        JOIN services s ON cc.service_id = s.service_id
-        LEFT JOIN subscriptions sub ON cc.card_id = sub.card_id
-        WHERE cc.client_id = ?`;
-const sql_check_existing_client = `SELECT client_id FROM client WHERE client_phone = ? OR client_email = ? LIMIT 1`;
-const sql_insert_client = `INSERT INTO client (foreName, lastName, client_phone, client_email) VALUES (?, ?, ?, ?)`;
-const sql_insert_mailing_list = `INSERT INTO  mailing_list (client_id, date_subscribed) VALUES (?, date(?))`;
-const sql_insert_client_card = `INSERT INTO client_card (client_id, service_id) VALUES (?, ?)`;
-const sql_insert_subscription = `INSERT INTO subscriptions (service_id, card_id, client_id, credits_balance, start_date, expiration_date, status) VALUES (?, ?, ?, ?, date(?), date(?), ?)`;
-const sql_select_service = `SELECT service_id, nr_credits FROM services WHERE name = ? LIMIT 1`;
-const sql_subtract_credits = `UPDATE subscriptions 
-SET credits_balance = credits_balance - 1, stamp_modified = CURRENT_TIMESTAMP,
-     status = CASE 
-        WHEN credits_balance - 1 = 0 THEN 9 
-        WHEN expiration_date < date('now') THEN 7
-        ELSE 6
-        END
-        WHERE sub_id = ?;`;
-const sql_sync_sub_status = `UPDATE subscriptions 
-    SET status = CASE 
-        WHEN credits_balance > 0 AND date('now') =< expiration_date THEN 6
-        WHEN date('now') > expiration_date THEN 7
-        WHEN status = 8 THEN 8
-        WHEN credits_balance = 0 THEN 9 
-    END, stamp_modified = CURRENT_TIMESTAMP;`;
-
-const sql_sync_client_card_status = `UPDATE client_card 
-    SET is_active = CASE 
-        WHEN card_id IN (
-            SELECT card_id FROM subscriptions 
-            WHERE status = 6
-        ) THEN 1
-        ELSE 0
-    END`
-const sql_update_client_card_status = `UPDATE client_card SET is_active = ? WHERE card_id = ?`;
-
+const sql_get_clients = `SELECT c.client_id, ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created FROM client c JOIN contact ct ON c.contact_id = ct.id ORDER BY ct.firstName;`;
+const sql_get_client_by_id = `SELECT ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created, c.stamp_modified FROM client c JOIN contact ct ON c.contact_id = ct.id WHERE c.client_id = ? LIMIT 1`;
+const sql_get_client_mailing_list = `SELECT date_subscribed, date_unsubscribed FROM mailing_list WHERE client_id = ? LIMIT 1`;
+const sql_get_client_card_info = `SELECT ca.card_id, p.name as service_name, NULL as credits_balance, s.start_date, s.expiration_date, s.status as subscription_status, s.stamp_created FROM cards ca JOIN subscriptions s ON ca.card_id = s.card_id JOIN product p ON s.product_id = p.product_id WHERE ca.client_id = ?`;
+const sql_check_existing_client = `SELECT c.client_id FROM client c JOIN contact ct ON c.contact_id = ct.id WHERE ct.phone = ? OR ct.email = ? LIMIT 1`;
+const sql_insert_client = `CALL insert_client(?, ?, ?, ?)`;
+const sql_insert_mailing_list = `INSERT INTO mailing_list (client_id, date_subscribed) VALUES (?, ?)`;
+const sql_insert_client_card = `INSERT INTO cards (client_id) VALUES (?)`;
+const sql_insert_subscription = `INSERT INTO subscriptions (client_id, product_id, card_id, start_date, expiration_date, status) VALUES (?, ?, ?, ?, ?, ?)`;
+const sql_select_service = `SELECT product_id, name FROM product WHERE name = ? LIMIT 1`;
+const sql_subtract_credits = `UPDATE subscriptions SET stamp_modified = CURRENT_TIMESTAMP, status = CASE WHEN expiration_date < CURDATE() THEN 7 ELSE 6 END WHERE id = ?;`;
+const sql_sync_sub_status = `UPDATE subscriptions SET status = CASE WHEN CURDATE() <= expiration_date THEN 6 WHEN CURDATE() > expiration_date THEN 7 WHEN status = 8 THEN 8 ELSE 9 END, stamp_modified = CURRENT_TIMESTAMP;`;
 
 ////////////////////////
 ///   BOOKING APIs   ///
 ////////////////////////
 
 // Get all pending bookings
-app.get('/api/pending', (req, res) => {
-    db.all(sql_get_pending_bookings, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
+app.get('/api/pending', async (req, res) => {
+    try {
+        const [rows] = await db.query(sql_get_pending_bookings);
         res.json(rows);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Approve or reject booking
 app.post('/api/approve', async (req, res) => {
     const { id, status } = req.body;
+    const connection = await db.getConnection();
 
     try {
-        //Begin transaction
-        await new Promise((resolve, reject) => {
-            db.run('BEGIN TRANSACTION', err => {
-                if (err) reject(err);
-                else resolve();
-            });
-        });
+        await connection.beginTransaction();
 
-    // Get booking details
-    const booking = await new Promise((resolve, reject) => {
-        db.get(sql_get_pending_booking, [id], (err, row) => {
-            if (err) reject(err);
-            else resolve(row);
-        });
-    });
-
-    // Update booking status
-    await new Promise ((resolve, reject) => {
-        db.run(sql_approve_or_reject_booking, [status, id], function(err) {
-            if (err) reject(err);
-            else resolve(this);
-        });
-    });
-
-    // Check if client exists
-    if (status === 2) {
-        const existingClient = await new Promise ((resolve, reject) => {
-            db.get(sql_check_existing_client, [booking.client_phone, booking.client_email], (err, row) => {
-                if (err) reject(err);
-                else resolve(row);
-            });
-        });
-
-        let clientId;
-        if (existingClient) {
-            clientId = existingClient.client_id;
-        } else {
-            // Create new client
-            const newClient = await new Promise ((resolve, reject) => {
-            db.run(sql_insert_client, 
-                [booking.client_forename, booking.client_lastname, booking.client_phone, booking.client_email],
-                function(err) {
-                if (err) reject(err);
-                else resolve(this);
-            });
-        });
-        clientId = newClient.lastID;
-
-        // Handle email subscription
-        if (booking.subscribe_email) {
-            await new Promise ((resolve, reject) => {
-                db.run(sql_insert_mailing_list, 
-                    [clientId, booking.date], // Use booking date instead of current date
-                    function(err) {
-                        if (err) reject(err);
-                        else resolve(this);
-                    });
-            });
+        // Get booking details
+        const [bookingRows] = await connection.query(sql_get_pending_booking, [id]);
+        const booking = bookingRows[0];
+        
+        if (!booking) {
+            await connection.rollback();
+            return res.status(404).json({ error: 'Booking not found' });
         }
 
-        // Handle subscribed clients
-        if (!['Solo','Private'].includes(booking.booking_type)) {
-            // Get service
-            const serviceType = await new Promise ((resolve, reject) => {
-                db.get(sql_select_service, [booking.booking_type], (err, row) => {
-                    if (err) reject(err);
-                    else resolve(row);
-                });
-            });
+        // Update booking status
+        await connection.execute(sql_approve_or_reject_booking, [status, id]);
 
-            if (serviceType) {
-                // Create subscription FIRST with status 5 (pending)
-                const startDate = booking.date;
-                const expirationDate = formatDate(addMonths(new Date(booking.date), 1));
+        // Check if client exists
+        if (status === 2) {
+            const [existingRows] = await connection.query(sql_check_existing_client, [booking.phone, booking.email]);
+            const existingClient = existingRows[0];
 
-                const subResult = await new Promise ((resolve, reject) => {
-                    db.run(sql_insert_subscription, 
-                        [serviceType.service_id, null, clientId, serviceType.nr_credits, startDate, expirationDate, 5],
-                        function(err) {
-                            if (err) reject(err);
-                            else resolve(this);
-                        });
-                });
+            let clientId;
+            if (existingClient) {
+                clientId = existingClient.client_id;
+            } else {
+                // Create new client using stored procedure
+                const [clientResult] = await connection.execute(sql_insert_client, 
+                    [booking.firstName, booking.lastname, booking.phone, booking.email]
+                );
+                // The stored procedure returns the client_id
+                clientId = clientResult[0][0]?.client_id;
 
-                const subscriptionId = subResult.lastID;
+                // Handle email subscription
+                if (booking.subscribe_email) {
+                    await connection.execute(sql_insert_mailing_list, [clientId, booking.date]);
+                }
 
-                // Check if subscription should be active (status 6)
-                // A subscription is active if start_date <= today AND expiration_date >= today AND credits_balance > 0
-                const today = formatDate(new Date());
-                let subscriptionStatus = 5; // Default to pending
-                let cardId = null;
+                // Handle subscribed clients (group classes)
+                if (!['Solo', 'Private'].includes(booking.booking_type)) {
+                    // Get service/product info
+                    const [serviceRows] = await connection.query(sql_select_service, [booking.booking_type]);
+                    const serviceType = serviceRows[0];
 
-                if (startDate <= today && expirationDate >= today) {
-                    // Update subscription status to 6 (active)
-                    subscriptionStatus = 6;
+                    if (serviceType) {
+                        const startDate = booking.date;
+                        const expirationDate = formatDate(addMonths(new Date(booking.date), 1));
 
-                    // Only create client card if subscription is active (status 6)
-                    const cardResult = await new Promise ((resolve, reject) => {
-                        db.run(sql_insert_client_card, 
-                            [clientId, serviceType.service_id],
-                            function(err) {
-                                if (err) reject(err);
-                                else resolve(this);
-                            });
-                    });
+                        // Create card first
+                        const [cardResult] = await connection.execute(sql_insert_client_card, [clientId]);
+                        const cardId = cardResult.insertId;
 
-                    cardId = cardResult.lastID;
-
-                    // Update subscription with card_id and status 6
-                    await new Promise ((resolve, reject) => {
-                        db.run(`UPDATE subscriptions SET card_id = ?, status = 6, is_active = 1 WHERE sub_id = ?`,
-                            [cardId, subscriptionId],
-                            function(err) {
-                                if (err) reject(err);
-                                else resolve(this);
-                            });
-                    });
-
-                    // Set client_card to active
-                    await new Promise ((resolve, reject) => {
-                        db.run(`UPDATE client_card SET is_active = 1 WHERE card_id = ?`,
-                            [cardId],
-                            function(err) {
-                                if (err) reject(err);
-                                else resolve(this);
-                            });
-                    });
-                } else {
-                    // Keep status as 5 (pending) - do NOT create client_card yet
-                    await new Promise ((resolve, reject) => {
-                        db.run(`UPDATE subscriptions SET status = 5 WHERE sub_id = ?`,
-                            [subscriptionId],
-                            function(err) {
-                                if (err) reject(err);
-                                else resolve(this);
-                            });
-                    });
+                        // Create subscription with card_id
+                        const [subResult] = await connection.execute(sql_insert_subscription, 
+                            [clientId, serviceType.product_id, cardId, startDate, expirationDate, 1]
+                        );
+                    }
                 }
             }
         }
-    }
-    }
 
-    // Commit transaction
-    await new Promise((resolve,reject) => {
-        db.run('COMMIT', err => {
-            if (err) reject(err);
-            else resolve();
-        });
-    });
-
-    res.json({ message: `Тренировката беше ${status === 2 ? 'добавена' : status === 4 ? 'отказана' : 'отменена'}.` });
+        await connection.commit();
+        res.json({ message: `Тренировката беше ${status === 2 ? 'добавена' : status === 4 ? 'отказана' : 'отменена'}.` });
 
     } catch (error) {
-        // Rollback transaction 
-        await new Promise(resolve => {
-            db.run('ROLLBACK', () => resolve());
-        })
+        await connection.rollback();
+        console.error('Approve booking error:', error);
         res.status(500).json({ error: error.message });
+    } finally {
+        connection.release();
     }
 });
 
 // Add new endpoint to handle subscription status updates
 app.post('/api/update-subscriptions', async (req, res) => {
     try {
-        await new Promise((resolve, reject) => {
-            db.run(sql_sync_sub_status, [], (err) => {
-                if (err) reject(err);
-                else resolve();
-            });
-        });
-
-        // Update client_card active status based on subscription status
-        await new Promise((resolve, reject) => {
-            db.run(sql_sync_client_card_status, [], (err) => {
-                if (err) reject(err);
-                else resolve();
-            });
-        });
-
+        await db.execute(sql_sync_sub_status);
         res.json({ message: 'Subscriptions updated successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -535,61 +381,75 @@ app.post('/api/update-subscriptions', async (req, res) => {
 });
 
 // Get all approved bookings
-app.get('/api/bookings-approved', (req, res) => {
-    db.all(sql_get_approved_bookings, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
+app.get('/api/bookings-approved', async (req, res) => {
+    try {
+        const [rows] = await db.query(sql_get_approved_bookings);
         res.json(rows);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Get available slots
-app.get('/api/unavailable-slots', (req, res) => {
-    db.all(`SELECT date, time, status FROM v_unavailable_slots`, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
+app.get('/api/unavailable-slots', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT date, time, status FROM v_unavailable_slots');
         res.json(rows);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Get all historically approved bookings
-app.get('/api/bookings-history-approved', (req, res) => {
-    db.all(sql_get_historically_approved_bookings, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
+app.get('/api/bookings-history-approved', async (req, res) => {
+    try {
+        const [rows] = await db.query(sql_get_historically_approved_bookings);
         res.json(rows);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Get bookings history
-app.get('/api/bookings-history', (req, res) => {
-    db.all(sql_get_bookings_history, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
+app.get('/api/bookings-history', async (req, res) => {
+    try {
+        const [rows] = await db.query(sql_get_bookings_history);
         res.json(rows);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Book a slot
-app.post('/api/book', (req, res) => {
-    const { booking_type, date, time, client_forename, client_lastname, client_phone, client_email, booking_note, subscribe_email } = req.body;
+app.post('/api/book', async (req, res) => {
+    const { booking_type, date, time, firstName, lastName, phone, email, booking_note, subscribe_email } = req.body;
 
-    if (!booking_type || !date || !time || !client_forename || !client_lastname || !client_phone || !client_email) {
+    if (!booking_type || !date || !time || !firstName || !lastName || !phone || !email) {
         return res.status(400).json({ error: 'Липсват необходими полета.' });
     }
     
-    const sql_book_check_existing = `SELECT * FROM bookings WHERE date = ? AND time = ? AND status = 2`;  
-
-    db.get(sql_book_check_existing, [date, time], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (row) return res.status(400).json({ error: 'За съжаление този час е зает. Моля изберете свободен час.' });
+    try {
+        // Check if slot is already booked
+        const [existingRows] = await db.query(
+            'SELECT * FROM booking WHERE date = ? AND time = ? AND status = 2',
+            [date, time]
+        );
         
-        const sql_book = `INSERT INTO bookings (booking_type, date, time, client_forename, client_lastname, client_phone, client_email, booking_note, subscribe_email, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`;
-        const sql_book_values = [booking_type, date, time, client_forename, client_lastname, client_phone, client_email, booking_note, subscribe_email];
+        if (existingRows.length > 0) {
+            return res.status(400).json({ error: 'За съжаление този час е зает. Моля изберете свободен час.' });
+        }
         
-        db.run(sql_book, sql_book_values,
-            function (err) {
-                if (err) return res.status(500).json({ error: err.message });
-                res.json({ message: 'Заявката е изпратена за одобрение.', id: this.lastID });
-            });
-    });
+        // Insert new booking
+        const [result] = await db.execute(
+            `INSERT INTO booking (booking_type, date, time, firstName, lastname, phone, email, booking_note, subscribe_email, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+            [booking_type, date, time, firstName, lastName, phone, email, booking_note, subscribe_email]
+        );
+        
+        res.json({ message: 'Заявката е изпратена за одобрение.', id: result.insertId });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 ////////////////////////
@@ -597,41 +457,43 @@ app.post('/api/book', (req, res) => {
 ////////////////////////
 
 // Get all active holidays
-app.get('/api/holidays', (req, res) => {
-    db.all(sql_get_holidays, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
+app.get('/api/holidays', async (req, res) => {
+    try {
+        const [rows] = await db.query(sql_get_holidays);
         res.json(rows);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// Automatically deactivate past holidays on loadHolidays and don't retrieve a message
-app.post('/api/auto-deactivate-past-holidays', (req, res) => {
-    const sql_auto_deactivate_past_holidays = `UPDATE holidays SET is_active = 0 WHERE date < date('now');`;
-
-    db.run(sql_auto_deactivate_past_holidays, function (err) {
-        if (err) return res.status(500).json({ error: err.message });
-    });
+// Automatically deactivate past holidays
+app.post('/api/auto-deactivate-past-holidays', async (req, res) => {
+    try {
+        await db.execute('UPDATE holidays SET is_active = 0 WHERE date < CURDATE()');
+        res.json({ message: 'Past holidays deactivated' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Delete holiday
-app.post('/api/delete-holiday', (req, res) => {
-    const sql_delete_holiday_values = [req.body.id];
-    const sql_delete_holiday = `DELETE FROM holidays WHERE id = ?;`;
+app.post('/api/delete-holiday', async (req, res) => {
+    const holidayId = req.body.id;
 
-    if (!sql_delete_holiday_values) {
+    if (!holidayId) {
         return res.status(400).json({ error: 'Missing holiday ID' });
     }
 
-    db.run(sql_delete_holiday, sql_delete_holiday_values, function(err) {
-        if (err) {
-            console.error('Грешка при изтриване:', err);
-            return res.status(500).json({ error: err.message });
-        }
-        if (this.changes === 0) {
+    try {
+        const [result] = await db.execute('DELETE FROM holidays WHERE id = ?', [holidayId]);
+        if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Почивният ден не е намерен' });
         }
         res.json({ message: 'Почивният ден е премахнат.' });
-    });
+    } catch (err) {
+        console.error('Грешка при изтриване:', err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Add holiday
@@ -642,48 +504,32 @@ app.post('/api/add-holiday', async (req, res) => {
         return res.status(400).json({ error: 'Invalid request' });
     }
 
+    const connection = await db.getConnection();
     try {
-        // Use a transaction to ensure all or nothing
-        await new Promise((resolve, reject) => {
-            db.run('BEGIN TRANSACTION', err => {
-                if (err) reject(err);
-                else resolve();
-            });
-        });
+        await connection.beginTransaction();
 
         for (const holiday of holidays) {
-            await new Promise((resolve, reject) => {
-                const query = holiday.time === null
-                    ? `INSERT INTO holidays (date, description) VALUES (?, ?)`
-                    : `INSERT INTO holidays (date, time, description) VALUES (?, ?, ?)`;
-                const params = holiday.time === null
-                    ? [holiday.date, description]
-                    : [holiday.date, holiday.time, description];
-                
-                db.run(query, params, function(err) {
-                    if (err) reject(err);
-                    else resolve();
-                });
-            });
+            const query = holiday.time === null
+                ? 'INSERT INTO holidays (date, description) VALUES (?, ?)'
+                : 'INSERT INTO holidays (date, time, description) VALUES (?, ?, ?)';
+            const params = holiday.time === null
+                ? [holiday.date, description]
+                : [holiday.date, holiday.time, description];
+            
+            await connection.execute(query, params);
         }
 
-        await new Promise((resolve, reject) => {
-            db.run('COMMIT', err => {
-                if (err) reject(err);
-                else resolve();
-            });
-        });
-
+        await connection.commit();
         res.json({ message: 'Почивката е добавена успешно.' });
     } catch (error) {
-        await new Promise(resolve => {
-            db.run('ROLLBACK', () => resolve());
-        });
+        await connection.rollback();
         res.status(500).json({ 
             error: error.message.includes('UNIQUE') 
                 ? 'Този ден/час вече е маркиран като почивка' 
                 : error.message 
         });
+    } finally {
+        connection.release();
     }
 });
 
@@ -691,38 +537,44 @@ app.post('/api/add-holiday', async (req, res) => {
 ///   CLIENT APIs   ///
 ////////////////////////
 
-app.get('/api/clients', (req, res) => {
-    db.all(sql_get_clients, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
+app.get('/api/clients', async (req, res) => {
+    try {
+        const [rows] = await db.query(sql_get_clients);
         res.json(rows);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.get('/api/client/:id', (req, res) => {
+app.get('/api/client/:id', async (req, res) => {
     const clientId = req.params.id;
-    db.get(sql_get_client_by_id, [clientId], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (!row) return res.status(404).json({ error: 'Client not found' });
-        res.json(row);
-    });
+    try {
+        const [rows] = await db.query(sql_get_client_by_id, [clientId]);
+        if (rows.length === 0) return res.status(404).json({ error: 'Client not found' });
+        res.json(rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.get('/api/client/:id/mailing-list', (req, res) => {
+app.get('/api/client/:id/mailing-list', async (req, res) => {
     const clientId = req.params.id;
-    
-    db.get(sql_get_client_mailing_list, [clientId], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(row || {});
-    });
+    try {
+        const [rows] = await db.query(sql_get_client_mailing_list, [clientId]);
+        res.json(rows[0] || {});
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.get('/api/client/:id/cards', (req, res) => {
+app.get('/api/client/:id/cards', async (req, res) => {
     const clientId = req.params.id;
-    
-    db.all(sql_get_client_card_info, [clientId], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        const [rows] = await db.query(sql_get_client_card_info, [clientId]);
         res.json(rows || []);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 ////////////////////////

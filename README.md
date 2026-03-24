@@ -249,14 +249,6 @@ ACCOUNT_LOCKOUT_DURATION_MS=1800000
 
 ## Known Issues & TODOs
 
-### High Priority ✅ COMPLETED
-- [x] Move credentials and secrets to environment variables
-- [x] Implement password hashing (bcrypt)
-- [x] Add rate limiting on login attempts
-- [x] Add CSRF token protection
-- [x] Add account lockout after failed login attempts
-- [x] Improve error handling and user feedback
-
 ### Medium Priority
 - [ ] Add email notifications for bookings
 - [ ] Multi-language support (currently Bulgarian/English)
@@ -265,6 +257,7 @@ ACCOUNT_LOCKOUT_DURATION_MS=1800000
 - [ ] SMS notifications option
 - [ ] Mobile app or responsive improvements
 - [ ] Analytics dashboard
+- [ ] Add dbstate table to track major table versions
 
 ### Low Priority
 - [ ] Performance optimization (lazy loading, caching)
