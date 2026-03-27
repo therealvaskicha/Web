@@ -461,12 +461,12 @@ if (logoutBtn) {
                             } else if (taken) {
                                 const booking = bookings.find(b => b.date === dateStr && b.time === time) ||
                                                 historicalBookings.find(b => b.date === dateStr && b.time === time);
-                                booking.client_name = `${booking.firstName} ${booking.lastName}`
+                                booking.client_name = `${booking.firstName} ${booking.lastname}`
                                 slotBtn.classList.add('taken');
                                 slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.phone}\nДата: ${booking.date}`;
                             } else if (pending) {
                                 const booking = pendingBookings.find(d => d.date === dateStr && d.time === time && d.status === 1);
-                                booking.client_name = `${booking.firstName} ${booking.lastName}`
+                                booking.client_name = `${booking.firstName} ${booking.lastname}`
                                 slotBtn.classList.add('pending');
                                 slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.phone}\nДата: ${booking.date}`;
                             } else {
@@ -663,10 +663,10 @@ if (logoutBtn) {
         async function handleBookingFormSubmit(e) {
             const booking_type = document.getElementById('booking-type').value;
             const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
+            const lastname = document.getElementById('lastname').value;
             const phone = document.getElementById('phone').value;
             const email = document.getElementById('email').value;
-            const booking_note = document.getElementById('booking-note').value;
+            const note = document.getElementById('booking-note').value;
             const subscribe_email = document.getElementById('subscribe-email').checked;
 
             const calendarEl = document.getElementById('admin-calendar');
@@ -692,10 +692,10 @@ if (logoutBtn) {
                     date: selectedDate, 
                     time: selectedTime,
                     firstName, 
-                    lastName, 
+                    lastname, 
                     phone, 
                     email, 
-                    booking_note, 
+                    note, 
                     subscribe_email
                 });
                 if (result.error) {
@@ -751,8 +751,8 @@ if (logoutBtn) {
             
                 paginatedBookings.forEach(booking => {
                     const row = pendingBookingsTable.insertRow();
-                    booking.client_name = `${booking.firstName} ${booking.lastName}`
-                    const noteCell = booking.booking_note ? `${booking.booking_type}<br>${booking.booking_note}` : booking.booking_type;
+                    booking.client_name = `${booking.firstName} ${booking.lastname}`
+                    const noteCell = booking.note ? `${booking.booking_type}<br>${booking.note}` : booking.booking_type;
                     row.innerHTML = `
                         <td>${booking.client_name}</td>
                         <td>${booking.date} ${booking.time}</td>
@@ -845,11 +845,11 @@ if (logoutBtn) {
             
                 paginatedBookings.forEach(booking => {
                     const row = approvedBookingsTable.insertRow();
-                    booking.client_name = `${booking.firstName} ${booking.lastName}`
-                    const noteCell = booking.booking_note ? `${booking.booking_type}<br>${booking.booking_note}` : booking.booking_type;
+                    booking.client_name = `${booking.firstName} ${booking.lastname}`
+                    const noteCell = booking.note ? `${booking.booking_type}<br>${booking.note}` : booking.booking_type;
                     row.innerHTML = `
                         <td>${booking.client_name}</td>
-                        <td>${booking.date} ${booking.time}</td>
+                        <td>${booking.date}</td>
                         <td>${noteCell}</td>
                         <td>
                             <img src="Images/btn-no-test.png" class="cancel-btn" data-id="${booking.id}">
@@ -1134,7 +1134,7 @@ if (logoutBtn) {
             while (clientsTable.rows.length > 1) clientsTable.deleteRow(1);
             clients.forEach(client => {
                 const row = clientsTable.insertRow();
-                row.innerHTML = `<td>${client.foreName} ${client.lastName}</td>`;
+                row.innerHTML = `<td>${client.firstName} ${client.lastname}</td>`;
                 row.style.cursor = 'pointer';
 
                 row.addEventListener('click', async () => {
@@ -1152,7 +1152,7 @@ if (logoutBtn) {
             const clientInfo = document.querySelector('.clientInfo');
             const closeBtn = document.querySelector('.close-client-info');
 
-            document.getElementById('clientName').textContent = `${client.foreName} ${client.lastName}`;
+            document.getElementById('clientName').textContent = `${client.firstName} ${client.lastname}`;
             document.getElementById('clientPhone').textContent = client.phone || 'N/A';
             if (client.phone) document.getElementById('clientPhone').href = 'tel:' + client.phone;
             document.getElementById('clientEmail').textContent = client.email || 'N/A';
@@ -1207,7 +1207,7 @@ if (logoutBtn) {
             topClients.style.display = 'none';
             clientInfo.style.display = 'block';
 
-            filterBookingHistoryByClient(client.foreName, client.lastName);
+            filterBookingHistoryByClient(client.firstName, client.lastname);
 
             closeBtn.onclick = () => {
                 clientInfo.style.display = 'none';
@@ -1221,8 +1221,8 @@ if (logoutBtn) {
         }
 
         // Filter by client
-        function filterBookingHistoryByClient(foreName, lastName) {
-            const clientName = `${foreName} ${lastName}`;
+        function filterBookingHistoryByClient(firstName, lastname) {
+            const clientName = `${firstName} ${lastname}`;
             if (historyFilterController) {
                 historyFilterController.setClientFilter(clientName);
             }
@@ -1265,7 +1265,7 @@ if (logoutBtn) {
 
                     if (selectedClient) {
                         filteredBookings = filteredBookings.filter(booking => {
-                            const clientName = `${booking.firstName} ${booking.lastName}`;
+                            const clientName = `${booking.firstName} ${booking.lastname}`;
                             return clientName === selectedClient;
                         });
                     }
@@ -1339,7 +1339,7 @@ if (logoutBtn) {
                     paginatedBookings.forEach(booking => {
                         const row = bookingHistoryTable.insertRow();
                         row.classList.add('row-initial');
-                        booking.client_name = `${booking.firstName} ${booking.lastName}`
+                        booking.client_name = `${booking.firstName} ${booking.lastname}`
                         row.innerHTML = `
                             <td>${booking.client_name}</td>
                             <td>${booking.booking_type}</td>

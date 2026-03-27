@@ -256,29 +256,70 @@ const nextMonth = formatDate(addMonths(new Date(), 1));
 /////////////////////////////
 
 // Booking related queries
-const sql_get_pending_bookings = `SELECT id, booking_type, date, time, booking_note, firstName, lastname, phone, email, subscribe_email, stamp_created, status FROM booking WHERE status = 1 ORDER BY date, time ASC;`
-const sql_get_pending_booking = `SELECT id, booking_type, date, time, booking_note, firstName, lastname, phone, email, subscribe_email, stamp_created, status FROM booking WHERE id = ?`
-const sql_get_approved_bookings = `SELECT id, booking_type, date, time, booking_note, firstName, lastname, phone, email, subscribe_email, stamp_created FROM booking WHERE status = 2 AND date >= CURDATE() AND (date > CURDATE() OR (date = CURDATE() AND time > DATE_SUB(CURTIME(), INTERVAL 1 HOUR))) ORDER BY date, time ASC;`;
-const sql_get_historically_approved_bookings = `SELECT id, booking_type, date, time, booking_note, firstName, lastname, phone, email, subscribe_email, stamp_created FROM booking WHERE status = 2 AND date <= CURDATE()`;
-const sql_get_bookings_history = `SELECT id, booking_type, date, time, booking_note, firstName, lastname, phone, email, subscribe_email, stamp_created, status FROM booking ORDER BY id DESC`;
-const sql_approve_or_reject_booking = `UPDATE booking SET status = ? WHERE id = ?`;
+const sql_get_pending_bookings = 
+`SELECT r.id, p.name as 'booking_type', DATE_FORMAT(r.date, '%Y-%m-%d %H:%i') as 'date', r.note, c.firstName, c.lastname
+FROM contact c 
+    left join requestlog r on c.id = r.contact_id 
+    right join product p on p.product_id = r.product_id
+WHERE status in (1,10) and date >= curdate() ORDER BY date ASC`
+const sql_get_pending_booking = 
+`SELECT id FROM booking WHERE id = ?`
+const sql_get_approved_bookings = 
+`SELECT id, date 
+FROM booking 
+WHERE status in (2,3,11) AND date >= curdate()`;
+const sql_get_historically_approved_bookings = 
+`SELECT id, date 
+FROM booking 
+WHERE status in (2,3,5,11) AND date <= curdate()`;
+const sql_get_bookings_history = 
+`SELECT b.id, b.date, co.firstName, co.lastname 
+FROM booking b 
+    join client c on b.client_id=c.client_id 
+    join contact co on co.id=c.contact_id
+ORDER BY b.id DESC`;
+const sql_approve_or_reject_booking = 
+`UPDATE booking SET status = ? WHERE id = ?`;
 
 // Holiday related queries
-const sql_get_holidays = `SELECT * FROM holidays WHERE is_active = 1 ORDER BY date, time;`;
+const sql_get_holidays = 
+`SELECT * FROM holidays WHERE is_active = 1 ORDER BY date DESC;`;
 
 // Client related queries
-const sql_get_clients = `SELECT c.client_id, ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created FROM client c JOIN contact ct ON c.contact_id = ct.id ORDER BY ct.firstName;`;
-const sql_get_client_by_id = `SELECT ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created, c.stamp_modified FROM client c JOIN contact ct ON c.contact_id = ct.id WHERE c.client_id = ? LIMIT 1`;
-const sql_get_client_mailing_list = `SELECT date_subscribed, date_unsubscribed FROM mailing_list WHERE client_id = ? LIMIT 1`;
-const sql_get_client_card_info = `SELECT ca.card_id, p.name as service_name, NULL as credits_balance, s.start_date, s.expiration_date, s.status as subscription_status, s.stamp_created FROM cards ca JOIN subscriptions s ON ca.card_id = s.card_id JOIN product p ON s.product_id = p.product_id WHERE ca.client_id = ?`;
-const sql_check_existing_client = `SELECT c.client_id FROM client c JOIN contact ct ON c.contact_id = ct.id WHERE ct.phone = ? OR ct.email = ? LIMIT 1`;
-const sql_insert_client = `CALL insert_client(?, ?, ?, ?)`;
-const sql_insert_mailing_list = `INSERT INTO mailing_list (client_id, date_subscribed) VALUES (?, ?)`;
-const sql_insert_client_card = `INSERT INTO cards (client_id) VALUES (?)`;
-const sql_insert_subscription = `INSERT INTO subscriptions (client_id, product_id, card_id, start_date, expiration_date, status) VALUES (?, ?, ?, ?, ?, ?)`;
-const sql_select_service = `SELECT product_id, name FROM product WHERE name = ? LIMIT 1`;
-const sql_subtract_credits = `UPDATE subscriptions SET stamp_modified = CURRENT_TIMESTAMP, status = CASE WHEN expiration_date < CURDATE() THEN 7 ELSE 6 END WHERE id = ?;`;
-const sql_sync_sub_status = `UPDATE subscriptions SET status = CASE WHEN CURDATE() <= expiration_date THEN 6 WHEN CURDATE() > expiration_date THEN 7 WHEN status = 8 THEN 8 ELSE 9 END, stamp_modified = CURRENT_TIMESTAMP;`;
+const sql_get_clients = 
+`SELECT c.client_id, ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created 
+FROM client c JOIN contact ct ON c.contact_id = ct.id 
+ORDER BY ct.firstName;`;
+const sql_get_client_by_id = 
+`SELECT ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created, c.stamp_modified 
+FROM client c JOIN contact ct ON c.contact_id = ct.id 
+WHERE c.client_id = ? LIMIT 1`;
+const sql_get_client_mailing_list = 
+`SELECT date_subscribed, date_unsubscribed 
+FROM mailing_list 
+WHERE client_id = ? order by id desc limit 1`;
+const sql_get_client_card_info = 
+`SELECT ca.card_id, p.name as 'booking_type', NULL as credits_balance, s.start_date, s.expiration_date, s.status as subscription_status, s.stamp_created 
+FROM card ca JOIN subscription s ON ca.card_id = s.card_id 
+JOIN product p ON s.product_id = p.product_id 
+WHERE ca.client_id = ?`;
+const sql_check_existing_client = 
+`SELECT c.client_id, ct.phone, ct.email
+FROM client c JOIN contact ct ON c.contact_id = ct.id 
+WHERE ct.phone = ? OR ct.email = ? 
+LIMIT 1`;
+const sql_insert_client = 
+`CALL insert_client(?, ?, ?, ?)`;
+const sql_insert_mailing_list = 
+`INSERT INTO mailing_list (contact_id, date_subscribed) VALUES (?, ?)`;
+const sql_insert_client_card = 
+`INSERT INTO card (client_id) VALUES (?)`;
+const sql_insert_subscription = 
+`INSERT INTO subscription (client_id, product_id, card_id, start_date, expiration_date, status) VALUES (?, ?, ?, ?, ?, ?)`;
+const sql_select_service = 
+`SELECT product_id, name FROM product WHERE name = ? LIMIT 1`;
+const sql_sync_sub_status = 
+`UPDATE subscription SET status = CASE WHEN CURDATE() <= expiration_date THEN 15 WHEN CURDATE() > expiration_date THEN 17 ELSE 9 END;`;
 
 ////////////////////////
 ///   BOOKING APIs   ///
@@ -319,20 +360,20 @@ app.post('/api/approve', async (req, res) => {
             const [existingRows] = await connection.query(sql_check_existing_client, [booking.phone, booking.email]);
             const existingClient = existingRows[0];
 
-            let clientId;
+            let contactId;
             if (existingClient) {
-                clientId = existingClient.client_id;
+                contactId = existingClient.client_id;
             } else {
                 // Create new client using stored procedure
                 const [clientResult] = await connection.execute(sql_insert_client, 
                     [booking.firstName, booking.lastname, booking.phone, booking.email]
                 );
                 // The stored procedure returns the client_id
-                clientId = clientResult[0][0]?.client_id;
+                contactId = clientResult[0][0]?.contactId;
 
                 // Handle email subscription
                 if (booking.subscribe_email) {
-                    await connection.execute(sql_insert_mailing_list, [clientId, booking.date]);
+                    await connection.execute(sql_insert_mailing_list, [contactId, booking.date]);
                 }
 
                 // Handle subscribed clients (group classes)
@@ -422,7 +463,7 @@ app.get('/api/bookings-history', async (req, res) => {
 
 // Book a slot
 app.post('/api/book', async (req, res) => {
-    const { booking_type, date, time, firstName, lastName, phone, email, booking_note, subscribe_email } = req.body;
+    const { booking_type, date, time, firstName, lastName, phone, email, note, subscribe_email } = req.body;
 
     if (!booking_type || !date || !time || !firstName || !lastName || !phone || !email) {
         return res.status(400).json({ error: 'Липсват необходими полета.' });
@@ -441,9 +482,9 @@ app.post('/api/book', async (req, res) => {
         
         // Insert new booking
         const [result] = await db.execute(
-            `INSERT INTO booking (booking_type, date, time, firstName, lastname, phone, email, booking_note, subscribe_email, status)
+            `INSERT INTO booking (booking_type, date, time, firstName, lastname, phone, email, note, subscribe_email, status)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
-            [booking_type, date, time, firstName, lastName, phone, email, booking_note, subscribe_email]
+            [booking_type, date, time, firstName, lastName, phone, email, note, subscribe_email]
         );
         
         res.json({ message: 'Заявката е изпратена за одобрение.', id: result.insertId });
