@@ -256,38 +256,74 @@ const nextMonth = formatDate(addMonths(new Date(), 1));
 /////////////////////////////
 
 // Booking related queries
-const sql_get_pending_bookings = 
-`SELECT r.id, p.name as 'booking_type', DATE_FORMAT(r.date, '%Y-%m-%d %H:%i') as 'date', r.note, c.firstName, c.lastname
+const sql_get_pending_requests = 
+`SELECT p.name as 'booking_type', DATE_FORMAT(r.date, '%Y-%m-%d') as date, DATE_FORMAT(r.date, '%H:%i') as time, r.note, c.firstName, c.lastName
 FROM contact c 
     left join requestlog r on c.id = r.contact_id 
     right join product p on p.product_id = r.product_id
-WHERE status in (1,10) and date >= curdate() ORDER BY date ASC`
-const sql_get_pending_booking = 
-`SELECT id FROM booking WHERE id = ?`
-const sql_get_approved_bookings = 
-`SELECT id, date 
-FROM booking 
-WHERE status in (2,3,11) AND date >= curdate()`;
-const sql_get_historically_approved_bookings = 
-`SELECT id, date 
-FROM booking 
-WHERE status in (2,3,5,11) AND date <= curdate()`;
+WHERE r.status in (1,10) and r.date >= curdate() ORDER BY r.date ASC`
+
+const sql_get_pending_requests_c = 
+`SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time
+FROM requestlog
+WHERE status in (1,10) and date >= curdate()`
+
+const sql_get_pending_request = 
+`SELECT r.id, r.product_id, r.contact_id, r.date, r.note, co.firstName, co.lastName, co.phone, co.email, p.name as booking_type
+FROM requestlog r
+JOIN contact co ON r.contact_id = co.id
+JOIN product p ON r.product_id = p.product_id
+WHERE co.firstName = ? AND co.lastName = ? AND DATE(r.date) = ? AND TIME(r.date) = ? AND p.name = ?`
+
+const sql_get_approved_requests_c = 
+`SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time
+from requestlog
+WHERE status = 2 AND date >= curdate()`;
+
+
+const sql_get_approved_requests = 
+`SELECT DATE_FORMAT(r.date, '%Y-%m-%d') as date, DATE_FORMAT(r.date, '%H:%i') as time, p.name as booking_type, co.firstName, co.lastName, r.note
+from product p 
+right join requestlog r on p.product_id = r.product_id 
+left join contact co on r.contact_id = co.id
+WHERE r.status = 2 AND r.date >= curdate()`;
+
+const sql_get_completed_bookings_c = 
+`SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time
+from booking
+WHERE date <= curdate()`;
 const sql_get_bookings_history = 
-`SELECT b.id, b.date, co.firstName, co.lastname 
+`SELECT DATE_FORMAT(b.date, '%Y-%m-%d') as date, DATE_FORMAT(b.date, '%H:%i') as time, co.firstName, co.lastName 
 FROM booking b 
     join client c on b.client_id=c.client_id 
     join contact co on co.id=c.contact_id
 ORDER BY b.id DESC`;
-const sql_approve_or_reject_booking = 
-`UPDATE booking SET status = ? WHERE id = ?`;
+// Update requestlog status
+const sql_approve_or_reject_request = 
+`UPDATE requestlog SET status = ? WHERE id = ?`;
+
+// Insert contact for new booking requests
+const sql_insert_contact = 
+`INSERT INTO contact (firstName, lastName, phone, email) VALUES (?, ?, ?, ?)`;
+
+// Check if contact already exists
+const sql_get_contact_by_details = 
+`SELECT id FROM contact WHERE firstName = ? AND lastName = ? AND phone = ?`;
+
+// Insert request into requestlog
+const sql_insert_request = 
+`INSERT INTO requestlog (product_id, contact_id, date, note, status) VALUES (?, ?, ?, ?, ?)`;
 
 // Holiday related queries
 const sql_get_holidays = 
-`SELECT * FROM holidays WHERE is_active = 1 ORDER BY date DESC;`;
+`SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time, description FROM holidays WHERE is_active = 1 ORDER BY date,time DESC;`;
+
+const sql_get_holidays_c = 
+`SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time FROM holidays WHERE is_active = 1;`;
 
 // Client related queries
 const sql_get_clients = 
-`SELECT c.client_id, ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created 
+`SELECT ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created 
 FROM client c JOIN contact ct ON c.contact_id = ct.id 
 ORDER BY ct.firstName;`;
 const sql_get_client_by_id = 
@@ -304,12 +340,10 @@ FROM card ca JOIN subscription s ON ca.card_id = s.card_id
 JOIN product p ON s.product_id = p.product_id 
 WHERE ca.client_id = ?`;
 const sql_check_existing_client = 
-`SELECT c.client_id, ct.phone, ct.email
+`SELECT c.client_id, ct.firstName, ct.lastName, ct.phone, ct.email
 FROM client c JOIN contact ct ON c.contact_id = ct.id 
-WHERE ct.phone = ? OR ct.email = ? 
+WHERE ct.firstName = ? AND ct.lastName = ? AND ct.phone = ?
 LIMIT 1`;
-const sql_insert_client = 
-`CALL insert_client(?, ?, ?, ?)`;
 const sql_insert_mailing_list = 
 `INSERT INTO mailing_list (contact_id, date_subscribed) VALUES (?, ?)`;
 const sql_insert_client_card = 
@@ -328,63 +362,75 @@ const sql_sync_sub_status =
 // Get all pending bookings
 app.get('/api/pending', async (req, res) => {
     try {
-        const [rows] = await db.query(sql_get_pending_bookings);
+        const [rows] = await db.query(sql_get_pending_requests);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Approve or reject booking
+// Get all pending bookings (for calendar)
+app.get('/api/c-pending', async (req, res) => {
+    try {
+        const [rows] = await db.query(sql_get_pending_requests_c);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Approve or reject request
 app.post('/api/approve', async (req, res) => {
-    const { id, status } = req.body;
+    const { firstName, lastName, date, time, booking_type, status } = req.body;
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
 
-        // Get booking details
-        const [bookingRows] = await connection.query(sql_get_pending_booking, [id]);
-        const booking = bookingRows[0];
+        // Get request details by composite key
+        // time comes as "15:00", need to convert to "15:00:00" for TIME() comparison
+        const timeValue = time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
+        const [requestRows] = await connection.query(sql_get_pending_request, [firstName, lastName, date, timeValue, booking_type]);
+        const request = requestRows[0];
         
-        if (!booking) {
+        if (!request) {
             await connection.rollback();
-            return res.status(404).json({ error: 'Booking not found' });
+            return res.status(404).json({ error: 'Request not found' });
         }
 
-        // Update booking status
-        await connection.execute(sql_approve_or_reject_booking, [status, id]);
+        // Update request status
+        await connection.execute(sql_approve_or_reject_request, [status, request.id]);
 
         // Check if client exists
         if (status === 2) {
-            const [existingRows] = await connection.query(sql_check_existing_client, [booking.phone, booking.email]);
+            const [existingRows] = await connection.query(sql_check_existing_client, [request.firstName, request.lastName, request.phone]);
             const existingClient = existingRows[0];
 
-            let contactId;
+            let clientId;
             if (existingClient) {
-                contactId = existingClient.client_id;
+                clientId = existingClient.client_id;
             } else {
-                // Create new client using stored procedure
-                const [clientResult] = await connection.execute(sql_insert_client, 
-                    [booking.firstName, booking.lastname, booking.phone, booking.email]
+                // Create new client record - client_id will be auto-generated by database
+                const [clientResult] = await connection.execute(
+                    `INSERT INTO client (contact_id) VALUES (?)`,
+                    [request.contact_id]
                 );
-                // The stored procedure returns the client_id
-                contactId = clientResult[0][0]?.contactId;
-
+                clientId = clientResult.insertId;
+                
                 // Handle email subscription
-                if (booking.subscribe_email) {
-                    await connection.execute(sql_insert_mailing_list, [contactId, booking.date]);
+                if (request.subscribe_email) {
+                    await connection.execute(sql_insert_mailing_list, [request.contact_id, request.date]);
                 }
 
                 // Handle subscribed clients (group classes)
-                if (!['Solo', 'Private'].includes(booking.booking_type)) {
+                if (!['Solo', 'Private'].includes(request.booking_type)) {
                     // Get service/product info
-                    const [serviceRows] = await connection.query(sql_select_service, [booking.booking_type]);
+                    const [serviceRows] = await connection.query(sql_select_service, [request.booking_type]);
                     const serviceType = serviceRows[0];
 
                     if (serviceType) {
-                        const startDate = booking.date;
-                        const expirationDate = formatDate(addMonths(new Date(booking.date), 1));
+                        const startDate = request.date;
+                        const expirationDate = formatDate(addMonths(new Date(request.date), 1));
 
                         // Create card first
                         const [cardResult] = await connection.execute(sql_insert_client_card, [clientId]);
@@ -421,10 +467,18 @@ app.post('/api/update-subscriptions', async (req, res) => {
     }
 });
 
-// Get all approved bookings
-app.get('/api/bookings-approved', async (req, res) => {
+app.get('/api/c-approved-requests', async (req, res) => {
     try {
-        const [rows] = await db.query(sql_get_approved_bookings);
+        const [rows] = await db.query(sql_get_approved_requests_c);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/approved-requests', async (req, res) => {
+    try {
+        const [rows] = await db.query(sql_get_approved_requests);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -434,7 +488,7 @@ app.get('/api/bookings-approved', async (req, res) => {
 // Get available slots
 app.get('/api/unavailable-slots', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT date, time, status FROM v_unavailable_slots');
+        const [rows] = await db.query("SELECT * FROM v_unavailable_slots;");
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -442,9 +496,9 @@ app.get('/api/unavailable-slots', async (req, res) => {
 });
 
 // Get all historically approved bookings
-app.get('/api/bookings-history-approved', async (req, res) => {
+app.get('/api/c-completed-bookings', async (req, res) => {
     try {
-        const [rows] = await db.query(sql_get_historically_approved_bookings);
+        const [rows] = await db.query(sql_get_completed_bookings_c);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -463,39 +517,98 @@ app.get('/api/bookings-history', async (req, res) => {
 
 // Book a slot
 app.post('/api/book', async (req, res) => {
-    const { booking_type, date, time, firstName, lastName, phone, email, note, subscribe_email } = req.body;
+    const { booking_type, date, time, firstName, lastName, phone, email, note } = req.body;
 
     if (!booking_type || !date || !time || !firstName || !lastName || !phone || !email) {
         return res.status(400).json({ error: 'Липсват необходими полета.' });
     }
     
+    // Combine date and time into datetime for MariaDB
+    const datetime = `${date} ${time}:00`;
+    
+    const connection = await db.getConnection();
+    
     try {
-        // Check if slot is already booked
-        const [existingRows] = await db.query(
-            'SELECT * FROM booking WHERE date = ? AND time = ? AND status = 2',
-            [date, time]
+        await connection.beginTransaction();
+        
+        // Check if slot is already booked in requestlog (approved bookings)
+        const [existingRows] = await connection.query(
+            `SELECT * FROM requestlog WHERE DATE(date) = ? AND TIME(date) = ? AND status IN (2, 3, 11)`,
+            [date, `${time}:00`]
         );
         
         if (existingRows.length > 0) {
+            await connection.rollback();
             return res.status(400).json({ error: 'За съжаление този час е зает. Моля изберете свободен час.' });
         }
         
-        // Insert new booking
-        const [result] = await db.execute(
-            `INSERT INTO booking (booking_type, date, time, firstName, lastname, phone, email, note, subscribe_email, status)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
-            [booking_type, date, time, firstName, lastName, phone, email, note, subscribe_email]
+        // Get product_id for the booking type
+        const [productRows] = await connection.query(sql_select_service, [booking_type]);
+        const product = productRows[0];
+        
+        if (!product) {
+            await connection.rollback();
+            return res.status(400).json({ error: 'Невалиден тип тренировка.' });
+        }
+        
+        // Check if contact already exists
+        const [contactRows] = await connection.query(sql_get_contact_by_details, [firstName, lastName, phone]);
+        let contactId;
+        
+        if (contactRows.length > 0) {
+            // Use existing contact
+            contactId = contactRows[0].id;
+        } else {
+            // Create new contact
+            const [contactResult] = await connection.execute(
+                sql_insert_contact,
+                [firstName, lastName, phone, email]
+            );
+            contactId = contactResult.insertId;
+        }
+        
+        // Check if contact already has a request for the same day (prevent multiple bookings per day)
+        const [existingDayRequest] = await connection.query(
+            `SELECT id FROM requestlog WHERE contact_id = ? AND DATE(date) = ? AND status IN (1, 2, 3, 11)`,
+            [contactId, date]
         );
         
+        if (existingDayRequest.length > 0) {
+            await connection.rollback();
+            return res.status(400).json({ error: 'Вече имате заявка за този ден. Един контакт може да направи само една заявка на ден.' });
+        }
+        
+        // Insert request into requestlog with status 1 (pending)
+        const [result] = await connection.execute(
+            sql_insert_request,
+            [product.product_id, contactId, datetime, note, 1]
+        );
+        
+        await connection.commit();
         res.json({ message: 'Заявката е изпратена за одобрение.', id: result.insertId });
+        
     } catch (err) {
+        await connection.rollback();
+        console.error('Book error:', err);
         res.status(500).json({ error: err.message });
+    } finally {
+        connection.release();
     }
 });
 
 ////////////////////////
 ///   HOLIDAY APIs   ///
 ////////////////////////
+
+// Get all active holidays
+app.get('/api/c-holidays', async (req, res) => {
+    try {
+        const [rows] = await db.query(sql_get_holidays_c);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // Get all active holidays
 app.get('/api/holidays', async (req, res) => {
@@ -518,15 +631,15 @@ app.post('/api/auto-deactivate-past-holidays', async (req, res) => {
 });
 
 // Delete holiday
-app.post('/api/delete-holiday', async (req, res) => {
-    const holidayId = req.body.id;
+app.post('/api/disable-holiday', async (req, res) => {
+    const holidayId = req.body.date;
 
     if (!holidayId) {
-        return res.status(400).json({ error: 'Missing holiday ID' });
+        return res.status(400).json({ error: 'Missing holiday' });
     }
 
     try {
-        const [result] = await db.execute('DELETE FROM holidays WHERE id = ?', [holidayId]);
+        const [result] = await db.execute("UPDATE holidays SET is_active = 0 WHERE date = ?", [holidayId]);
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Почивният ден не е намерен' });
         }
@@ -550,14 +663,16 @@ app.post('/api/add-holiday', async (req, res) => {
         await connection.beginTransaction();
 
         for (const holiday of holidays) {
-            const query = holiday.time === null
-                ? 'INSERT INTO holidays (date, description) VALUES (?, ?)'
-                : 'INSERT INTO holidays (date, time, description) VALUES (?, ?, ?)';
-            const params = holiday.time === null
-                ? [holiday.date, description]
-                : [holiday.date, holiday.time, description];
+            // Combine date and time into datetime for MariaDB
+            // If time is null, it's a full day holiday (use 00:00:00)
+            const datetime = holiday.time === null 
+                ? `${holiday.date} 00:00:00`
+                : `${holiday.date} ${holiday.time}:00`;
             
-            await connection.execute(query, params);
+            await connection.execute(
+                'INSERT INTO holidays (date, description) VALUES (?, ?)',
+                [datetime, description]
+            );
         }
 
         await connection.commit();

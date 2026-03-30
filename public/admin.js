@@ -27,24 +27,41 @@ class APIService {
         });
     }
 
-    // Get approved bookings
-    static async getBookingsApproved() {
-        return this.request('/api/bookings-approved');
+    ////////////////////
+    // CALENDAR API's //
+    ////////////////////
+
+    static async getPendingC() {
+        return this.request('/api/c-pending');
     }
 
-    // Get historical approved bookings
-    static async getBookingsHistoryApproved() {
-        return this.request('/api/bookings-history-approved');
+    static async getApprovedRequestsC() {
+        return this.request('/api/c-approved-requests');
     }
 
-    // Get pending bookings
+    static async getBookingsHistoryApprovedC() {
+        return this.request('/api/c-completed-bookings');
+    }
+
+    static async getHolidaysC() {
+        return this.request('/api/c-holidays');
+    }
+
+    /////////////////
+    // TABLE API's //
+    /////////////////
+
+    // Requests
     static async getPending() {
         return this.request('/api/pending');
     }
 
-    // Get holidays
+    static async getApprovedRequests() {
+        return this.request('/api/approved-requests');
+    }
+
     static async getHolidays() {
-        return this.request('/api/holidays');
+        return this.request ('/api/holidays');
     }
 
     // Add holiday(s)
@@ -57,11 +74,11 @@ class APIService {
     }
 
     // Delete holiday
-    static async deleteHoliday(id) {
-        return this.request('/api/delete-holiday', {
+    static async deleteHoliday(date) {
+        return this.request('/api/disable-holiday', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id })
+            body: JSON.stringify({ date })
         });
     }
 
@@ -83,11 +100,11 @@ class APIService {
     }
 
     // Approve a booking
-    static async approveBooking(id, status) {
+    static async approveBooking(data) {
         return this.request('/api/approve', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, status })
+            body: JSON.stringify(data)
         });
     }
 
@@ -348,17 +365,17 @@ if (logoutBtn) {
         if (holidaysTable) {
             holidaysTable.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('remove-btn')) {
-                    const id = e.target.dataset.id;
+                    const datetime = e.target.dataset.id;
                     
                     // Validate ID exists
-                    if (!id || id === 'undefined' || id === 'null') {
-                        alert('Грешка: не може да се получи ID на почивния ден. Опитайте да обновите страницата.');
-                        console.error('Invalid holiday ID:', id);
+                    if (!datetime) {
+                        alert('Грешка: Не намирам празника. Опитайте да обновите страницата.');
+                        console.error('Невалиден празничен идентификатор:', datetime);
                         return;
                     }
                     
                     if (confirm('Сигурни ли сте, че искате да премахнете този почивен ден?')) {
-                        await deleteHoliday(id);
+                        await deleteHoliday(datetime);
                         await loadHolidays();
                     }
                 }
@@ -426,10 +443,10 @@ if (logoutBtn) {
 
                 // Fetch bookings and holidays
                 Promise.all([
-                    APIService.getBookingsApproved(),
-                    APIService.getHolidays(),
-                    APIService.getPending(),
-                    APIService.getBookingsHistoryApproved()
+                    APIService.getApprovedRequestsC(),
+                    APIService.getHolidaysC(),
+                    APIService.getPendingC(),
+                    APIService.getBookingsHistoryApprovedC()
                 ]).then(([bookings, holidays, pendingBookings, historicalBookings]) => {
                     for (let d = 0; d < 7; d++) {
                         const date = new Date(startDate);
@@ -437,7 +454,9 @@ if (logoutBtn) {
                         const dateStr = date.toISOString().split('T')[0];
                         const dayCol = weekRow.children[d];
                         const slotsCol = dayCol.querySelector('.calendar-slots-col');
-                        if (holidays.includes(dateStr)) {
+                        // Check for full-day holiday (time === '00:00:00')
+                        const fullDayHoliday = holidays.find(h => h.date === dateStr && h.time === '00:00:00');
+                        if (fullDayHoliday) {
                             dayCol.classList.add('holiday');
                             slotsCol.innerHTML = '<div class="holiday-label">Почивен ден</div>';
                             continue;
@@ -445,8 +464,8 @@ if (logoutBtn) {
                         times.forEach(time => {
                             const taken = bookings.some(b => b.date === dateStr && b.time === time) || 
                                         historicalBookings.some(b => b.date === dateStr && b.time === time);
-                            const pending = pendingBookings.some(d => d.date === dateStr && d.time === time && d.status === 1);
-                            const isHoliday = holidays.some(h => h.date === dateStr && (h.time === null || h.time === time));
+                            const pending = pendingBookings.some(d => d.date === dateStr && d.time === time);
+                            const isHoliday = holidays.some(h => h.date === dateStr && (h.time === '00:00' || h.time === time));
 
                             const slotBtn = document.createElement('button');
                             const bookingDateHour = document.getElementById('booking-date-hour');
@@ -455,20 +474,20 @@ if (logoutBtn) {
                             slotBtn.textContent = time;
 
                             if (isHoliday) {
-                                const holiday = holidays.find(h => h.date === dateStr && (h.time === null || h.time === time));
+                                const holiday = holidays.find(h => h.date === dateStr && (h.time === '00:00' || h.time === time));
                                 slotBtn.classList.add('holiday');
                                 slotBtn.title = `${holiday.description || 'Почивен ден'}`
                             } else if (taken) {
                                 const booking = bookings.find(b => b.date === dateStr && b.time === time) ||
                                                 historicalBookings.find(b => b.date === dateStr && b.time === time);
-                                booking.client_name = `${booking.firstName} ${booking.lastname}`
+                                // booking.client_name = `${booking.firstName} ${booking.lastName}`
                                 slotBtn.classList.add('taken');
-                                slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.phone}\nДата: ${booking.date}`;
+                                // slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.phone}\nДата: ${booking.date}`;
                             } else if (pending) {
                                 const booking = pendingBookings.find(d => d.date === dateStr && d.time === time && d.status === 1);
-                                booking.client_name = `${booking.firstName} ${booking.lastname}`
+                                // booking.client_name = `${booking.firstName} ${booking.lastName}`
                                 slotBtn.classList.add('pending');
-                                slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.phone}\nДата: ${booking.date}`;
+                                // slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.phone}\nДата: ${booking.date}`;
                             } else {
                                 slotBtn.classList.add('available');
                             }
@@ -540,7 +559,7 @@ if (logoutBtn) {
                     const slots = document.querySelectorAll('.slot.selected');
                     const now = new Date();
                     
-                    const approvedBookings = await APIService.getBookingsApproved();
+                    const approvedBookings = await APIService.getApprovedRequestsC();
                     const conflicts = [];
 
                     // Process headers (full days)
@@ -635,12 +654,12 @@ if (logoutBtn) {
         }
 
         // Remove holiday
-        async function deleteHoliday(id) {
+        async function deleteHoliday(date) {
             try {
-                if (!id || id === 'undefined' || id === 'null') {
-                    throw new Error('Invalid holiday ID provided to delete function');
+                if (!date || date === 'undefined' || date === 'null') {
+                    throw new Error('Invalid holiday date provided to delete function');
                 }
-                const result = await APIService.deleteHoliday(id);
+                const result = await APIService.deleteHoliday(date);
                 if (result && result.message) {
                     alert(result.message);
                     const weekStart = new Date();
@@ -663,7 +682,7 @@ if (logoutBtn) {
         async function handleBookingFormSubmit(e) {
             const booking_type = document.getElementById('booking-type').value;
             const firstName = document.getElementById('firstName').value;
-            const lastname = document.getElementById('lastname').value;
+            const lastName = document.getElementById('lastName').value;
             const phone = document.getElementById('phone').value;
             const email = document.getElementById('email').value;
             const note = document.getElementById('booking-note').value;
@@ -692,7 +711,7 @@ if (logoutBtn) {
                     date: selectedDate, 
                     time: selectedTime,
                     firstName, 
-                    lastname, 
+                    lastName, 
                     phone, 
                     email, 
                     note, 
@@ -701,7 +720,9 @@ if (logoutBtn) {
                 if (result.error) {
                     alert(result.error);
                 } else {
-                    await updateBooking(result.id, 2);
+                    // Construct composite key for the newly created request
+                    const compositeKey = `${firstName}|${lastName}|${selectedDate}|${selectedTime}|${booking_type}`;
+                    await updateBooking(compositeKey, 2);
                     bookingForm.reset();
                     selectedSlot.classList.remove('selected');
                     document.getElementById('booking-date-hour').value = '';
@@ -751,15 +772,17 @@ if (logoutBtn) {
             
                 paginatedBookings.forEach(booking => {
                     const row = pendingBookingsTable.insertRow();
-                    booking.client_name = `${booking.firstName} ${booking.lastname}`
+                    booking.client_name = `${booking.firstName} ${booking.lastName}`
                     const noteCell = booking.note ? `${booking.booking_type}<br>${booking.note}` : booking.booking_type;
+                    // Use composite key instead of id
+                    const compositeKey = `${booking.firstName}|${booking.lastName}|${booking.date}|${booking.time}|${booking.booking_type}`;
                     row.innerHTML = `
                         <td>${booking.client_name}</td>
                         <td>${booking.date} ${booking.time}</td>
                         <td>${noteCell}</td>
                         <td>
-                            <img src="Images/btn-yes-test.png" class="approve-btn" data-id="${booking.id}">
-                            <img src="Images/btn-no-test.png" class="reject-btn" data-id="${booking.id}">
+                            <img src="Images/btn-yes-test.png" class="approve-btn" data-key="${compositeKey}">
+                            <img src="Images/btn-no-test.png" class="reject-btn" data-key="${compositeKey}">
                         </td>
                     `;
                 });
@@ -774,15 +797,15 @@ if (logoutBtn) {
             pendingBookingsTable.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('approve-btn')) {
                     if (confirm('Сигурни ли сте, че искате да одобрите този час?')) {
-                        const id = e.target.dataset.id;
-                        await updateBooking(id, 2);
+                        const key = e.target.dataset.key;
+                        await updateBooking(key, 2);
                         document.getElementById('booking-date-hour').value = '';
                     }
                 }
                 if (e.target.classList.contains('reject-btn')) {             
                     if (confirm('Сигурни ли сте, че искате да откажете този час?')) {
-                        const id = e.target.dataset.id;
-                        await updateBooking(id, 4);
+                        const key = e.target.dataset.key;
+                        await updateBooking(key, 7);
                     }   
                 }
             });
@@ -792,9 +815,11 @@ if (logoutBtn) {
         }
 
         // Approve or reject booking
-        async function updateBooking(id, status) {
+        async function updateBooking(compositeKey, status) {
             try {
-                const result = await APIService.approveBooking(id, status);
+                // Parse composite key: firstName|lastName|date|time|booking_type
+                const [firstName, lastName, date, time, booking_type] = compositeKey.split('|');
+                const result = await APIService.approveBooking({ firstName, lastName, date, time, booking_type, status });
                 alert(result.message || result.error);
                 loadPending();
                 loadBookings();
@@ -815,7 +840,7 @@ if (logoutBtn) {
             const approvedBookingsTable = document.getElementById('approvedBookingsTable');
             if (!approvedBookingsTable) return;
 
-            const bookings = await APIService.getBookingsApproved();
+            const bookings = await APIService.getApprovedRequests();
             const container = approvedBookingsTable.parentElement;
 
             if (bookings.length < 1) {
@@ -845,14 +870,15 @@ if (logoutBtn) {
             
                 paginatedBookings.forEach(booking => {
                     const row = approvedBookingsTable.insertRow();
-                    booking.client_name = `${booking.firstName} ${booking.lastname}`
+                    booking.client_name = `${booking.firstName} ${booking.lastName}`
                     const noteCell = booking.note ? `${booking.booking_type}<br>${booking.note}` : booking.booking_type;
+                    const compositeKey = `${booking.firstName}|${booking.lastName}|${booking.date}|${booking.time}|${booking.booking_type}`;
                     row.innerHTML = `
                         <td>${booking.client_name}</td>
-                        <td>${booking.date}</td>
+                        <td>${booking.date} ${booking.time}</td>
                         <td>${noteCell}</td>
                         <td>
-                            <img src="Images/btn-no-test.png" class="cancel-btn" data-id="${booking.id}">
+                            <img src="Images/btn-no-test.png" class="cancel-btn" data-key="${compositeKey}">
                         </td>
                     `;
                 });
@@ -867,8 +893,8 @@ if (logoutBtn) {
             approvedBookingsTable.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('cancel-btn')) {
                     if (confirm('Сигурни ли сте, че искате да отмените този час?')) {
-                        const id = e.target.dataset.id;
-                        await updateBooking(id, 3);
+                        const key = e.target.dataset.key;
+                        await updateBooking(key, 9);
                     }
                 }
             });
@@ -910,17 +936,17 @@ if (logoutBtn) {
                 }
 
                 paginatedHolidays.forEach(holiday => {
-                    if (!holiday.id) {
-                        console.warn('Holiday missing ID:', holiday);
-                        return; // Skip holidays without IDs
+                    if (!holiday.date) {
+                        console.warn('Holiday missing date:', holiday);
+                        return; // Skip holidays without dates
                     }
                     const row = holidaysTable.insertRow();
                     row.innerHTML = `
                         <td>${holiday.date}</td>
-                        <td>${holiday.time || 'Цял ден'}</td>
+                        <td>${holiday.time === '00:00' ? 'Цял ден' : holiday.time}</td>
                         <td>${holiday.description || ''}</td>
                         <td>
-                            <button class="remove-btn" data-id="${holiday.id}">Отмени</button>
+                            <button class="remove-btn" data-id="${holiday.date} ${holiday.time}">Отмени</button>
                         </td>
                     `;
                 });
@@ -1134,7 +1160,7 @@ if (logoutBtn) {
             while (clientsTable.rows.length > 1) clientsTable.deleteRow(1);
             clients.forEach(client => {
                 const row = clientsTable.insertRow();
-                row.innerHTML = `<td>${client.firstName} ${client.lastname}</td>`;
+                row.innerHTML = `<td>${client.firstName} ${client.lastName}</td>`;
                 row.style.cursor = 'pointer';
 
                 row.addEventListener('click', async () => {
@@ -1152,7 +1178,7 @@ if (logoutBtn) {
             const clientInfo = document.querySelector('.clientInfo');
             const closeBtn = document.querySelector('.close-client-info');
 
-            document.getElementById('clientName').textContent = `${client.firstName} ${client.lastname}`;
+            document.getElementById('clientName').textContent = `${client.firstName} ${client.lastName}`;
             document.getElementById('clientPhone').textContent = client.phone || 'N/A';
             if (client.phone) document.getElementById('clientPhone').href = 'tel:' + client.phone;
             document.getElementById('clientEmail').textContent = client.email || 'N/A';
@@ -1207,7 +1233,7 @@ if (logoutBtn) {
             topClients.style.display = 'none';
             clientInfo.style.display = 'block';
 
-            filterBookingHistoryByClient(client.firstName, client.lastname);
+            filterBookingHistoryByClient(client.firstName, client.lastName);
 
             closeBtn.onclick = () => {
                 clientInfo.style.display = 'none';
@@ -1221,8 +1247,8 @@ if (logoutBtn) {
         }
 
         // Filter by client
-        function filterBookingHistoryByClient(firstName, lastname) {
-            const clientName = `${firstName} ${lastname}`;
+        function filterBookingHistoryByClient(firstName, lastName) {
+            const clientName = `${firstName} ${lastName}`;
             if (historyFilterController) {
                 historyFilterController.setClientFilter(clientName);
             }
@@ -1265,7 +1291,7 @@ if (logoutBtn) {
 
                     if (selectedClient) {
                         filteredBookings = filteredBookings.filter(booking => {
-                            const clientName = `${booking.firstName} ${booking.lastname}`;
+                            const clientName = `${booking.firstName} ${booking.lastName}`;
                             return clientName === selectedClient;
                         });
                     }
@@ -1339,7 +1365,7 @@ if (logoutBtn) {
                     paginatedBookings.forEach(booking => {
                         const row = bookingHistoryTable.insertRow();
                         row.classList.add('row-initial');
-                        booking.client_name = `${booking.firstName} ${booking.lastname}`
+                        booking.client_name = `${booking.firstName} ${booking.lastName}`
                         row.innerHTML = `
                             <td>${booking.client_name}</td>
                             <td>${booking.booking_type}</td>

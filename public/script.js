@@ -423,8 +423,6 @@ if (calendarEl) {
         return Promise.all([
             getUnavailableSlots()
         ]).then(([unavailable]) => {
-                // ... rest of your code
-                // Add error checking
                 if (!Array.isArray(unavailable)) {
                     console.error('Invalid data received:', unavailable);
                     unavailable = []; // Ensure it's an array
@@ -437,7 +435,7 @@ if (calendarEl) {
                 const slotsCol = dayCol.querySelector('.calendar-slots-col');
                 times.forEach(time => {
                     const taken = unavailable.some(u => u.date === dateStr && u.time === time);
-                    const isHoliday = unavailable.some(u => u.date === dateStr && u.status === 'holiday' && (u.time === null || u.time === time));
+                    const isHoliday = unavailable.some(u => u.date === dateStr && u.status === 'holiday' && (u.time === '00:00' || u.time === time));
                     const slotBtn = document.createElement('button');
                     slotBtn.className = 'slot'; // default class
                     slotBtn.textContent = time;
