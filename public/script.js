@@ -647,11 +647,11 @@ if (calendarEl) {
 
                 // After captcha is verified, submit the booking
                 const booking_type = document.getElementById('booking-type').value;
-                const client_forename = document.getElementById('client-forename').value;
-                const client_lastname = document.getElementById('client-lastname').value;
-                const client_phone = document.getElementById('client-phone').value;
-                const client_email = document.getElementById('client-email').value;
-                const booking_note = document.getElementById('booking-note').value;
+                const firstName = document.getElementById('firstName').value;
+                const lastName = document.getElementById('lastName').value;
+                const phone = document.getElementById('phone').value;
+                const email = document.getElementById('email').value;
+                const note = document.getElementById('note').value;
                 const subscribe_email = document.getElementById('subscribe-email').checked;
                 const calendarWrap = document.querySelector('.calendar-wrap');
                 
@@ -667,11 +667,11 @@ if (calendarEl) {
                         booking_type, 
                         date: selectedDate, 
                         time: selectedTime,
-                        client_forename, 
-                        client_lastname, 
-                        client_phone, 
-                        client_email, 
-                        booking_note, 
+                        firstName, 
+                        lastName, 
+                        phone, 
+                        email, 
+                        note, 
                         subscribe_email
                     })
                 });
