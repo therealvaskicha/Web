@@ -100,8 +100,26 @@ class APIService {
     }
 
     // Approve a request
-    static async approveBooking(data) {
+    static async approveRequest(data) {
         return this.request('/api/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    }
+
+    // Reject a request
+    static async rejectRequest(data) {
+        return this.request('/api/reject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    }
+
+    // Cancel a request
+    static async cancelRequest(data) {
+        return this.request('/api/cancel', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -722,7 +740,7 @@ if (logoutBtn) {
                 } else {
                     // Construct composite key for the newly created request
                     const compositeKey = `${firstName}|${lastName}|${selectedDate}|${selectedTime}|${booking_type}`;
-                    await updateBooking(compositeKey, 2);
+                    await updateBooking(compositeKey, 1);
                     bookingForm.reset();
                     selectedSlot.classList.remove('selected');
                     document.getElementById('booking-date-hour').value = '';
@@ -798,14 +816,14 @@ if (logoutBtn) {
                 if (e.target.classList.contains('approve-btn')) {
                     if (confirm('Сигурни ли сте, че искате да одобрите този час?')) {
                         const key = e.target.dataset.key;
-                        await updateBooking(key, 2);
+                        await updateBooking(key, 1);
                         document.getElementById('booking-date-hour').value = '';
                     }
                 }
                 if (e.target.classList.contains('reject-btn')) {             
                     if (confirm('Сигурни ли сте, че искате да откажете този час?')) {
                         const key = e.target.dataset.key;
-                        await updateBooking(key, 7);
+                        await updateBooking(key, 2);
                     }   
                 }
             });
@@ -814,12 +832,24 @@ if (logoutBtn) {
             displayPendingBookings();
         }
 
-        // Approve or reject request
-        async function updateBooking(compositeKey, status) {
+        // Approve, reject, or cancel request
+        async function updateBooking(compositeKey, action) {
             try {
                 // Parse composite key: firstName|lastName|date|time|booking_type
                 const [firstName, lastName, date, time, booking_type] = compositeKey.split('|');
-                const result = await APIService.approveBooking({ firstName, lastName, date, time, booking_type, status });
+                const data = { firstName, lastName, date, time, booking_type };
+                
+                let result;
+                if (action === 1) {
+                    result = await APIService.approveRequest(data);
+                } else if (action === 2) {
+                    result = await APIService.rejectRequest(data);
+                } else if (action === 3) {
+                    result = await APIService.cancelRequest(data);
+                } else {
+                    throw new Error('Invalid action: ' + action);
+                }
+                
                 alert(result.message || result.error);
                 loadPending();
                 loadBookings();
@@ -894,7 +924,7 @@ if (logoutBtn) {
                 if (e.target.classList.contains('cancel-btn')) {
                     if (confirm('Сигурни ли сте, че искате да отмените този час?')) {
                         const key = e.target.dataset.key;
-                        await updateBooking(key, 9);
+                        await updateBooking(key, 3);
                     }
                 }
             });
