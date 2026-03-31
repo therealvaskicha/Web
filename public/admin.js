@@ -99,7 +99,7 @@ class APIService {
         });
     }
 
-    // Approve a booking
+    // Approve a request
     static async approveBooking(data) {
         return this.request('/api/approve', {
             method: 'POST',
@@ -113,24 +113,24 @@ class APIService {
         return this.request('/api/clients');
     }
 
-    // Get booking history
+    // Get request history
     static async getBookingHistory() {
-        return this.request('/api/bookings-history');
+        return this.request('/api/request-history');
     }
 
     // Get client details by ID
-    static async getClient(clientId) {
-        return this.request(`/api/client/${clientId}`);
+    static async getClient(firstName, lastName, phone) {
+        return this.request(`/api/client/${firstName}/${lastName}/${phone}`);
     }
 
     // Get client mailing list info
-    static async getClientMailingList(clientId) {
-        return this.request(`/api/client/${clientId}/mailing-list`);
+    static async getClientMailingList(firstName, lastName, phone) {
+        return this.request(`/api/client/${firstName}/${lastName}/${phone}/mailing-list`);
     }
 
     // Get client subscription cards
-    static async getClientCards(clientId) {
-        return this.request(`/api/client/${clientId}/cards`);
+    static async getClientCards(firstName, lastName, phone) {
+        return this.request(`/api/client/${firstName}/${lastName}/${phone}/cards`);
     }
 }
 
@@ -478,16 +478,16 @@ if (logoutBtn) {
                                 slotBtn.classList.add('holiday');
                                 slotBtn.title = `${holiday.description || 'Почивен ден'}`
                             } else if (taken) {
-                                const booking = bookings.find(b => b.date === dateStr && b.time === time) ||
+                                const request = bookings.find(b => b.date === dateStr && b.time === time) ||
                                                 historicalBookings.find(b => b.date === dateStr && b.time === time);
-                                // booking.client_name = `${booking.firstName} ${booking.lastName}`
+                                // request.client_name = `${request.firstName} ${request.lastName}`
                                 slotBtn.classList.add('taken');
-                                // slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.phone}\nДата: ${booking.date}`;
+                                // slotBtn.title = `Резервация #${request.id}\nТип: ${request.booking_type}\nИме: ${request.client_name}\nТел: ${request.phone}\nДата: ${request.date}`;
                             } else if (pending) {
-                                const booking = pendingBookings.find(d => d.date === dateStr && d.time === time && d.status === 1);
-                                // booking.client_name = `${booking.firstName} ${booking.lastName}`
+                                const request = pendingBookings.find(d => d.date === dateStr && d.time === time && d.status === 1);
+                                // request.client_name = `${request.firstName} ${request.lastName}`
                                 slotBtn.classList.add('pending');
-                                // slotBtn.title = `Резервация #${booking.id}\nТип: ${booking.booking_type}\nИме: ${booking.client_name}\nТел: ${booking.phone}\nДата: ${booking.date}`;
+                                // slotBtn.title = `Резервация #${request.id}\nТип: ${request.booking_type}\nИме: ${request.client_name}\nТел: ${request.phone}\nДата: ${request.date}`;
                             } else {
                                 slotBtn.classList.add('available');
                             }
@@ -581,8 +581,8 @@ if (logoutBtn) {
                         // Check for conflicts on full days
                         const dayConflicts = approvedBookings.filter(b => b.date === dateStr);
                         if (dayConflicts.length > 0) {
-                            dayConflicts.forEach(booking => {
-                                conflicts.push(`Предстояща тренировка: ${booking.date} ${booking.time}`);
+                            dayConflicts.forEach(request => {
+                                conflicts.push(`Предстояща тренировка: ${request.date} ${request.time}`);
                             });
                         } else {
                             holidays.push({ date: dateStr, time: null });
@@ -770,15 +770,15 @@ if (logoutBtn) {
                     return;
                 }
             
-                paginatedBookings.forEach(booking => {
+                paginatedBookings.forEach(request => {
                     const row = pendingBookingsTable.insertRow();
-                    booking.client_name = `${booking.firstName} ${booking.lastName}`
-                    const noteCell = booking.note ? `${booking.booking_type}<br>${booking.note}` : booking.booking_type;
+                    request.client_name = `${request.firstName} ${request.lastName}`
+                    const noteCell = request.note ? `${request.booking_type}<br>${request.note}` : request.booking_type;
                     // Use composite key instead of id
-                    const compositeKey = `${booking.firstName}|${booking.lastName}|${booking.date}|${booking.time}|${booking.booking_type}`;
+                    const compositeKey = `${request.firstName}|${request.lastName}|${request.date}|${request.time}|${request.booking_type}`;
                     row.innerHTML = `
-                        <td>${booking.client_name}</td>
-                        <td>${booking.date} ${booking.time}</td>
+                        <td>${request.client_name}</td>
+                        <td>${request.date} ${request.time}</td>
                         <td>${noteCell}</td>
                         <td>
                             <img src="Images/btn-yes-test.png" class="approve-btn" data-key="${compositeKey}">
@@ -814,7 +814,7 @@ if (logoutBtn) {
             displayPendingBookings();
         }
 
-        // Approve or reject booking
+        // Approve or reject request
         async function updateBooking(compositeKey, status) {
             try {
                 // Parse composite key: firstName|lastName|date|time|booking_type
@@ -868,14 +868,14 @@ if (logoutBtn) {
                     return;
                 }
             
-                paginatedBookings.forEach(booking => {
+                paginatedBookings.forEach(request => {
                     const row = approvedBookingsTable.insertRow();
-                    booking.client_name = `${booking.firstName} ${booking.lastName}`
-                    const noteCell = booking.note ? `${booking.booking_type}<br>${booking.note}` : booking.booking_type;
-                    const compositeKey = `${booking.firstName}|${booking.lastName}|${booking.date}|${booking.time}|${booking.booking_type}`;
+                    request.client_name = `${request.firstName} ${request.lastName}`
+                    const noteCell = request.note ? `${request.booking_type}<br>${request.note}` : request.booking_type;
+                    const compositeKey = `${request.firstName}|${request.lastName}|${request.date}|${request.time}|${request.booking_type}`;
                     row.innerHTML = `
-                        <td>${booking.client_name}</td>
-                        <td>${booking.date} ${booking.time}</td>
+                        <td>${request.client_name}</td>
+                        <td>${request.date} ${request.time}</td>
                         <td>${noteCell}</td>
                         <td>
                             <img src="Images/btn-no-test.png" class="cancel-btn" data-key="${compositeKey}">
@@ -1164,30 +1164,30 @@ if (logoutBtn) {
                 row.style.cursor = 'pointer';
 
                 row.addEventListener('click', async () => {
-                    await showClientInfo(client.client_id); 
+                    await showClientInfo(client.firstName, client.lastName, client.phone); 
                 });
             })
         }
 
         // Show client info
-        async function showClientInfo(clientId) {
+        async function showClientInfo(firstName, lastName, phone) {
         try {
-            const client = await APIService.getClient(clientId);
+            const client = await APIService.getClient(firstName, lastName, phone);
 
             const topClients = document.querySelector('.topClients');
             const clientInfo = document.querySelector('.clientInfo');
             const closeBtn = document.querySelector('.close-client-info');
 
-            document.getElementById('clientName').textContent = `${client.firstName} ${client.lastName}`;
-            document.getElementById('clientPhone').textContent = client.phone || 'N/A';
-            if (client.phone) document.getElementById('clientPhone').href = 'tel:' + client.phone;
+            document.getElementById('clientName').textContent = `${firstName} ${lastName}`;
+            document.getElementById('clientPhone').textContent = phone || 'N/A';
+            if (phone) document.getElementById('clientPhone').href = 'tel:' + phone;
             document.getElementById('clientEmail').textContent = client.email || 'N/A';
             if (client.email) document.getElementById('clientEmail').href = 'mailto:' + client.email;
             document.getElementById('clientCreated').textContent = formatClientDate(client.stamp_created);
 
-            const mailingList = await APIService.getClientMailingList(clientId);
+            const mailingList = await APIService.getClientMailingList(firstName, lastName, phone);
 
-            const cards = await APIService.getClientCards(clientId);
+            const cards = await APIService.getClientCards(firstName, lastName, phone);
 
             const mailingListSection = document.getElementById('mailingListSection');
             if (mailingList && mailingList.date_subscribed) {
@@ -1254,14 +1254,14 @@ if (logoutBtn) {
             }
         }
 
-        // Reset booking history filter
+        // Reset request history filter
         function resetBookingHistoryFilter() {
             if (historyFilterController) {
                 historyFilterController.clearClientFilter();
             }
         }
 
-        // Load booking history with filters
+        // Load request history with filters
         async function loadHistory() {
             const bookingHistoryTable = document.getElementById('bookingHistoryTable');
             const paginationContainer = document.getElementById('historyPagination');
@@ -1290,24 +1290,24 @@ if (logoutBtn) {
                     filteredBookings = [...bookings];
 
                     if (selectedClient) {
-                        filteredBookings = filteredBookings.filter(booking => {
-                            const clientName = `${booking.firstName} ${booking.lastName}`;
+                        filteredBookings = filteredBookings.filter(request => {
+                            const clientName = `${request.firstName} ${request.lastName}`;
                             return clientName === selectedClient;
                         });
                     }
 
                     if (activeStatusFilter) {
-                        filteredBookings = filteredBookings.filter(booking => booking.status === activeStatusFilter);
+                        filteredBookings = filteredBookings.filter(request => request.status === activeStatusFilter);
                     }
 
                     if (startDateInput.value || endDateInput.value) {
-                        filteredBookings = filteredBookings.filter(booking => {
-                            const bookingDate = new Date(booking.date);
+                        filteredBookings = filteredBookings.filter(request => {
+                            const requestDate = new Date(request.date);
                             const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
                             const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
 
-                            if (startDate && bookingDate < startDate) return false;
-                            if (endDate && bookingDate > endDate) return false;
+                            if (startDate && requestDate < startDate) return false;
+                            if (endDate && requestDate > endDate) return false;
                             return true;
                         });
                     }
@@ -1362,19 +1362,19 @@ if (logoutBtn) {
                         return;
                     }
 
-                    paginatedBookings.forEach(booking => {
+                    paginatedBookings.forEach(request => {
                         const row = bookingHistoryTable.insertRow();
                         row.classList.add('row-initial');
-                        booking.client_name = `${booking.firstName} ${booking.lastName}`
+                        request.client_name = `${request.firstName} ${request.lastName}`
                         row.innerHTML = `
-                            <td>${booking.client_name}</td>
-                            <td>${booking.booking_type}</td>
-                            <td>${booking.date}</td>
-                            <td>${booking.time}</td>
-                            <td>${booking.stamp_created}</td>
+                            <td>${request.client_name}</td>
+                            <td>${request.booking_type}</td>
+                            <td>${request.date}</td>
+                            <td>${request.time}</td>
+                            <td>${request.stamp_created}</td>
                         `;
 
-                        switch (booking.status) {
+                        switch (request.status) {
                             case 3:
                                 row.classList.add('row-canceled');
                                 break;

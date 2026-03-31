@@ -44,11 +44,10 @@
           <div class="mobile-only">
             <button class="showhide">||</button>
             <div class="container">
-              <h2>Моите клиенти</h2>
               <div class="table-container">
                   <table id="clientsTable">
                       <tr>
-                          <th>А - Я</th>
+                          <th>Моите клиенти</th>
                       </tr>
                   </table>
                   <div class="pagination" id="clientsPagination"></div>
@@ -69,10 +68,13 @@
             <span class="close-client-info">&times;</span>
           
             <div class="client-info-content">
-              <h3 id="clientName"></h3>
-            
+              <h3>Клиент</h3>
               <div class="info-section">
                   <h4>Лични данни</h4>
+                  <div class="info-item">
+                      <label>Имена:</label>
+                      <span id="clientName"></span>
+                  </div>
                   <div class="info-item">
                       <label>Телефон:</label>
                       <a id="clientPhone" href="tel:" class="phone-link"></a>
@@ -82,16 +84,44 @@
                       <a id="clientEmail" href="mailto:" class="phone-link"></a>
                   </div>
                   <div class="info-item">
+                      <label>Адрес:</label>
+                      <span id="clientAddress">tba</span>
+                  </div>
+                  <div class="info-item">
+                      <label>Град:</label>
+                      <span id="clientCity">tba</span>
+                  </div>
+                  <div class="info-item">
+                      <label>Държава:</label>
+                      <span id="clientCountry">tba</span>
+                  </div>
+                  <div class="info-item">
+                      <label>Пол:</label>
+                      <span id="clientGender">tba</span>
+                  </div>
+                  <div class="info-item">
+                      <label>Рожден ден:</label>
+                      <span id="clientBirthday">tba</span>
+                  </div>
+                  <div class="info-item">
                       <label>Регистриран:</label>
                       <span id="clientCreated"></span>
                   </div>
               </div>
             
               <div class="info-section" id="mailingListSection" style="display: none;">
-                  <h4>E-mail известия</h4>
+                  <h4>E-mail бюлетин</h4>
                   <div class="info-item">
-                      <label>Дата на абонамент:</label>
+                      <label>Абониран от:</label>
                       <span id="mailingListDate"></span>
+                  </div>
+                  <div class="info-item">
+                      <label>Оферти:</label>
+                      <span id="mailingListOffers">tba</span>
+                  </div>
+                  <div class="info-item">
+                      <label>Новини:</label>
+                      <span id="mailingListNews">tba</span>
                   </div>
               </div>
             

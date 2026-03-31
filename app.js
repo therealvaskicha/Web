@@ -292,12 +292,12 @@ const sql_get_completed_bookings_c =
 `SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time
 from booking
 WHERE date <= curdate()`;
-const sql_get_bookings_history = 
-`SELECT DATE_FORMAT(b.date, '%Y-%m-%d') as date, DATE_FORMAT(b.date, '%H:%i') as time, co.firstName, co.lastName 
-FROM booking b 
-    join client c on b.client_id=c.client_id 
-    join contact co on co.id=c.contact_id
-ORDER BY b.id DESC`;
+const sql_get_request_history = 
+`SELECT DATE_FORMAT(r.date, '%Y-%m-%d') as date, DATE_FORMAT(r.date, '%H:%i') as time, co.firstName, co.lastName, p.name as booking_type, DATE_FORMAT(r.stamp_created, '%Y-%m-%d %H:%i') as stamp_created, r.status
+FROM requestlog r 
+    join contact co on r.contact_id=co.id 
+    join product p on r.product_id=p.product_id
+ORDER BY r.stamp_modified DESC`;
 // Update requestlog status
 const sql_approve_or_reject_request = 
 `UPDATE requestlog SET status = ? WHERE id = ?`;
@@ -312,7 +312,7 @@ const sql_get_contact_by_details =
 
 // Insert request into requestlog
 const sql_insert_request = 
-`INSERT INTO requestlog (product_id, contact_id, date, note, status) VALUES (?, ?, ?, ?, ?)`;
+`INSERT INTO requestlog (product_id, contact_id, date, note, status, client_id) VALUES (?, ?, ?, ?, ?, ?)`;
 
 // Holiday related queries
 const sql_get_holidays = 
@@ -324,16 +324,16 @@ const sql_get_holidays_c =
 // Client related queries
 const sql_get_clients = 
 `SELECT ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created 
+FROM client c JOIN contact ct ON c.contact_id = ct.id
+ORDER BY ct.firstName, ct.lastName ASC`;
+const sql_get_client_by_compid = 
+`SELECT ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created
 FROM client c JOIN contact ct ON c.contact_id = ct.id 
-ORDER BY ct.firstName;`;
-const sql_get_client_by_id = 
-`SELECT ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created, c.stamp_modified 
-FROM client c JOIN contact ct ON c.contact_id = ct.id 
-WHERE c.client_id = ? LIMIT 1`;
+WHERE ct.firstName = ? and ct.lastName = ? and ct.phone = ?`;
 const sql_get_client_mailing_list = 
-`SELECT date_subscribed, date_unsubscribed 
-FROM mailing_list 
-WHERE client_id = ? order by id desc limit 1`;
+`SELECT m.date_subscribed, m.date_unsubscribed 
+FROM mailing_list m join contact ct on m.contact_id = ct.id
+WHERE ct.firstName = ? and ct.lastName = ? and ct.phone = ?`;
 const sql_get_client_card_info = 
 `SELECT ca.card_id, p.name as 'booking_type', NULL as credits_balance, s.start_date, s.expiration_date, s.status as subscription_status, s.stamp_created 
 FROM card ca JOIN subscription s ON ca.card_id = s.card_id 
@@ -420,6 +420,18 @@ app.post('/api/approve', async (req, res) => {
                     [request.contact_id, nextClientId]
                 );
                 clientId = nextClientId;
+                
+                // Update requestlog with client_id for this contact's pending requests
+                await connection.execute(
+                    `UPDATE requestlog SET client_id = ? WHERE contact_id = ? AND client_id IS NULL`,
+                    [clientId, request.contact_id]
+                );
+                
+                // Update mailing_list with client_id for this contact
+                await connection.execute(
+                    `UPDATE mailing_list SET client_id = ? WHERE contact_id = ? AND client_id IS NULL`,
+                    [clientId, request.contact_id]
+                );
                 
                 // Handle email subscription
                 if (request.subscribe_email) {
@@ -509,10 +521,10 @@ app.get('/api/c-completed-bookings', async (req, res) => {
     }
 });
 
-// Get bookings history
-app.get('/api/bookings-history', async (req, res) => {
+// Get request history
+app.get('/api/request-history', async (req, res) => {
     try {
-        const [rows] = await db.query(sql_get_bookings_history);
+        const [rows] = await db.query(sql_get_request_history);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -613,19 +625,61 @@ app.post('/api/book', async (req, res) => {
             return res.status(400).json({ error: 'Вече имате заявка за този ден. Един контакт може да направи само една заявка на ден.' });
         }
         
+        // Fetch client_id if contact is already a client
+        const [clientRows] = await connection.query(
+            `SELECT client_id FROM client WHERE contact_id = ? LIMIT 1`,
+            [contactId]
+        );
+        const clientId = clientRows.length > 0 ? clientRows[0].client_id : null;
+        
         // Insert request into requestlog with status 1 (pending)
         const [result] = await connection.execute(
             sql_insert_request,
-            [product.product_id, contactId, datetime, note, 1]
+            [product.product_id, contactId, datetime, note, 1, clientId]
         );
         
-        // Add to mailing list
-        const dateSubscribed = subscribe_email === true || subscribe_email === 1 ? new Date().toISOString().split('T')[0] : null;
+        // Handle mailing list subscription
         try {
-            await connection.execute(
-                `INSERT IGNORE INTO mailing_list (contact_id, email, date_subscribed) VALUES (?, ?, ?)`,
-                [contactId, email, dateSubscribed]
+            const [existingMailingEntry] = await connection.query(
+                `SELECT id, date_subscribed, date_unsubscribed FROM mailing_list WHERE contact_id = ? AND email = ?`,
+                [contactId, email]
             );
+
+            if (existingMailingEntry.length > 0) {
+                // Email already exists for this contact
+                const entry = existingMailingEntry[0];
+                
+                if (subscribe_email) {
+                    // User wants to subscribe
+                    if (entry.date_unsubscribed !== null) {
+                        // Was unsubscribed, now resubscribing - reset subscription
+                        await connection.execute(
+                            `UPDATE mailing_list SET date_subscribed = CURDATE(), date_unsubscribed = NULL, client_id = ? WHERE id = ?`,
+                            [clientId, entry.id]
+                        );
+                    } else {
+                        // Already subscribed - just update client_id if null
+                        await connection.execute(
+                            `UPDATE mailing_list SET client_id = ? WHERE id = ? AND client_id IS NULL`,
+                            [clientId, entry.id]
+                        );
+                    }
+                } else {
+                    // Update client_id even if not subscribing
+                    await connection.execute(
+                        `UPDATE mailing_list SET client_id = ? WHERE id = ? AND client_id IS NULL`,
+                        [clientId, entry.id]
+                    );
+                }
+                // If subscribe_email is false, don't create new entry
+            } else {
+                // New email for this contact - create entry
+                const dateSubscribed = subscribe_email === true || subscribe_email === 1 ? new Date().toISOString().split('T')[0] : null;
+                await connection.execute(
+                    `INSERT INTO mailing_list (contact_id, email, date_subscribed, client_id) VALUES (?, ?, ?, ?)`,
+                    [contactId, email, dateSubscribed, clientId]
+                );
+            }
         } catch (mailingErr) {
             // Log mailing list error but don't fail the booking
             console.warn('Mailing list error (non-critical):', mailingErr);
@@ -749,10 +803,10 @@ app.get('/api/clients', async (req, res) => {
     }
 });
 
-app.get('/api/client/:id', async (req, res) => {
-    const clientId = req.params.id;
+app.get('/api/client/:firstName/:lastName/:phone', async (req, res) => {
+    const { firstName, lastName, phone } = req.params;
     try {
-        const [rows] = await db.query(sql_get_client_by_id, [clientId]);
+        const [rows] = await db.query(sql_get_client_by_compid, [firstName, lastName, phone]);
         if (rows.length === 0) return res.status(404).json({ error: 'Client not found' });
         res.json(rows[0]);
     } catch (err) {
@@ -760,20 +814,20 @@ app.get('/api/client/:id', async (req, res) => {
     }
 });
 
-app.get('/api/client/:id/mailing-list', async (req, res) => {
-    const clientId = req.params.id;
+app.get('/api/client/:firstName/:lastName/:phone/mailing-list', async (req, res) => {
+    const { firstName, lastName, phone } = req.params;
     try {
-        const [rows] = await db.query(sql_get_client_mailing_list, [clientId]);
+        const [rows] = await db.query(sql_get_client_mailing_list, [firstName, lastName, phone]);
         res.json(rows[0] || {});
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-app.get('/api/client/:id/cards', async (req, res) => {
-    const clientId = req.params.id;
+app.get('/api/client/:firstName/:lastName/:phone/cards', async (req, res) => {
+    const { firstName, lastName, phone } = req.params;
     try {
-        const [rows] = await db.query(sql_get_client_card_info, [clientId]);
+        const [rows] = await db.query(sql_get_client_card_info, [firstName, lastName, phone]);
         res.json(rows || []);
     } catch (err) {
         res.status(500).json({ error: err.message });
