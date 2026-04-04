@@ -305,6 +305,11 @@ tr:hover {
   background-color: #c9a0a0;
 }
 
+.row-taken {
+    background: #ffd699;
+    color: #222;
+}
+
 .row-approved {
   background: #d6f5d6;
   color: #222;
@@ -313,6 +318,11 @@ tr:hover {
 .row-pending {
   background: #79dd68;
   color: #222;
+}
+
+.row-past {
+    background: #e0e0e0;
+    color: #666;
 }
 
 button { 
@@ -619,7 +629,9 @@ select {
   transition: 0.05s;
 }
 
+.slot.past.active,
 .slot.available.active,
+.slot.taken.active,
 .slot.canceled.active,
 .slot.pending.active,
 .slot.rejected.active {

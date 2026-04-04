@@ -8,6 +8,15 @@ const csrf = require('csurf');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
+
+// Import controllers
+const bookingController = require('./controllers/bookingController');
+const requestController = require('./controllers/requestController');
+const holidayController = require('./controllers/holidayController');
+const clientController = require('./controllers/clientController');
+const subscriptionController = require('./controllers/subscriptionController');
+const viewController = require('./controllers/viewController');
+
 const app = express();
 
 // Middleware setup
@@ -248,137 +257,6 @@ function addMonths(date, months) {
     return newDate;
 }
 
-const stamp_created = formatDate(new Date());
-const nextMonth = formatDate(addMonths(new Date(), 1));
-
-/////////////////////////////
-///    QUERIES            ///
-/////////////////////////////
-
-// Booking related queries
-const sql_get_pending_requests = 
-`SELECT p.name as 'booking_type', DATE_FORMAT(r.date, '%Y-%m-%d') as date, DATE_FORMAT(r.date, '%H:%i') as time, r.note, c.firstName, c.lastName
-FROM contact c 
-    left join requestlog r on c.id = r.contact_id 
-    right join product p on p.product_id = r.product_id
-WHERE r.status in (1, 10) and r.date >= curdate() ORDER BY r.date ASC`
-
-const sql_get_pending_requests_c = 
-`SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time
-FROM requestlog
-WHERE status in (1,10) and date >= curdate()`
-
-const sql_get_pending_request = 
-`SELECT r.id, r.product_id, r.contact_id, r.date, r.note, co.firstName, co.lastName, co.phone, co.email, p.name as booking_type
-FROM requestlog r
-JOIN contact co ON r.contact_id = co.id
-JOIN product p ON r.product_id = p.product_id
-WHERE co.firstName = ? AND co.lastName = ? AND DATE(r.date) = ? AND TIME(r.date) = ? AND p.name = ? AND r.status in (1,10)`
-
-const sql_get_approved_requests_c = 
-`SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time
-from requestlog
-WHERE status = 2 AND date >= curdate()`;
-
-
-const sql_get_approved_requests = 
-`SELECT DATE_FORMAT(r.date, '%Y-%m-%d') as date, DATE_FORMAT(r.date, '%H:%i') as time, p.name as booking_type, co.firstName, co.lastName, r.note
-from product p 
-right join requestlog r on p.product_id = r.product_id 
-left join contact co on r.contact_id = co.id
-WHERE r.status = 2 AND r.date >= curdate()`;
-
-const sql_get_completed_bookings_c = 
-`SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time
-from booking
-WHERE date <= curdate()`;
-const sql_get_request_history = 
-`SELECT DATE_FORMAT(r.date, '%Y-%m-%d') as date, DATE_FORMAT(r.date, '%H:%i') as time, co.firstName, co.lastName, p.name as booking_type, DATE_FORMAT(r.stamp_created, '%Y-%m-%d %H:%i') as stamp_created, r.status
-FROM requestlog r 
-    join contact co on r.contact_id=co.id 
-    join product p on r.product_id=p.product_id
-ORDER BY r.stamp_modified DESC`;
-// Update requestlog status
-const sql_update_request = 
-`UPDATE requestlog SET status = ? WHERE id = ?`;
-
-// Insert contact for new booking requests
-const sql_insert_contact = 
-`INSERT INTO contact (firstName, lastName, phone, email) VALUES (?, ?, ?, ?)`;
-
-// Check if contact already exists
-const sql_get_contact_by_details = 
-`SELECT id FROM contact WHERE firstName = ? AND lastName = ? AND phone = ?`;
-
-// Insert request into requestlog
-const sql_insert_request = 
-`INSERT INTO requestlog (product_id, contact_id, date, note, status, client_id) VALUES (?, ?, ?, ?, ?, ?)`;
-
-// Holiday related queries
-const sql_get_holidays = 
-`SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time, description FROM holidays WHERE is_active = 1 ORDER BY date,time DESC;`;
-
-const sql_get_holidays_c = 
-`SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time FROM holidays WHERE is_active = 1;`;
-
-// Client related queries
-const sql_get_clients = 
-`SELECT ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created 
-FROM client c JOIN contact ct ON c.contact_id = ct.id
-ORDER BY ct.firstName, ct.lastName ASC`;
-const sql_get_client_by_compid = 
-`SELECT ct.firstName, ct.lastName, ct.phone, ct.email, c.stamp_created
-FROM client c JOIN contact ct ON c.contact_id = ct.id 
-WHERE ct.firstName = ? and ct.lastName = ? and ct.phone = ?`;
-const sql_get_client_mailing_list = 
-`SELECT m.date_subscribed, m.date_unsubscribed 
-FROM mailing_list m join contact ct on m.contact_id = ct.id
-WHERE ct.firstName = ? and ct.lastName = ? and ct.phone = ?`;
-const sql_get_client_card_info = 
-`SELECT ca.card_id, p.name as 'booking_type', NULL as credits_balance, s.start_date, s.expiration_date, s.status as subscription_status, s.stamp_created 
-FROM card ca JOIN subscription s ON ca.card_id = s.card_id 
-JOIN product p ON s.product_id = p.product_id 
-WHERE ca.client_id = ?`;
-const sql_check_existing_client = 
-`SELECT c.client_id, ct.firstName, ct.lastName, ct.phone, ct.email
-FROM client c JOIN contact ct ON c.contact_id = ct.id 
-WHERE ct.firstName = ? AND ct.lastName = ? AND ct.phone = ?
-LIMIT 1`;
-const sql_insert_mailing_list = 
-`INSERT INTO mailing_list (contact_id, date_subscribed) VALUES (?, ?)`;
-const sql_insert_client_card = 
-`INSERT INTO card (client_id) VALUES (?)`;
-const sql_insert_subscription = 
-`INSERT INTO subscription (product_id, card_id, start_date, expiration_date, status) VALUES (?, ?, ?, ?, ?)`;
-const sql_select_service = 
-`SELECT product_id, name FROM product WHERE name = ? LIMIT 1`;
-const sql_sync_sub_status = 
-`UPDATE subscription SET status = CASE WHEN CURDATE() <= expiration_date THEN 15 WHEN CURDATE() > expiration_date THEN 17 ELSE 9 END;`;
-
-////////////////////////
-///   BOOKING APIs   ///
-////////////////////////
-
-// Get all pending bookings
-app.get('/api/pending', async (req, res) => {
-    try {
-        const [rows] = await db.query(sql_get_pending_requests);
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Get all pending bookings (for calendar)
-app.get('/api/c-pending', async (req, res) => {
-    try {
-        const [rows] = await db.query(sql_get_pending_requests_c);
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
 // Helper function to find request by composite key
 async function findRequestByCompositeKey(connection, firstName, lastName, date, time, booking_type) {
     const timeValue = time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
@@ -386,650 +264,72 @@ async function findRequestByCompositeKey(connection, firstName, lastName, date, 
     return requestRows[0] || null;
 }
 
-// Approve a booking request
-app.post('/api/approve', async (req, res) => {
-    const { firstName, lastName, date, time, booking_type } = req.body;
-    const connection = await db.getConnection();
+////////////////////////
+///   REQUEST APIs   ///
+////////////////////////
 
-    try {
-        await connection.beginTransaction();
+// GET requests
+app.get('/api/pending', (req, res) => requestController.getPendingRequests(req, res));
 
-        // Find request by composite key
-        const request = await findRequestByCompositeKey(connection, firstName, lastName, date, time, booking_type);
-        
-        if (!request) {
-            await connection.rollback();
-            return res.status(404).json({ error: 'Заявката не е намерена.' });
-        }
+app.get('/api/c-pending', (req, res) => requestController.getPendingRequestsCalendar(req, res));
 
-        // Check if this is a subscription product (service_type IN (10,11))
-        const [productRows] = await connection.query(
-            `SELECT p.service_type FROM product p WHERE p.product_id = ?`,
-            [request.product_id]
-        );
-        const product = productRows[0];
-        const isSubscription = product && product.service_type && [10, 11].includes(product.service_type);
+app.get('/api/c-approved-requests', (req, res) => requestController.getApprovedRequestsCalendar(req, res));
 
-        // Update request status to 2 (Approved)
-        await connection.execute(sql_update_request, [2, request.id]);
+app.get('/api/approved-requests', (req, res) => requestController.getApprovedRequests(req, res));
 
-        // Check if client exists and create if needed
-        const [existingRows] = await connection.query(sql_check_existing_client, [request.firstName, request.lastName, request.phone]);
-        const existingClient = existingRows[0];
+app.get('/api/c-completed-bookings', (req, res) => requestController.getCompletedBookingsCalendar(req, res));
 
-        let clientId;
-        if (existingClient) {
-            clientId = existingClient.client_id;
-        } else {
-            // Get next client_id starting from 1000
-            const [nextClientIdResult] = await connection.query('SELECT get_next_client_id() as next_id');
-            const nextClientId = nextClientIdResult[0].next_id;
-            
-            // Create new client record
-            await connection.execute(
-                `INSERT INTO client (contact_id, client_id) VALUES (?, ?)`,
-                [request.contact_id, nextClientId]
-            );
-            clientId = nextClientId;
-            
-            // Update requestlog with client_id for this contact's pending requests
-            await connection.execute(
-                `UPDATE requestlog SET client_id = ? WHERE contact_id = ? AND client_id IS NULL`,
-                [clientId, request.contact_id]
-            );
-            
-            // Update mailing_list with client_id for this contact
-            await connection.execute(
-                `UPDATE mailing_list SET client_id = ? WHERE contact_id = ? AND client_id IS NULL`,
-                [clientId, request.contact_id]
-            );
-        }
+app.get('/api/unavailable-slots', (req, res) => viewController.getUnavailableSlots(req, res));
 
-        // Handle subscription requests: create or reuse card and create subscription with status 10
-        if (isSubscription) {
-            // Check if client already has a card
-            const [existingCardRows] = await connection.query(
-                `SELECT card_id FROM card WHERE client_id = ? LIMIT 1`,
-                [clientId]
-            );
-            
-            let cardId;
-            if (existingCardRows.length > 0) {
-                // Reuse existing card
-                cardId = existingCardRows[0].card_id;
-            } else {
-                // Get next card_id starting from 200
-                const [nextCardIdResult] = await connection.query('SELECT get_next_card_id() as next_id');
-                const nextCardId = nextCardIdResult[0].next_id;
-                cardId = nextCardId;
-                
-                // Create card with status 19 (Inactive)
-                await connection.execute(
-                    `INSERT INTO card (card_id, client_id, status) VALUES (?, ?, 19)`,
-                    [nextCardId, clientId]
-                );
-            }
-            
-            // Check if subscription already exists for this card + product + start_date
-            const startDate = new Date(request.date).toISOString().split('T')[0];
-            const [existingSubRows] = await connection.query(
-                `SELECT id FROM subscription WHERE card_id = ? AND product_id = ? AND start_date = ? LIMIT 1`,
-                [cardId, request.product_id, startDate]
-            );
-            
-            // Only create subscription if it doesn't already exist
-            if (existingSubRows.length === 0) {
-                const expirationDate = formatDate(addMonths(new Date(startDate), 1));
-                
-                // Create new subscription with status 10 (Pending Payment)
-                await connection.execute(
-                    `INSERT INTO subscription (product_id, card_id, start_date, expiration_date, status) VALUES (?, ?, ?, ?, 10)`,
-                    [request.product_id, cardId, startDate, expirationDate]
-                );
-            }
-        }
+app.get('/api/request-history', (req, res) => requestController.getRequestHistory(req, res));
 
-        await connection.commit();
-        res.json({ message: isSubscription 
-            ? 'Абонаментната заявка е създадена. Очаква се потвърждение на плащането.'
-            : 'Тренировката беше добавена.' 
-        });
+// POST requests
+app.post('/api/approve', (req, res) => requestController.approveRequest(req, res));
 
-    } catch (error) {
-        await connection.rollback();
-        console.error('Approve booking error:', error);
-        res.status(500).json({ error: error.message });
-    } finally {
-        connection.release();
-    }
-});
+app.post('/api/reject', (req, res) => requestController.rejectRequest(req, res));
 
-// Reject a booking request
-app.post('/api/reject', async (req, res) => {
-    const { firstName, lastName, date, time, booking_type } = req.body;
-    const connection = await db.getConnection();
-
-    try {
-        await connection.beginTransaction();
-
-        // Find request by composite key
-        const request = await findRequestByCompositeKey(connection, firstName, lastName, date, time, booking_type);
-        
-        if (!request) {
-            await connection.rollback();
-            return res.status(404).json({ error: 'Заявката не е намерена.' });
-        }
-
-        // Update request status to 7 (Rejected/Declined)
-        await connection.execute(sql_update_request, [7, request.id]);
-
-        await connection.commit();
-        res.json({ message: 'Заявката беше отказана.' });
-
-    } catch (error) {
-        await connection.rollback();
-        console.error('Reject booking error:', error);
-        res.status(500).json({ error: error.message });
-    } finally {
-        connection.release();
-    }
-});
-
-// Cancel a booking request
-app.post('/api/cancel', async (req, res) => {
-    const { firstName, lastName, date, time, booking_type } = req.body;
-    const connection = await db.getConnection();
-
-    try {
-        await connection.beginTransaction();
-
-        // Find request by composite key (allow both pending and approved statuses for cancellation)
-        const timeValue = time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
-        const [requestRows] = await connection.query(
-            `SELECT r.id, r.product_id, r.contact_id, r.date, r.note, co.firstName, co.lastName, co.phone, co.email, p.name as booking_type
-            FROM requestlog r
-            JOIN contact co ON r.contact_id = co.id
-            JOIN product p ON r.product_id = p.product_id
-            WHERE co.firstName = ? AND co.lastName = ? AND DATE(r.date) = ? AND TIME(r.date) = ? AND p.name = ? AND r.status IN (2, 3, 10)`,
-            [firstName, lastName, date, timeValue, booking_type]
-        );
-        const request = requestRows[0];
-        
-        if (!request) {
-            await connection.rollback();
-            return res.status(404).json({ error: 'Заявката не е намерена.' });
-        }
-
-        // Update request status to 9 (Canceled)
-        await connection.execute(sql_update_request, [9, request.id]);
-
-        await connection.commit();
-        res.json({ message: 'Заявката беше отменена.' });
-
-    } catch (error) {
-        await connection.rollback();
-        console.error('Cancel booking error:', error);
-        res.status(500).json({ error: error.message });
-    } finally {
-        connection.release();
-    }
-});
-
-// Add new endpoint to handle subscription status updates
-app.post('/api/update-subscriptions', async (req, res) => {
-    try {
-        await db.execute(sql_sync_sub_status);
-        res.json({ message: 'Subscriptions updated successfully' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+app.post('/api/cancel', (req, res) => requestController.cancelRequest(req, res));
 
 // Approve or decline subscription payment
-app.post('/api/approve-subscription-payment', async (req, res) => {
-    const { subscription_id, approved } = req.body;
-
-    if (!subscription_id || approved === undefined) {
-        return res.status(400).json({ error: 'Missing subscription_id or approval status' });
-    }
-
-    const connection = await db.getConnection();
-
-    try {
-        await connection.beginTransaction();
-
-        // Get subscription details with related client and contact info
-        const [subRows] = await connection.query(
-            `SELECT s.id, s.card_id, s.start_date, s.product_id, c.contact_id 
-             FROM subscription s 
-             JOIN card ca ON s.card_id = ca.card_id 
-             JOIN client c ON ca.client_id = c.client_id 
-             WHERE s.id = ? LIMIT 1`,
-            [subscription_id]
-        );
-
-        if (subRows.length === 0) {
-            await connection.rollback();
-            return res.status(404).json({ error: 'Subscription not found' });
-        }
-
-        const sub = subRows[0];
-
-        // Find related requestlog entry by contact_id, product_id, and start_date
-        const [requestRows] = await connection.query(
-            `SELECT id FROM requestlog 
-             WHERE contact_id = ? AND product_id = ? AND DATE(date) = ? 
-             ORDER BY id DESC LIMIT 1`,
-            [sub.contact_id, sub.product_id, sub.start_date]
-        );
-
-        const requestId = requestRows.length > 0 ? requestRows[0].id : null;
-
-        if (approved) {
-            // Payment approved: set card and subscription to status 15 (Active)
-            await connection.execute(
-                `UPDATE card SET status = 15 WHERE card_id = ?`,
-                [sub.card_id]
-            );
-
-            await connection.execute(
-                `UPDATE subscription SET status = 15 WHERE id = ?`,
-                [subscription_id]
-            );
-
-            // Update requestlog to status 15 (Active) if found
-            if (requestId) {
-                await connection.execute(
-                    `UPDATE requestlog SET status = 15 WHERE id = ?`,
-                    [requestId]
-                );
-            }
-
-            res.json({ message: 'Абонаментът е активиран успешно.' });
-        } else {
-            // Payment declined: set card to 19 (Inactive), subscription and requestlog to 18 (Declined)
-            await connection.execute(
-                `UPDATE card SET status = 19 WHERE card_id = ?`,
-                [sub.card_id]
-            );
-
-            await connection.execute(
-                `UPDATE subscription SET status = 18 WHERE id = ?`,
-                [subscription_id]
-            );
-
-            // Update requestlog to status 18 (Declined) if found
-            if (requestId) {
-                await connection.execute(
-                    `UPDATE requestlog SET status = 18 WHERE id = ?`,
-                    [requestId]
-                );
-            }
-
-            res.json({ message: 'Абонаментът е отхвърлен.' });
-        }
-
-        await connection.commit();
-
-    } catch (error) {
-        await connection.rollback();
-        console.error('Payment approval error:', error);
-        res.status(500).json({ error: error.message });
-    } finally {
-        connection.release();
-    }
-});
-
-app.get('/api/c-approved-requests', async (req, res) => {
-    try {
-        const [rows] = await db.query(sql_get_approved_requests_c);
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.get('/api/approved-requests', async (req, res) => {
-    try {
-        const [rows] = await db.query(sql_get_approved_requests);
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Get available slots
-app.get('/api/unavailable-slots', async (req, res) => {
-    try {
-        const [rows] = await db.query("SELECT * FROM v_unavailable_slots;");
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Get all historically approved bookings
-app.get('/api/c-completed-bookings', async (req, res) => {
-    try {
-        const [rows] = await db.query(sql_get_completed_bookings_c);
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Get request history
-app.get('/api/request-history', async (req, res) => {
-    try {
-        const [rows] = await db.query(sql_get_request_history);
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+app.post('/api/approve-subscription-payment', (req, res) => subscriptionController.approveSubscriptionPayment(req, res));
 
 // Book a slot
-app.post('/api/book', async (req, res) => {
-    const { booking_type, date, time, firstName, lastName, phone, email, note, subscribe_email } = req.body;
-
-    if (!booking_type || !date || !time || !firstName || !lastName || !phone || !email) {
-        return res.status(400).json({ error: 'Липсват необходими полета.' });
-    }
-    
-    // Combine date and time into datetime for MariaDB
-    const datetime = `${date} ${time}:00`;
-    
-    const connection = await db.getConnection();
-    
-    try {
-        await connection.beginTransaction();
-        
-        // Check if slot is already booked in requestlog (approved bookings)
-        const [existingRows] = await connection.query(
-            `SELECT * FROM requestlog WHERE DATE(date) = ? AND TIME(date) = ? AND status IN (2, 3)`,
-            [date, `${time}:00`]
-        );
-        
-        if (existingRows.length > 0) {
-            await connection.rollback();
-            return res.status(400).json({ error: 'За съжаление този час е зает. Моля изберете свободен час.' });
-        }
-        
-        // Get product_id for the booking type
-        const [productRows] = await connection.query(sql_select_service, [booking_type]);
-        const product = productRows[0];
-        
-        if (!product) {
-            await connection.rollback();
-            return res.status(400).json({ error: 'Невалиден тип тренировка.' });
-        }
-        
-        // Check if phone already exists with different name
-        const [phoneCheckRows] = await connection.query(
-            `SELECT id, firstName, lastName FROM contact WHERE phone = ?`,
-            [phone]
-        );
-        
-        if (phoneCheckRows.length > 0) {
-            const existingContact = phoneCheckRows[0];
-            // Check if name matches
-            if (existingContact.firstName !== firstName || existingContact.lastName !== lastName) {
-                await connection.rollback();
-                return res.status(400).json({ 
-                    error: 'Контакт с този номер на телефон вече е известен.' 
-                });
-            }
-        }
-        
-        // Check if contact already exists (by firstName, lastName, phone)
-        const [contactRows] = await connection.query(sql_get_contact_by_details, [firstName, lastName, phone]);
-        let contactId;
-        
-        if (contactRows.length > 0) {
-            // Use existing contact
-            contactId = contactRows[0].id;
-            
-            // Update email if it's different
-            const [currentContactData] = await connection.query(
-                `SELECT email FROM contact WHERE id = ?`,
-                [contactId]
-            );
-            
-            if (currentContactData.length > 0 && currentContactData[0].email !== email) {
-                // Update email
-                await connection.execute(
-                    `UPDATE contact SET email = ? WHERE id = ?`,
-                    [email, contactId]
-                );
-            }
-        } else {
-            // Create new contact
-            const [contactResult] = await connection.execute(
-                sql_insert_contact,
-                [firstName, lastName, phone, email]
-            );
-            contactId = contactResult.insertId;
-        }
-        
-        // Check if contact already has a request for the same day (prevent multiple bookings per day)
-        const [existingDayRequest] = await connection.query(
-            `SELECT id FROM requestlog WHERE contact_id = ? AND DATE(date) = ? AND status IN (1, 2, 3)`,
-            [contactId, date]
-        );
-        
-        if (existingDayRequest.length > 0) {
-            await connection.rollback();
-            return res.status(400).json({ error: 'Вече имате заявка за този ден. Един контакт може да направи само една заявка на ден.' });
-        }
-        
-        // Fetch client_id if contact is already a client
-        const [clientRows] = await connection.query(
-            `SELECT client_id FROM client WHERE contact_id = ? LIMIT 1`,
-            [contactId]
-        );
-        const clientId = clientRows.length > 0 ? clientRows[0].client_id : null;
-        
-        // Insert request into requestlog with status 1 (pending)
-        const [result] = await connection.execute(
-            sql_insert_request,
-            [product.product_id, contactId, datetime, note, 1, clientId]
-        );
-        
-        // Handle mailing list subscription
-        try {
-            const [existingMailingEntry] = await connection.query(
-                `SELECT id, date_subscribed, date_unsubscribed FROM mailing_list WHERE contact_id = ? AND email = ?`,
-                [contactId, email]
-            );
-
-            if (existingMailingEntry.length > 0) {
-                // Email already exists for this contact
-                const entry = existingMailingEntry[0];
-                
-                if (subscribe_email) {
-                    // User wants to subscribe
-                    if (entry.date_unsubscribed !== null) {
-                        // Was unsubscribed, now resubscribing - reset subscription
-                        await connection.execute(
-                            `UPDATE mailing_list SET date_subscribed = CURDATE(), date_unsubscribed = NULL, client_id = ? WHERE id = ?`,
-                            [clientId, entry.id]
-                        );
-                    } else {
-                        // Already subscribed - just update client_id if null
-                        await connection.execute(
-                            `UPDATE mailing_list SET client_id = ? WHERE id = ? AND client_id IS NULL`,
-                            [clientId, entry.id]
-                        );
-                    }
-                } else {
-                    // Update client_id even if not subscribing
-                    await connection.execute(
-                        `UPDATE mailing_list SET client_id = ? WHERE id = ? AND client_id IS NULL`,
-                        [clientId, entry.id]
-                    );
-                }
-                // If subscribe_email is false, don't create new entry
-            } else {
-                // New email for this contact - create entry
-                const dateSubscribed = subscribe_email === true || subscribe_email === 1 ? new Date().toISOString().split('T')[0] : null;
-                await connection.execute(
-                    `INSERT INTO mailing_list (contact_id, email, date_subscribed, client_id) VALUES (?, ?, ?, ?)`,
-                    [contactId, email, dateSubscribed, clientId]
-                );
-            }
-        } catch (mailingErr) {
-            // Log mailing list error but don't fail the booking
-            console.warn('Mailing list error (non-critical):', mailingErr);
-        }
-        
-        await connection.commit();
-        res.json({ message: 'Заявката е изпратена за одобрение.', id: result.insertId });
-        
-    } catch (err) {
-        await connection.rollback();
-        console.error('Book error:', err);
-        res.status(500).json({ error: err.message });
-    } finally {
-        connection.release();
-    }
-});
+app.post('/api/book', (req, res) => bookingController.createBooking(req, res));
 
 ////////////////////////
 ///   HOLIDAY APIs   ///
 ////////////////////////
 
 // Get all active holidays
-app.get('/api/c-holidays', async (req, res) => {
-    try {
-        const [rows] = await db.query(sql_get_holidays_c);
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+app.get('/api/c-holidays', (req, res) => holidayController.getHolidaysForCalendar(req, res));
 
-// Get all active holidays
-app.get('/api/holidays', async (req, res) => {
-    try {
-        const [rows] = await db.query(sql_get_holidays);
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+app.get('/api/holidays', (req, res) => holidayController.getAllHolidays(req, res));
 
-// Automatically deactivate past holidays
-app.post('/api/auto-deactivate-past-holidays', async (req, res) => {
-    try {
-        await db.execute('UPDATE holidays SET is_active = 0 WHERE date < CURDATE()');
-        res.json({ message: 'Past holidays deactivated' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+app.post('/api/auto-deactivate-past-holidays', (req, res) => holidayController.deactivatePastHolidays(req, res));
 
-// Delete holiday
-app.post('/api/disable-holiday', async (req, res) => {
-    const holidayId = req.body.date;
+app.post('/api/disable-holiday', (req, res) => holidayController.deactivateHoliday(req, res));
 
-    if (!holidayId) {
-        return res.status(400).json({ error: 'Missing holiday' });
-    }
-
-    try {
-        const [result] = await db.execute("UPDATE holidays SET is_active = 0 WHERE date = ?", [holidayId]);
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Почивният ден не е намерен' });
-        }
-        res.json({ message: 'Почивният ден е премахнат.' });
-    } catch (err) {
-        console.error('Грешка при изтриване:', err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Add holiday
-app.post('/api/add-holiday', async (req, res) => {
-    const { holidays, description } = req.body;
-    
-    if (!holidays || !Array.isArray(holidays) || holidays.length === 0) {
-        return res.status(400).json({ error: 'Invalid request' });
-    }
-
-    const connection = await db.getConnection();
-    try {
-        await connection.beginTransaction();
-
-        for (const holiday of holidays) {
-            // Combine date and time into datetime for MariaDB
-            // If time is null, it's a full day holiday (use 00:00:00)
-            const datetime = holiday.time === null 
-                ? `${holiday.date} 00:00:00`
-                : `${holiday.date} ${holiday.time}:00`;
-            
-            await connection.execute(
-                'INSERT INTO holidays (date, description) VALUES (?, ?)',
-                [datetime, description]
-            );
-        }
-
-        await connection.commit();
-        res.json({ message: 'Почивката е добавена успешно.' });
-    } catch (error) {
-        await connection.rollback();
-        res.status(500).json({ 
-            error: error.message.includes('UNIQUE') 
-                ? 'Този ден/час вече е маркиран като почивка' 
-                : error.message 
-        });
-    } finally {
-        connection.release();
-    }
-});
+app.post('/api/add-holiday', (req, res) => holidayController.addHoliday(req, res));
 
 ////////////////////////
 ///   CLIENT APIs   ///
 ////////////////////////
 
-app.get('/api/clients', async (req, res) => {
-    try {
-        const [rows] = await db.query(sql_get_clients);
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+app.get('/api/clients', (req, res) => clientController.getAllClients(req, res));
 
-app.get('/api/client/:firstName/:lastName/:phone', async (req, res) => {
-    const { firstName, lastName, phone } = req.params;
-    try {
-        const [rows] = await db.query(sql_get_client_by_compid, [firstName, lastName, phone]);
-        if (rows.length === 0) return res.status(404).json({ error: 'Client not found' });
-        res.json(rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+// Composite key routes (more specific) - must come first
+app.get('/api/client/:firstName/:lastName/:phone', (req, res) => clientController.getClientByCompositeKey(req, res));
 
-app.get('/api/client/:firstName/:lastName/:phone/mailing-list', async (req, res) => {
-    const { firstName, lastName, phone } = req.params;
-    try {
-        const [rows] = await db.query(sql_get_client_mailing_list, [firstName, lastName, phone]);
-        res.json(rows[0] || {});
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+app.get('/api/client/:firstName/:lastName/:phone/mailing-list', (req, res) => clientController.getClientMailingListByComposite(req, res));
 
-app.get('/api/client/:firstName/:lastName/:phone/cards', async (req, res) => {
-    const { firstName, lastName, phone } = req.params;
-    try {
-        const [rows] = await db.query(sql_get_client_card_info, [firstName, lastName, phone]);
-        res.json(rows || []);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+app.get('/api/client/:firstName/:lastName/:phone/cards', (req, res) => clientController.getClientCardsByComposite(req, res));
+
+// ID-based routes (less specific) - must come after
+app.get('/api/client/:id', (req, res) => clientController.getClientById(req, res));
+
+app.get('/api/client/:id/mailing-list', (req, res) => clientController.getClientMailingList(req, res));
+
+app.get('/api/client/:id/cards', (req, res) => clientController.getClientCards(req, res));
 
 ////////////////////////
 ///  START SERVER   ///

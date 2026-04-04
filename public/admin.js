@@ -498,14 +498,10 @@ if (logoutBtn) {
                             } else if (taken) {
                                 const request = bookings.find(b => b.date === dateStr && b.time === time) ||
                                                 historicalBookings.find(b => b.date === dateStr && b.time === time);
-                                // request.client_name = `${request.firstName} ${request.lastName}`
                                 slotBtn.classList.add('taken');
-                                // slotBtn.title = `Резервация #${request.id}\nТип: ${request.booking_type}\nИме: ${request.client_name}\nТел: ${request.phone}\nДата: ${request.date}`;
                             } else if (pending) {
                                 const request = pendingBookings.find(d => d.date === dateStr && d.time === time && d.status === 1);
-                                // request.client_name = `${request.firstName} ${request.lastName}`
                                 slotBtn.classList.add('pending');
-                                // slotBtn.title = `Резервация #${request.id}\nТип: ${request.booking_type}\nИме: ${request.client_name}\nТел: ${request.phone}\nДата: ${request.date}`;
                             } else {
                                 slotBtn.classList.add('available');
                             }
@@ -988,9 +984,6 @@ if (logoutBtn) {
             }
 
             displayHolidays();
-
-            // Automatically deactivate past holidays
-            await APIService.autoDeactivatePastHolidays();
         }
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
@@ -1360,10 +1353,14 @@ if (logoutBtn) {
                                 activeStatusFilter = 1;
                             } else if (button.classList.contains('available')) {
                                 activeStatusFilter = 2;
-                            } else if (button.classList.contains('rejected')) {
-                                activeStatusFilter = 4;
-                            } else if (button.classList.contains('canceled')) {
+                            } else if (button.classList.contains('taken')) {
                                 activeStatusFilter = 3;
+                            } else if (button.classList.contains('past')) {
+                                activeStatusFilter = 5;
+                            } else if (button.classList.contains('rejected')) {
+                                activeStatusFilter = 7;
+                            } else if (button.classList.contains('canceled')) {
+                                activeStatusFilter = 9;
                             }
                         }
                         applyFilters();
@@ -1405,14 +1402,20 @@ if (logoutBtn) {
                         `;
 
                         switch (request.status) {
-                            case 3:
+                            case 9:
                                 row.classList.add('row-canceled');
                                 break;
-                            case 4:
+                            case 7:
                                 row.classList.add('row-rejected');
                                 break;
                             case 2:
                                 row.classList.add('row-approved');
+                                break;
+                            case 5:
+                                row.classList.add('row-past');
+                                break;
+                            case 3:
+                                row.classList.add('row-taken');
                                 break;
                             default:
                                 row.classList.add('row-pending');
