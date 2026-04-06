@@ -1,0 +1,120 @@
+#!/bin/bash
+
+function log_mysql_escape() {
+	printf '%s' "$1" | sed "s/'/\\\\'/g"
+}
+
+function log_info()
+{
+	lognow=$(date + "%d/%m/%Y %H:%M:%S")
+	echo "$SCRIPT_NAME - $lognow ${@}" >> $LOG_FILE
+}
+
+function log_error()
+{
+	LOG_LINES="${@}"
+	while read -r line
+	do
+		log_info "ERROR : $line"
+	done <<<"$LOG_LINES"
+
+	log_db "ERROR" "$line"
+}
+
+function general_log()
+{
+	lognow=$(date + "%d/%m/%Y %H:%M:%S")
+	echo "$SCRIPT_NAME - $lognow ${@}" >> $GENERAL_LOG
+}
+
+function log_already_running()
+{
+	log_info "ERROR: SCRIPT STILL RUNNING. This run will end."
+	log_db "RUNNING"
+}
+
+function log_db()
+{
+	ACTION=""
+	DESCRIPTION=""
+
+	ACTION=$1	# START, SUCCESS, RUNNING, ERROR
+	DESCRIPTION=$2	# Open text, optional
+
+	# STATUS CODES
+	# 1 - run started properly, and is in progress
+	# 2 - An error occurred
+	# 3 - A previous run is found in the ps list. The new attempt to run fails
+	# 10 - Success
+
+	# Escape variables for SQL injection protection
+	SCRIPT_NAME_ESC=$(log_mysql_escape "$SCRIPT_NAME")
+	SCRIPT_TYPE_ESC=$(log_mysql_escape "$SCRIPT_TYPE")
+	LOCAL_IP_ESC=$(log_mysql_escape "$LOCAL_IP")
+	DESCRIPTION_ESC=$(log_mysql_escape "$DESCRIPTION")
+
+	case $ACTION in
+		START)
+			$MARIADB_LOG << EOD
+			use coolerm;
+			SET @scr_name = '$SCRIPT_NAME_ESC';
+			SET @scr_type = '$SCRIPT_TYPE_ESC';
+			SET @ip = '$LOCAL_IP_ESC';
+			SET @desc = '$DESCRIPTION_ESC';
+			PREPARE stmt FROM 'INSERT INTO script_run_log (script_name, script_type, host, start_time, status, description) VALUES (?, ?, ?, NOW(), 1, ?)';
+			EXECUTE stmt USING @scr_name, @scr_type, @ip, @desc;
+			DEALLOCATE PREPARE stmt;
+EOD
+			;;
+		END)
+			$MARIADB_LOG << EOD
+			use coolerm;
+			SET @scr_name = '$SCRIPT_NAME_ESC';
+			SET @scr_type = '$SCRIPT_TYPE_ESC';
+			SET @desc = '$DESCRIPTION_ESC';
+			PREPARE stmt FROM 'UPDATE script_run_log SET success_time = now(), end_time = now(), status=10, description=? WHERE script_name=? AND script_type=? AND end_time is NULL and status!=10';
+			EXECUTE stmt USING @desc, @scr_name, @scr_type;
+			DEALLOCATE PREPARE stmt;
+EOD
+			;;
+		RUNNING)
+			$MARIADB_LOG << EOD
+			use coolerm;
+			SET @scr_name = '$SCRIPT_NAME_ESC';
+			SET @scr_type = '$SCRIPT_TYPE_ESC';
+			PREPARE stmt FROM 'UPDATE script_run_log SET error_time = now(), end_time = now(), status=3, description="PREVIOUS RUN IN PROGRESS" WHERE script_name=? AND script_type=? AND end_time is NULL AND status!=10';
+			EXECUTE stmt USING @scr_name, @scr_type;
+			DEALLOCATE PREPARE stmt;
+EOD
+			;;
+		ERROR)
+			$MARIADB_LOG << EOD
+			use coolerm;
+			SET @scr_name = '$SCRIPT_NAME_ESC';
+			SET @scr_type = '$SCRIPT_TYPE_ESC';
+			SET @desc = '$DESCRIPTION_ESC';
+			PREPARE stmt FROM 'UPDATE script_run_log SET error_time = now(), end_time = now(), status=2, description=? WHERE script_name=? AND script_type=? and end_time is NULL AND status!=10';
+			EXECUTE stmt USING @ddesc, @scr_name, @scr_type;
+			DEALLOCATE PREPARE stmt;
+EOD
+			;;
+		*)
+			# IDK
+			;;
+	esac
+
+}
+
+function log_start()
+{
+	general_log "START "
+	log_info "START "
+	log_db "START " ""
+}
+
+function log_end()
+{
+	general_log "END "
+	log_info "END "
+	log_db "END" ""
+}

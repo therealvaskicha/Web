@@ -1,0 +1,5 @@
+#!/bin/bash
+
+MARIADB_READ="C:\Program Files\MariaDB 11.8\bin\mysql.exe --defaults-extra-file=C:\Users\HEXTECH\.mariadb_read.cnf"
+MARIADB_WRITE="C:\Program Files\MariaDB 11.8\bin\mysql.exe --defaults-extra-file=C:\Users\HEXTECH\.mariadb_write.cnf"
+MARIADB_VIEW="C:\Program Files\MariaDB 11.8\bin\mysql.exe --defaults-extra-file=C:\Users\HEXTECH\.mariadb_view.cnf"

@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Process completed requests - runs every hour at minute 1
+# This script checks for approved/scheduled requests that have passed their time slot
+# and creates booking entries + marks them as completed
+
+# Database configuration
+DB_HOST="localhost"
+DB_USER="vaskicha"
+DB_PASSWORD="parolata123"
+DB_NAME="CooleRM"
+
+# Log file for debugging
+LOG_FILE="/var/log/pilates-request-processor.log"
+
+# Timestamp for logging
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+echo "[$TIMESTAMP] Starting request processing..." >> "$LOG_FILE"
+
+# MySQL query to get approved/scheduled requests where the datetime has passed by 1 hour
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" << EOF >> "$LOG_FILE" 2>&1
+-- Get all approved (2) or scheduled (3) requests where current time > appointment time + 1 hour
+SELECT 
+    r.id,
+    r.order_id,
+    r.contact_id,
+    r.product_id,
+    r.client_id,
+    r.date,
+    r.status
+INTO @request_ids
+FROM requestlog r
+WHERE r.status IN (2, 3)
+  AND DATE_ADD(r.date, INTERVAL 1 HOUR) <= NOW();
+
+-- For each matching request, create a booking and update request log
+IF FOUND_ROWS() > 0 THEN
+    -- Create booking entries for all matching requests
+    INSERT INTO booking (order_id, contact_id, product_id, client_id, appointment_date, status)
+    SELECT 
+        r.order_id,
+        r.contact_id,
+        r.product_id,
+        r.client_id,
+        r.date,
+        1  -- Completed status in booking table
+    FROM requestlog r
+    WHERE r.status IN (2, 3)
+      AND DATE_ADD(r.date, INTERVAL 1 HOUR) <= NOW()
+      AND NOT EXISTS (
+          SELECT 1 FROM booking b 
+          WHERE b.order_id = r.order_id 
+          AND b.appointment_date = r.date
+      );
+    
+    -- Insert completion entries in requestlog with status 5 (completed)
+    INSERT INTO requestlog (order_id, contact_id, product_id, client_id, date, status)
+    SELECT 
+        r.order_id,
+        r.contact_id,
+        r.product_id,
+        r.client_id,
+        NOW(),
+        5  -- Completed status
+    FROM requestlog r
+    WHERE r.status IN (2, 3)
+      AND DATE_ADD(r.date, INTERVAL 1 HOUR) <= NOW()
+      AND NOT EXISTS (
+          SELECT 1 FROM requestlog r2
+          WHERE r2.order_id = r.order_id
+            AND r2.status = 5
+      );
+    
+    -- Update original request status to completed (5)
+    UPDATE requestlog
+    SET status = 5
+    WHERE status IN (2, 3)
+      AND DATE_ADD(date, INTERVAL 1 HOUR) <= NOW();
+    
+    SELECT CONCAT('Processed ', ROW_COUNT(), ' requests at ', NOW());
+ELSE
+    SELECT CONCAT('No requests to process at ', NOW());
+END IF;
+EOF
+
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[$TIMESTAMP] Request processing completed" >> "$LOG_FILE"
