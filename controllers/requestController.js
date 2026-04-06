@@ -1,6 +1,24 @@
 // Request Controller - thin layer for HTTP concerns
 const requestDomain = require('../data/request/request');
 
+async function createRequest(req, res) {
+    try {
+        // Validate request
+        const { firstName, lastName, date, time, booking_type } = req.body;
+        
+        if (!firstName || !lastName || !date || !time || !booking_type) {
+            return res.status(400).json({ error: 'Липсват необходими полета.' });
+        }
+        
+        // Call domain layer
+        await requestDomain.insertRequest(req, res);
+        
+    } catch (error) {
+        console.error('Request creation - controller error:', error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
 async function approveRequest(req, res) {
     try {
         // Validate request
@@ -116,6 +134,7 @@ async function getRequestHistory(req, res) {
 }
 
 module.exports = {
+    createRequest,
     approveRequest,
     rejectRequest,
     cancelRequest,

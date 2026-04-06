@@ -10,6 +10,7 @@
     "express": "^5.1.0",
     "express-rate-limit": "^7.1.5",
     "express-session": "^1.18.2",
-    "mariadb": "^3.5.2"
+    "mariadb": "^3.5.2",
+    "node-cron": "^4.2.1"
   }
 }

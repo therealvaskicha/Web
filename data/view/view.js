@@ -4,7 +4,7 @@ const queries = require('./queries');
 
 async function getUnavailableSlots(req, res) {
     try {
-        const [rows] = await db.query(queries.getUnavailableSlots);
+        const rows = await db.query(queries.getUnavailableSlots);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });

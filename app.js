@@ -88,7 +88,7 @@ async function isAccountLocked(req, res, next) {
     if (!username) return next();
     
     try {
-        const [rows] = await db.query(
+        const rows = await db.query(
             'SELECT locked_until FROM login_attempts WHERE username = ? AND locked_until IS NOT NULL ORDER BY locked_until DESC LIMIT 1',
             [username]
         );
@@ -120,7 +120,7 @@ async function recordLoginAttempt(username, ip, success) {
     const params = [username, ip, success ? 1 : 0, success ? null : lockedUntil.toISOString()];
     
     try {
-        await db.execute(query, params);
+        await db.query(query, params);
     } catch (err) {
         console.error('Error recording login attempt:', err);
     }
@@ -132,7 +132,7 @@ async function checkFailedAttempts(username) {
     const cutoffTime = new Date(Date.now() - windowMs).toISOString();
     
     try {
-        const [rows] = await db.query(
+        const rows = await db.query(
             `SELECT COUNT(*) as count FROM login_attempts 
              WHERE username = ? AND success = 0 AND attempt_timestamp > ?`,
             [username, cutoffTime]
@@ -260,7 +260,7 @@ function addMonths(date, months) {
 // Helper function to find request by composite key
 async function findRequestByCompositeKey(connection, firstName, lastName, date, time, booking_type) {
     const timeValue = time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
-    const [requestRows] = await connection.query(sql_get_pending_request, [firstName, lastName, date, timeValue, booking_type]);
+    const requestRows = await connection.query(sql_get_pending_request, [firstName, lastName, date, timeValue, booking_type]);
     return requestRows[0] || null;
 }
 
@@ -290,11 +290,10 @@ app.post('/api/reject', (req, res) => requestController.rejectRequest(req, res))
 
 app.post('/api/cancel', (req, res) => requestController.cancelRequest(req, res));
 
+app.post('/api/book', (req, res) => requestController.createRequest(req, res));
+
 // Approve or decline subscription payment
 app.post('/api/approve-subscription-payment', (req, res) => subscriptionController.approveSubscriptionPayment(req, res));
-
-// Book a slot
-app.post('/api/book', (req, res) => bookingController.createBooking(req, res));
 
 ////////////////////////
 ///   HOLIDAY APIs   ///

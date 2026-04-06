@@ -1,14 +1,5 @@
 #!/bin/bash
-
-# Process completed requests - runs every hour at minute 1
-# This script checks for approved/scheduled requests that have passed their time slot
-# and creates booking entries + marks them as completed
-
-# Database configuration
-DB_HOST="localhost"
-DB_USER="vaskicha"
-DB_PASSWORD="parolata123"
-DB_NAME="CooleRM"
+source /c/Vaseto/Web/scripts/core/functions/db/define-mariadb-command
 
 # Log file for debugging
 LOG_FILE="/var/log/pilates-request-processor.log"

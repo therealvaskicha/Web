@@ -3,7 +3,7 @@
 module.exports = {
     getAllHolidays: `
         SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time, description 
-        FROM holidays WHERE is_active = 1 ORDER BY date, time DESC
+        FROM holidays WHERE is_active = 1 and date >= curdate() ORDER BY date, time DESC
     `,
     
     getHolidaysByStatus: `

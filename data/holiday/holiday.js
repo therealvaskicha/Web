@@ -4,7 +4,7 @@ const queries = require('./queries');
 
 async function getAllHolidays() {
     try {
-        const [rows] = await db.query(queries.getAllHolidays);
+        const rows = await db.query(queries.getAllHolidays);
         return rows;
     } catch (error) {
         console.error('Get all holidays error:', error);
@@ -14,7 +14,7 @@ async function getAllHolidays() {
 
 async function getHolidaysByStatus() {
     try {
-        const [rows] = await db.query(queries.getHolidaysByStatus);
+        const rows = await db.query(queries.getHolidaysByStatus);
         return rows;
     } catch (error) {
         console.error('Get holidays by status error:', error);
@@ -24,7 +24,7 @@ async function getHolidaysByStatus() {
 
 async function deactivatePastHolidays() {
     try {
-        await db.execute(queries.deactivatePastHolidays);
+        await db.query(queries.deactivatePastHolidays);
         return { success: true };
     } catch (error) {
         console.error('Deactivate past holidays error:', error);
@@ -34,7 +34,7 @@ async function deactivatePastHolidays() {
 
 async function deactivateHoliday(date) {
     try {
-        await db.execute(queries.deactivateHoliday, [date]);
+        await db.query(queries.deactivateHoliday, [date]);
         return { success: true };
     } catch (error) {
         console.error('Deactivate holiday error:', error);
@@ -49,7 +49,7 @@ async function addHoliday(holidays, description) {
 
         for (const date of holidays) {
             const datetime = `${date} 00:00:00`;
-            await connection.execute(queries.insertHoliday, [datetime, description]);
+            await connection.query(queries.insertHoliday, [datetime, description]);
         }
 
         await connection.commit();
@@ -59,7 +59,7 @@ async function addHoliday(holidays, description) {
         console.error('Add holiday error:', error);
         throw error;
     } finally {
-        connection.release();
+        await connection.end();
     }
 }
 

@@ -9,7 +9,7 @@ async function approveSubscriptionPayment(req, res) {
     try {
         await connection.beginTransaction();
 
-        const [subRows] = await connection.query(queries.getSubscriptionDetails, [subscription_id]);
+        const subRows = await connection.query(queries.getSubscriptionDetails, [subscription_id]);
         const subscription = subRows[0];
 
         if (!subscription) {
@@ -22,10 +22,10 @@ async function approveSubscriptionPayment(req, res) {
         const newCardStatus = approved ? 15 : 19; // 15 = Active, 19 = Inactive
 
         // Update card status
-        await connection.execute(queries.updateCardStatus, [newCardStatus, subscription.card_id]);
+        await connection.query(queries.updateCardStatus, [newCardStatus, subscription.card_id]);
 
         // Create new subscription status record
-        await connection.execute(
+        await connection.query(
             `INSERT INTO subscription (product_id, card_id, start_date, expiration_date, status)
              SELECT product_id, card_id, start_date, expiration_date, ?
              FROM subscription WHERE id = ?`,
@@ -35,12 +35,12 @@ async function approveSubscriptionPayment(req, res) {
         // Update related requestlog status
         const startDate = subscription.client_id ? new Date().toISOString().split('T')[0] : null;
         if (startDate) {
-            const [reqRows] = await connection.query(queries.getRelatedRequestlog,
+            const reqRows = await connection.query(queries.getRelatedRequestlog,
                 [subscription.card_id, subscription.product_id, startDate]);
             
             if (reqRows.length > 0) {
                 const orderEntry = reqRows[0];
-                await connection.execute(
+                await connection.query(
                     `INSERT INTO requestlog (order_id, contact_id, product_id, client_id, date, status)
                      VALUES (?, ?, ?, ?, ?, ?)`,
                     [orderEntry.order_id, orderEntry.contact_id, orderEntry.product_id, 
@@ -62,7 +62,7 @@ async function approveSubscriptionPayment(req, res) {
         console.error('Approve subscription payment error:', error);
         res.status(500).json({ error: error.message });
     } finally {
-        connection.release();
+        await connection.end();
     }
 }
 

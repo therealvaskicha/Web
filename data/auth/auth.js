@@ -4,7 +4,7 @@ const queries = require('./queries');
 
 async function checkAccountLock(username) {
     try {
-        const [rows] = await db.query(queries.checkAccountLock, [username]);
+        const rows = await db.query(queries.checkAccountLock, [username]);
         
         if (rows.length > 0 && new Date(rows[0].locked_until) > new Date()) {
             const remainingTime = Math.ceil((new Date(rows[0].locked_until) - new Date()) / 1000 / 60);
@@ -28,7 +28,7 @@ async function recordLoginAttempt(username, ip, success) {
     const lockedUntil = new Date(now.getTime() + lockoutDuration);
 
     try {
-        await db.execute(
+        await db.query(
             queries.insertLoginAttempt, 
             [username, ip, success ? 1 : 0, success ? null : lockedUntil.toISOString()]
         );
@@ -42,7 +42,7 @@ async function getFailedAttempts(username) {
     const cutoffTime = new Date(Date.now() - windowMs).toISOString();
     
     try {
-        const [rows] = await db.query(queries.getFailedAttempts, [username, cutoffTime]);
+        const rows = await db.query(queries.getFailedAttempts, [username, cutoffTime]);
         return rows[0]?.count || 0;
     } catch (err) {
         console.error('Error checking failed attempts:', err);

@@ -16,7 +16,7 @@ async function createBooking(req, res) {
         await connection.beginTransaction();
         
         // Check slot availability
-        const [existingRows] = await connection.query(
+        const existingRows = await connection.query(
             queries.checkSlotAvailability,
             [date, `${time}:00`]
         );
@@ -27,7 +27,7 @@ async function createBooking(req, res) {
         }
         
         // Get product
-        const [productRows] = await connection.query(queries.selectServiceByName, [booking_type]);
+        const productRows = await connection.query(queries.selectServiceByName, [booking_type]);
         const product = productRows[0];
         
         if (!product) {
@@ -36,7 +36,7 @@ async function createBooking(req, res) {
         }
         
         // Check phone conflict
-        const [phoneCheckRows] = await connection.query(queries.getContactPhone, [phone]);
+        const phoneCheckRows = await connection.query(queries.getContactPhone, [phone]);
         if (phoneCheckRows.length > 0) {
             const existingContact = phoneCheckRows[0];
             if (existingContact.firstName !== firstName || existingContact.lastName !== lastName) {
@@ -46,23 +46,23 @@ async function createBooking(req, res) {
         }
         
         // Get or create contact
-        const [contactRows] = await connection.query(queries.getContactByDetails, [firstName, lastName, phone]);
+        const contactRows = await connection.query(queries.getContactByDetails, [firstName, lastName, phone]);
         let contactId;
         
         if (contactRows.length > 0) {
             contactId = contactRows[0].id;
             
             // Update email if different
-            const [currentContactData] = await connection.query(
+            const currentContactData = await connection.query(
                 `SELECT email FROM contact WHERE id = ?`,
                 [contactId]
             );
             
             if (currentContactData.length > 0 && currentContactData[0].email !== email) {
-                await connection.execute(queries.updateContactEmail, [email, contactId]);
+                await connection.query(queries.updateContactEmail, [email, contactId]);
             }
         } else {
-            const [contactResult] = await connection.execute(
+            const contactResult = await connection.query(
                 queries.insertContact,
                 [firstName, lastName, phone, email]
             );
@@ -70,7 +70,7 @@ async function createBooking(req, res) {
         }
         
         // Check for duplicate booking same day
-        const [existingDayRequest] = await connection.query(
+        const existingDayRequest = await connection.query(
             queries.getRequestByContactAndDate,
             [contactId, date]
         );
@@ -81,11 +81,11 @@ async function createBooking(req, res) {
         }
         
         // Get client_id if contact is already a client
-        const [clientRows] = await connection.query(queries.getClientIdByContact, [contactId]);
+        const clientRows = await connection.query(queries.getClientIdByContact, [contactId]);
         const clientId = clientRows.length > 0 ? clientRows[0].client_id : null;
         
         // Insert request
-        const [result] = await connection.execute(
+        const result = await connection.query(
             queries.insertRequest,
             [product.product_id, contactId, datetime, note, 1, clientId]
         );
@@ -94,7 +94,7 @@ async function createBooking(req, res) {
         const dateSubscribed = subscribe_email === true || subscribe_email === 1 ? new Date().toISOString().split('T')[0] : null;
         
         try {
-            const [existingMailingEntry] = await connection.query(
+            const existingMailingEntry = await connection.query(
                 queries.getExistingMailingEntry,
                 [contactId, email]
             );
@@ -104,20 +104,20 @@ async function createBooking(req, res) {
                 
                 if (subscribe_email && !entry.date_subscribed && !entry.date_unsubscribed) {
                     // First subscription
-                    await connection.execute(
+                    await connection.query(
                         queries.updateMailingListSubscription,
                         [dateSubscribed, clientId, contactId, email]
                     );
                 } else if (subscribe_email && entry.date_unsubscribed) {
                     // Re-subscribe after unsubscribe
-                    await connection.execute(
+                    await connection.query(
                         queries.updateMailingListSubscription,
                         [dateSubscribed, clientId, contactId, email]
                     );
                 } else if (!subscribe_email && !entry.date_subscribed) {
                     // Update client_id if it was missing
                     if (!entry.date_subscribed) {
-                        await connection.execute(
+                        await connection.query(
                             `UPDATE mailing_list SET client_id = ? WHERE contact_id = ? AND email = ?`,
                             [clientId, contactId, email]
                         );
@@ -125,7 +125,7 @@ async function createBooking(req, res) {
                 }
             } else {
                 // New email - create new mailing entry
-                await connection.execute(
+                await connection.query(
                     queries.insertMailingListEntry,
                     [contactId, email, dateSubscribed, clientId]
                 );
@@ -142,7 +142,7 @@ async function createBooking(req, res) {
         console.error('Book error:', err);
         res.status(500).json({ error: err.message });
     } finally {
-        connection.release();
+        await connection.end();
     }
 }
 

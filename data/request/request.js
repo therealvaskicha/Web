@@ -12,8 +12,8 @@ function addMonths(date, months) {
     return newDate;
 }
 
-async function insertRequestStatus(connection, orderId, contactId, productId, clientId, appointmentDate, newStatus) {
-    await connection.execute(
+async function insertRequest(connection, orderId, contactId, productId, clientId, appointmentDate, newStatus) {
+    await connection.query(
         `INSERT INTO requestlog (order_id, contact_id, product_id, client_id, date, status) 
          VALUES (?, ?, ?, ?, ?, ?)`,
         [orderId, contactId, productId, clientId, appointmentDate, newStatus]
@@ -28,7 +28,7 @@ async function approveRequest(req, res) {
         await connection.beginTransaction();
 
         const timeValue = time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
-        const [requestRows] = await connection.query(queries.getPendingRequest, 
+        const requestRows = await connection.query(queries.getPendingRequest, 
             [firstName, lastName, date, timeValue, booking_type]);
         const request = requestRows[0];
         
@@ -55,14 +55,14 @@ async function approveRequest(req, res) {
 
         // Create or get client
         if (!request.client_id) {
-            const [existingRows] = await connection.query(queries.getExistingClient, 
+            const existingRows = await connection.query(queries.getExistingClient, 
                 [request.firstName, request.lastName, request.phone]);
             
             if (!existingRows[0]) {
-                const [nextClientIdResult] = await connection.query(queries.getNextClientId);
+                const nextClientIdResult = await connection.query(queries.getNextClientId);
                 const nextClientId = nextClientIdResult[0].next_id;
                 
-                await connection.execute(
+                await connection.query(
                     queries.insertClient,
                     [request.contact_id, nextClientId]
                 );
@@ -75,15 +75,15 @@ async function approveRequest(req, res) {
             const clientId = request.client_id || existingRows[0]?.client_id;
 
             // Check for existing card
-            const [cardRows] = await connection.query(queries.checkExistingCard, [clientId]);
+            const cardRows = await connection.query(queries.checkExistingCard, [clientId]);
             let cardId;
 
             if (cardRows.length === 0) {
                 // Create new card
-                const [nextCardIdResult] = await connection.query(queries.getNextCardId);
+                const nextCardIdResult = await connection.query(queries.getNextCardId);
                 const nextCardId = nextCardIdResult[0].next_id;
                 
-                const [cardResult] = await connection.execute(
+                const cardResult = await connection.query(
                     `INSERT INTO card (client_id, card_id, status) VALUES (?, ?, 19)`,
                     [clientId, nextCardId]
                 );
@@ -94,13 +94,13 @@ async function approveRequest(req, res) {
 
             // Check for duplicate subscription
             const startDate = formatDate(new Date(request.date));
-            const [duplicateRows] = await connection.query(queries.getDuplicateSubscription, 
+            const duplicateRows = await connection.query(queries.getDuplicateSubscription, 
                 [cardId, request.product_id, startDate]);
 
             if (duplicateRows.length === 0) {
                 const expirationDate = formatDate(addMonths(new Date(request.date), 1));
                 
-                await connection.execute(
+                await connection.query(
                     queries.insertSubscription,
                     [request.product_id, cardId, startDate, expirationDate]
                 );
@@ -118,7 +118,7 @@ async function approveRequest(req, res) {
         console.error('Approve error:', error);
         res.status(500).json({ error: error.message });
     } finally {
-        connection.release();
+        await connection.end();
     }
 }
 
@@ -130,7 +130,7 @@ async function rejectRequest(req, res) {
         await connection.beginTransaction();
 
         const timeValue = time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
-        const [requestRows] = await connection.query(queries.getPendingRequest, 
+        const requestRows = await connection.query(queries.getPendingRequest, 
             [firstName, lastName, date, timeValue, booking_type]);
         const request = requestRows[0];
         
@@ -163,7 +163,7 @@ async function rejectRequest(req, res) {
         console.error('Reject error:', error);
         res.status(500).json({ error: error.message });
     } finally {
-        connection.release();
+        await connection.end();
     }
 }
 
@@ -175,7 +175,7 @@ async function cancelRequest(req, res) {
         await connection.beginTransaction();
 
         const timeValue = time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
-        const [requestRows] = await connection.query(queries.getPendingRequest, 
+        const requestRows = await connection.query(queries.getPendingRequest, 
             [firstName, lastName, date, timeValue, booking_type]);
         const request = requestRows[0];
         
@@ -203,13 +203,13 @@ async function cancelRequest(req, res) {
         console.error('Cancel error:', error);
         res.status(500).json({ error: error.message });
     } finally {
-        connection.release();
+        await connection.end();
     }
 }
 
 async function getPendingRequests(req, res) {
     try {
-        const [rows] = await db.query(queries.getPendingRequests);
+        const rows = await db.query(queries.getPendingRequests);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -218,7 +218,7 @@ async function getPendingRequests(req, res) {
 
 async function getApprovedRequestsCalendar(req, res) {
     try {
-        const [rows] = await db.query(queries.getApprovedRequestsCalendar);
+        const rows = await db.query(queries.getApprovedRequestsCalendar);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -227,7 +227,7 @@ async function getApprovedRequestsCalendar(req, res) {
 
 async function getPendingRequestsCalendar(req, res) {
     try {
-        const [rows] = await db.query(queries.getPendingRequestsCalendar);
+        const rows = await db.query(queries.getPendingRequestsCalendar);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -236,7 +236,7 @@ async function getPendingRequestsCalendar(req, res) {
 
 async function getApprovedRequests(req, res) {
     try {
-        const [rows] = await db.query(queries.getApprovedRequests);
+        const rows = await db.query(queries.getApprovedRequests);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -245,7 +245,7 @@ async function getApprovedRequests(req, res) {
 
 async function getCompletedBookingsCalendar(req, res) {
     try {
-        const [rows] = await db.query(queries.getCompletedBookingsCalendar);
+        const rows = await db.query(queries.getCompletedBookingsCalendar);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -254,7 +254,7 @@ async function getCompletedBookingsCalendar(req, res) {
 
 async function getRequestHistory(req, res) {
     try {
-        const [rows] = await db.query(queries.getRequestHistory);
+        const rows = await db.query(queries.getRequestHistory);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -265,7 +265,7 @@ module.exports = {
     approveRequest,
     rejectRequest,
     cancelRequest,
-    insertRequestStatus,
+    insertRequest,
     getPendingRequests,
     getApprovedRequestsCalendar,
     getPendingRequestsCalendar,
