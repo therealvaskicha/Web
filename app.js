@@ -247,22 +247,22 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-function formatDate(date) {
-    return date.toISOString().split('T')[0];
-}
+// function formatDate(date) {
+//     return date.toISOString().split('T')[0];
+// }
 
-function addMonths(date, months) {
-    const newDate = new Date(date);
-    newDate.setMonth(newDate.getMonth() + months);
-    return newDate;
-}
+// function addMonths(date, months) {
+//     const newDate = new Date(date);
+//     newDate.setMonth(newDate.getMonth() + months);
+//     return newDate;
+// }
 
 // Helper function to find request by composite key
-async function findRequestByCompositeKey(connection, firstName, lastName, date, time, booking_type) {
-    const timeValue = time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
-    const requestRows = await connection.query(sql_get_pending_request, [firstName, lastName, date, timeValue, booking_type]);
-    return requestRows[0] || null;
-}
+// async function findRequestByCompositeKey(connection, firstName, lastName, date, time, booking_type) {
+//     const timeValue = time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
+//     const requestRows = await connection.query(sql_get_pending_request, [firstName, lastName, date, timeValue, booking_type]);
+//     return requestRows[0] || null;
+// }
 
 ////////////////////////
 ///   REQUEST APIs   ///
@@ -277,7 +277,7 @@ app.get('/api/c-approved-requests', (req, res) => requestController.getApprovedR
 
 app.get('/api/approved-requests', (req, res) => requestController.getApprovedRequests(req, res));
 
-app.get('/api/c-completed-bookings', (req, res) => requestController.getCompletedBookingsCalendar(req, res));
+app.get('/api/c-completed-bookings', (req, res) => bookingController.getCompletedBookingsCalendar(req, res));
 
 app.get('/api/unavailable-slots', (req, res) => viewController.getUnavailableSlots(req, res));
 

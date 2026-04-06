@@ -45,4 +45,5 @@ module.exports = {
     syncSubscriptionStatus: `
       UPDATE subscription SET status = CASE WHEN CURDATE() <= expiration_date THEN 15 WHEN CURDATE() > expiration_date THEN 17 ELSE 9 END
     `,
+    
 };

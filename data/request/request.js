@@ -1,6 +1,7 @@
 // Request domain module
 const db = require('../../database');
 const queries = require('./queries');
+const creation = require('./creation');
 
 function formatDate(date) {
     return date.toISOString().split('T')[0];
@@ -12,12 +13,127 @@ function addMonths(date, months) {
     return newDate;
 }
 
-async function insertRequest(connection, orderId, contactId, productId, clientId, appointmentDate, newStatus) {
-    await connection.query(
-        `INSERT INTO requestlog (order_id, contact_id, product_id, client_id, date, status) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [orderId, contactId, productId, clientId, appointmentDate, newStatus]
-    );
+async function insertRequest(req, res) {
+    const { booking_type, date, time, firstName, lastName, phone, email, note, subscribe_email } = req.body;
+
+    if (!booking_type || !date || !time || !firstName || !lastName || !phone || !email) {
+        return res.status(400).json({ error: 'Липсват необходими полета.' });
+    }
+    
+    const datetime = `${date} ${time}:00`;
+    const connection = await db.getConnection();
+    
+    try {
+        await connection.beginTransaction();
+        
+        // Check slot availability
+        const existingRows = await connection.query(
+            creation.checkSlotAvailability,
+            [date, `${time}:00`]
+        );
+        
+        if (existingRows.length > 0) {
+            await connection.rollback();
+            return res.status(400).json({ error: 'За съжаление този час е зает. Моля изберете свободен час.' });
+        }
+        
+        // Get product
+        const productRows = await connection.query(creation.selectServiceByName, [booking_type]);
+        const product = productRows[0];
+        
+        if (!product) {
+            await connection.rollback();
+            return res.status(400).json({ error: 'Невалиден тип тренировка.' });
+        }
+        
+        // Check phone conflict
+        const phoneCheckRows = await connection.query(creation.getContactPhone, [phone]);
+        if (phoneCheckRows.length > 0) {
+            const existingContact = phoneCheckRows[0];
+            if (existingContact.firstName !== firstName || existingContact.lastName !== lastName) {
+                await connection.rollback();
+                return res.status(400).json({ error: 'Контакт с този номер на телефон вече е известен.' });
+            }
+        }
+        
+        // Get or create contact
+        const contactRows = await connection.query(creation.getContactByDetails, [firstName, lastName, phone]);
+        let contactId;
+        
+        if (contactRows.length > 0) {
+            contactId = contactRows[0].id;
+            
+            // Update email if different
+            const currentEmail = await connection.query(creation.getEmail, [contactId]);
+            
+            if (currentEmail.length > 0 && currentEmail[0].email !== email) {
+                await connection.query(creation.updateContactEmail, [email, contactId]);
+            }
+        } else {
+            const contactResult = await connection.query(
+                creation.insertContact,
+                [firstName, lastName, phone, email]
+            );
+            contactId = contactResult.insertId;
+        }
+        
+        // Check for duplicate booking same day
+        const existingDayRequest = await connection.query(
+            creation.getRequestByContactAndDate,
+            [contactId, date]
+        );
+        
+        if (existingDayRequest.length > 0) {
+            await connection.rollback();
+            return res.status(400).json({ error: 'Вече имате заявка за този ден. Един контакт може да направи само една заявка на ден.' });
+        }
+        
+        // Get client_id if contact is already a client
+        const clientRows = await connection.query(creation.getClientIdByContact, [contactId]);
+        const clientId = clientRows.length > 0 ? clientRows[0].client_id : null;
+        
+        // Insert request
+        const result = await connection.query(creation.insertRequest, [product.product_id, contactId, datetime, note, 1, clientId]);
+        
+        // Handle mailing list
+        const dateSubscribed = subscribe_email === true || subscribe_email === 1 ? new Date().toISOString().split('T')[0] : null;
+        
+        try {
+            const existingMailingEntry = await connection.query(creation.getExistingMailingEntry, [contactId, email]);
+            
+            if (existingMailingEntry.length > 0) {
+                const entry = existingMailingEntry[0];
+                
+                if (subscribe_email && !entry.date_subscribed && !entry.date_unsubscribed) {
+                    // First subscription
+                    await connection.query(creation.updateMailingListSubscription, [dateSubscribed, clientId, contactId, email]);
+                } else if (subscribe_email && entry.date_unsubscribed) {
+                    // Re-subscribe after unsubscribe
+                    await connection.query(creation.updateMailingListSubscription,[dateSubscribed, clientId, contactId, email]);
+                } else if (!subscribe_email && !entry.date_subscribed) {
+                    // Update client_id if it was missing
+                    if (!entry.date_subscribed) {
+                        await connection.query(creation.updateMailingClientId, [clientId, contactId, email]);
+                    }
+                }
+            } else {
+                // New email - create new mailing entry
+                await connection.query(creation.insertMailingListEntry,[contactId, email, dateSubscribed, clientId]);
+            }
+        } catch (mailingErr) {
+            console.warn('Mailing list error (non-critical):', mailingErr);
+        }
+        
+        await connection.commit();
+        res.json({ message: 'Заявката е изпратена за одобрение.', id: Number(result.insertId) });
+        
+    } catch (err) {
+        await connection.rollback();
+        console.error('Book error:', err);
+        res.status(500).json({ error: err.message });
+    } finally {
+        await connection.end();
+    }
 }
 
 async function approveRequest(req, res) {
@@ -43,19 +159,17 @@ async function approveRequest(req, res) {
         }
 
         // Update request status
-        await insertRequestStatus(
-            connection, 
+        await connection.query(queries.insertRequestStatus,[
             request.order_id, 
             request.contact_id, 
             request.product_id, 
             request.client_id, 
             request.date, 
-            2  // Approved status
-        );
+            2]); // Approved status
 
         // Create or get client
         if (!request.client_id) {
-            const existingRows = await connection.query(queries.getExistingClient, 
+            const existingRows = await connection.query(queries.checkExistingClient, 
                 [request.firstName, request.lastName, request.phone]);
             
             if (!existingRows[0]) {
@@ -83,10 +197,7 @@ async function approveRequest(req, res) {
                 const nextCardIdResult = await connection.query(queries.getNextCardId);
                 const nextCardId = nextCardIdResult[0].next_id;
                 
-                const cardResult = await connection.query(
-                    `INSERT INTO card (client_id, card_id, status) VALUES (?, ?, 19)`,
-                    [clientId, nextCardId]
-                );
+                const cardResult = await connection.query(queries.insertCard, [nextCardId, clientId]);
                 cardId = nextCardId;
             } else {
                 cardId = cardRows[0].card_id;
@@ -145,15 +256,13 @@ async function rejectRequest(req, res) {
         }
 
         // Update request status to rejected (7)
-        await insertRequestStatus(
-            connection, 
+        await connection.query(queries.insertRequestStatus,[
             request.order_id, 
             request.contact_id, 
             request.product_id, 
             request.client_id, 
             request.date, 
-            7  // Rejected status
-        );
+            7]); // Rejected status
 
         await connection.commit();
         res.json({ message: 'Заявката е отхвърлена.' });
@@ -185,15 +294,13 @@ async function cancelRequest(req, res) {
         }
 
         // Update request status to cancelled (9)
-        await insertRequestStatus(
-            connection, 
+        await connection.query(queries.insertRequestStatus,[
             request.order_id, 
             request.contact_id, 
             request.product_id, 
             request.client_id, 
             request.date, 
-            9  // Cancelled status
-        );
+            9]); // Cancelled status
 
         await connection.commit();
         res.json({ message: 'Заявката е отменена.' });
@@ -243,15 +350,6 @@ async function getApprovedRequests(req, res) {
     }
 }
 
-async function getCompletedBookingsCalendar(req, res) {
-    try {
-        const rows = await db.query(queries.getCompletedBookingsCalendar);
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-}
-
 async function getRequestHistory(req, res) {
     try {
         const rows = await db.query(queries.getRequestHistory);
@@ -270,6 +368,5 @@ module.exports = {
     getApprovedRequestsCalendar,
     getPendingRequestsCalendar,
     getApprovedRequests,
-    getCompletedBookingsCalendar,
     getRequestHistory
 };

@@ -113,16 +113,6 @@ async function getApprovedRequests(req, res) {
     }
 }
 
-async function getCompletedBookingsCalendar(req, res) {
-    try {
-        await requestDomain.getCompletedBookingsCalendar(req, res);
-        
-    } catch (error) {
-        console.error('Get completed bookings calendar - controller error:', error);
-        res.status(500).json({ error: error.message });
-    }
-}
-
 async function getRequestHistory(req, res) {
     try {
         await requestDomain.getRequestHistory(req, res);
@@ -142,6 +132,5 @@ module.exports = {
     getPendingRequests,
     getPendingRequestsCalendar,
     getApprovedRequests,
-    getCompletedBookingsCalendar,
     getRequestHistory
 };
