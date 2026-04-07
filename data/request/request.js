@@ -85,7 +85,7 @@ async function insertRequest(req, res) {
         
         if (existingDayRequest.length > 0) {
             await connection.rollback();
-            return res.status(400).json({ error: 'Вече имате заявка за този ден. Един контакт може да направи само една заявка на ден.' });
+            return res.status(400).json({ error: 'Вече имате заявена резервация за този ден.' });
         }
         
         // Get client_id if contact is already a client

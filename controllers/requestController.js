@@ -4,7 +4,7 @@ const requestDomain = require('../data/request/request');
 async function createRequest(req, res) {
     try {
         // Validate request
-        const { firstName, lastName, date, time, booking_type } = req.body;
+        const { firstName, lastName, date, time, booking_type, note } = req.body;
         
         if (!firstName || !lastName || !date || !time || !booking_type) {
             return res.status(400).json({ error: 'Липсват необходими полета.' });

@@ -28,7 +28,7 @@ module.exports = {
     `,
 
     getRequestByContactAndDate: `
-        SELECT id FROM requestlog WHERE contact_id = ? AND DATE(date) = ?
+        SELECT id FROM requestlog WHERE contact_id = ? AND DATE(date) = ?  group by order_id having max(status in (7, 9)) = 0;
     `,
 
     getClientIdByContact: `

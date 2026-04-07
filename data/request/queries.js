@@ -36,7 +36,8 @@ module.exports = {
       GROUP BY r.order_id
         HAVING 
           MAX(r.status NOT IN (1, 10)) = 0
-          AND MIN(r.status IN (1, 10)) = 1;
+          AND MIN(r.status IN (1, 10)) = 1
+      ORDER BY r.date ASC, time ASC, r.stamp_created ASC
     `,
     getPendingRequestsCalendar: `
       SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time
@@ -61,8 +62,8 @@ module.exports = {
       WHERE date >= curdate()
       GROUP BY order_id
         HAVING 
-          MAX(status NOT IN (2, 3)) = 0
-          AND MIN(status IN (1, 10)) = 1;
+          MAX(status IN (2, 3)) = 1
+          AND MIN(status NOT IN (7, 9)) = 1;
     `,
     getApprovedRequests: `
       SELECT DATE_FORMAT(r.date, '%Y-%m-%d') as date, DATE_FORMAT(r.date, '%H:%i') as time, p.name as booking_type, co.firstName, co.lastName, r.note
@@ -72,8 +73,8 @@ module.exports = {
       WHERE r.date >= curdate()
       GROUP BY r.order_id
         HAVING 
-          MAX(r.status NOT IN (2 ,3)) = 0
-          AND MIN(r.status NOT IN (2, 3)) = 1;
+          MAX(r.status IN (2, 3)) = 1
+          AND MIN(r.status NOT IN (7, 9)) = 1;
     `,
 
     getRequestHistory: `

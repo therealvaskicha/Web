@@ -9,6 +9,11 @@ module.exports = {
       FROM mailing_list m join contact ct on m.contact_id = ct.id
       WHERE ct.firstName = ? and ct.lastName = ? and ct.phone = ?
     `,
+    getClientMailingListByClientId: `
+    SELECT m.date_subscribed, m.date_unsubscribed 
+      FROM mailing_list m join contact ct on m.contact_id = ct.id
+      WHERE m.client_id = ?
+    `,
     insertMailingList: `
       INSERT INTO mailing_list (contact_id, date_subscribed) VALUES (?, ?)
     `,

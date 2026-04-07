@@ -770,7 +770,7 @@ if (logoutBtn) {
             }
         
             // Initialize pagination controller for pending bookings
-            const pendingPagination = new PaginationController('pendingBookingsTable', 'pendingPagination', 2);
+            const pendingPagination = new PaginationController('pendingBookingsTable', 'pendingPagination', 5);
         
             function displayPendingBookings() {
                 // Clear existing rows
@@ -795,8 +795,8 @@ if (logoutBtn) {
                         <td>${request.date} ${request.time}</td>
                         <td>${noteCell}</td>
                         <td>
-                            <img src="Images/btn-yes-test.png" class="approve-btn" data-key="${compositeKey}">
-                            <img src="Images/btn-no-test.png" class="reject-btn" data-key="${compositeKey}">
+                            <img src="Images/btn-yes-test.png" title="Одобри" class="approve-btn" data-key="${compositeKey}">
+                            <img src="Images/btn-no-test.png" title="Откажи" class="reject-btn" data-key="${compositeKey}">
                         </td>
                     `;
                 });
@@ -904,7 +904,7 @@ if (logoutBtn) {
                         <td>${request.date} ${request.time}</td>
                         <td>${noteCell}</td>
                         <td>
-                            <img src="Images/btn-no-test.png" class="cancel-btn" data-key="${compositeKey}">
+                            <img src="Images/btn-no-test.png" class="cancel-btn" title="Отмени" data-key="${compositeKey}">
                         </td>
                     `;
                 });
@@ -1351,9 +1351,9 @@ if (logoutBtn) {
 
                             if (button.classList.contains('pending')) {
                                 activeStatusFilter = 1;
-                            } else if (button.classList.contains('available')) {
-                                activeStatusFilter = 2;
                             } else if (button.classList.contains('taken')) {
+                                activeStatusFilter = 2;
+                            } else if (button.classList.contains('approved')) {
                                 activeStatusFilter = 3;
                             } else if (button.classList.contains('past')) {
                                 activeStatusFilter = 5;
@@ -1409,13 +1409,13 @@ if (logoutBtn) {
                                 row.classList.add('row-rejected');
                                 break;
                             case 2:
-                                row.classList.add('row-approved');
+                                row.classList.add('row-taken');
                                 break;
                             case 5:
                                 row.classList.add('row-past');
                                 break;
                             case 3:
-                                row.classList.add('row-taken');
+                                row.classList.add('row-approved');
                                 break;
                             default:
                                 row.classList.add('row-pending');

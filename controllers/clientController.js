@@ -32,7 +32,7 @@ async function getClientById(req, res) {
     }
 }
 
-async function getClientMailingList(req, res) {
+async function getClientMailingListByClientId(req, res) {
     try {
         const { id } = req.params;
         
@@ -40,7 +40,7 @@ async function getClientMailingList(req, res) {
             return res.status(400).json({ error: 'ID е задължително' });
         }
         
-        const mailingList = await clientDomain.getClientMailingList(id);
+        const mailingList = await clientDomain.getClientMailingListByClientId(id);
         res.json(mailingList || []);
     } catch (err) {
         console.error('Get client mailing list controller error:', err);
@@ -69,13 +69,13 @@ async function getClientByCompositeKey(req, res) {
         const { firstName, lastName, phone } = req.params;
         
         if (!firstName || !lastName || !phone) {
-            return res.status(400).json({ error: 'firstName, lastName, phone են задължителни' });
+            return res.status(400).json({ error: 'firstName, lastName, phone - required' });
         }
         
         const client = await clientDomain.getClientByCompositeKey(firstName, lastName, phone);
         
         if (!client) {
-            return res.status(404).json({ error: 'Клиент не е намерен' });
+            return res.status(404).json({ error: 'Client not found' });
         }
         
         res.json(client);
@@ -90,7 +90,7 @@ async function getClientMailingListByComposite(req, res) {
         const { firstName, lastName, phone } = req.params;
         
         if (!firstName || !lastName || !phone) {
-            return res.status(400).json({ error: 'firstName, lastName, phone են задължителни' });
+            return res.status(400).json({ error: 'firstName, lastName, phone - required' });
         }
         
         const mailingList = await clientDomain.getClientMailingListByComposite(firstName, lastName, phone);
@@ -120,7 +120,7 @@ async function getClientCardsByComposite(req, res) {
 module.exports = {
     getAllClients,
     getClientById,
-    getClientMailingList,
+    getClientMailingListByClientId,
     getClientCards,
     getClientByCompositeKey,
     getClientMailingListByComposite,

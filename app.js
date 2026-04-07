@@ -257,13 +257,6 @@ app.get('/', (req, res) => {
 //     return newDate;
 // }
 
-// Helper function to find request by composite key
-// async function findRequestByCompositeKey(connection, firstName, lastName, date, time, booking_type) {
-//     const timeValue = time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
-//     const requestRows = await connection.query(sql_get_pending_request, [firstName, lastName, date, timeValue, booking_type]);
-//     return requestRows[0] || null;
-// }
-
 ////////////////////////
 ///   REQUEST APIs   ///
 ////////////////////////
@@ -326,7 +319,7 @@ app.get('/api/client/:firstName/:lastName/:phone/cards', (req, res) => clientCon
 // ID-based routes (less specific) - must come after
 app.get('/api/client/:id', (req, res) => clientController.getClientById(req, res));
 
-app.get('/api/client/:id/mailing-list', (req, res) => clientController.getClientMailingList(req, res));
+app.get('/api/client/:id/mailing-list', (req, res) => clientController.getClientMailingListByClientId(req, res));
 
 app.get('/api/client/:id/cards', (req, res) => clientController.getClientCards(req, res));
 

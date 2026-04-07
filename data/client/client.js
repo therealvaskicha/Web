@@ -4,7 +4,7 @@ const queries = require('./queries');
 
 async function getAllClients(req, res) {
     try {
-        const rows = await db.query(queries.client.getAllClients);
+        const rows = await db.query(queries.getAllClients);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -13,7 +13,7 @@ async function getAllClients(req, res) {
 
 async function getClientById(clientId) {
     try {
-        const rows = await db.query(queries.client.getClientById, [clientId]);
+        const rows = await db.query(queries.getClientById, [clientId]);
         return rows[0] || null;
     } catch (error) {
         console.error('Get client by ID error:', error);
@@ -21,9 +21,9 @@ async function getClientById(clientId) {
     }
 }
 
-async function getClientMailingList(clientId) {
+async function getClientMailingListByClientId(clientId) {
     try {
-        const rows = await db.query(queries.client.getClientMailingList, [clientId]);
+        const rows = await db.query(queries.getClientMailingListByClientId, [clientId]);
         return rows;
     } catch (error) {
         console.error('Get client mailing list error:', error);
@@ -33,7 +33,7 @@ async function getClientMailingList(clientId) {
 
 async function getClientCards(clientId) {
     try {
-        const rows = await db.query(queries.client.getClientCards, [clientId]);
+        const rows = await db.query(queries.getClientCards, [clientId]);
         return rows;
     } catch (error) {
         console.error('Get client cards error:', error);
@@ -43,7 +43,7 @@ async function getClientCards(clientId) {
 
 async function getClientByCompositeKey(firstName, lastName, phone) {
     try {
-        const rows = await db.query(queries.client.getClientByCompId, [firstName, lastName, phone]);
+        const rows = await db.query(queries.getClientByCompId, [firstName, lastName, phone]);
         return rows[0] || null;
     } catch (error) {
         console.error('Get client by composite key error:', error);
@@ -54,7 +54,7 @@ async function getClientByCompositeKey(firstName, lastName, phone) {
 // Internal method - includes contact_id for private use
 async function getClientByCompositeKeyInternal(firstName, lastName, phone) {
     try {
-        const rows = await db.query(queries.client.getClientByCompIdInternal, [firstName, lastName, phone]);
+        const rows = await db.query(queries.getClientByCompIdInternal, [firstName, lastName, phone]);
         return rows[0] || null;
     } catch (error) {
         console.error('Get client by composite key internal error:', error);
@@ -65,16 +65,16 @@ async function getClientByCompositeKeyInternal(firstName, lastName, phone) {
 async function getClientMailingListByComposite(firstName, lastName, phone) {
     try {
         // First get client by composite key (internal version with contact_id)
-        const client = await getClientByCompositeKeyInternal(firstName, lastName, phone);
+        const client = await db.query(queries.getContactByDetails, [firstName, lastName, phone]);
         if (!client) return null;
         
         // Get client_id from contact_id for internal query
-        const clientIdResult = await db.query(queries.client.getClientByContactId, [client.contact_id]);
+        const clientIdResult = await db.query(queries.getClientByContactId, [client.id]);
         if (!clientIdResult[0]) return [];
         const clientId = clientIdResult[0].client_id;
         
         // Then get mailing list using client_id
-        const rows = await db.query(queries.client.getClientMailingList, [clientId]);
+        const rows = await db.query(queries.getClientMailingListByClientId, [clientId]);
         return rows;
     } catch (error) {
         console.error('Get client mailing list by composite key error:', error);
@@ -85,16 +85,16 @@ async function getClientMailingListByComposite(firstName, lastName, phone) {
 async function getClientCardsByComposite(firstName, lastName, phone) {
     try {
         // First get client by composite key (internal version with contact_id)
-        const client = await getClientByCompositeKeyInternal(firstName, lastName, phone);
+        const client = await db.query(queries.getContactByDetails, [firstName, lastName, phone]);
         if (!client) return [];
         
         // Get client_id from contact_id for internal query
-        const clientIdResult = await db.query(queries.client.getClientByContactId, [client.contact_id]);
+        const clientIdResult = await db.query(queries.getClientByContactId, [client.id]);
         if (!clientIdResult[0]) return [];
         const clientId = clientIdResult[0].client_id;
         
         // Then get cards using client_id
-        const rows = await db.query(queries.client.getClientCards, [clientId]);
+        const rows = await db.query(queries.getClientCard, [clientId]);
         return rows;
     } catch (error) {
         console.error('Get client cards by composite key error:', error);
@@ -105,7 +105,7 @@ async function getClientCardsByComposite(firstName, lastName, phone) {
 module.exports = {
     getAllClients,
     getClientById,
-    getClientMailingList,
+    getClientMailingListByClientId,
     getClientCards,
     getClientByCompositeKey,
     getClientMailingListByComposite,
