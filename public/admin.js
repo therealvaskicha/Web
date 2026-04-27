@@ -91,8 +91,8 @@ class APIService {
     }
 
     // Request an appointment
-    static async saverequest(requestData) {
-        return this.request('/api/saverequest', {
+    static async makerequest(requestData) {
+        return this.request('/api/makerequest', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
@@ -409,13 +409,45 @@ if (logoutBtn) {
             });
         }
 
+        function highlightTableRow(dateStr, time) {
+            const allRows = document.querySelectorAll('table tbody tr, table tr.highlighted');
+            const datetimeStr = `${dateStr} ${time}`;
+            const tables = document.querySelectorAll('table');
+            tables.forEach(table => {
+                const rows = table.querySelectorAll('tr');
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length > 1) {
+                        const cellText = cells[1].textContent.trim();
+                        if (cellText === datetimeStr) {
+                            row.classList.add('highlighted');
+                        }
+                    }
+                });
+            });
+        }
+
+        function deHighlightTableRow(dateStr, time) {
+            const allRows = document.querySelectorAll('table tbody tr, table tr.highlighted');
+            const datetimeStr = `${dateStr} ${time}`;
+            const tables = document.querySelectorAll('table');
+            tables.forEach(table => {
+                const rows = table.querySelectorAll('tr');
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length > 1) {
+                        const cellText = cells[1].textContent.trim();
+                        if (cellText === datetimeStr) {
+                            row.classList.remove('highlighted');
+                        }
+                    }
+                });
+            });
+        }
+
         // Holidays calendar setup
         const calendarEl = document.getElementById('admin-calendar');
-        // const requestServices = document.getElementById('requestServices');
         const requestForm = document.getElementById('request-form');
-
-        // let selectedDate = null;
-        // let selectedTime = null;
 
         // Render calendar
         if (calendarEl) {
@@ -509,7 +541,7 @@ if (logoutBtn) {
                                                 bookings.find(b => b.date === dateStr && b.time === time);
                                 slotBtn.classList.add('taken');
                             } else if (pending) {
-                                const request = pending.find(d => d.date === dateStr && d.time === time && d.status === 1);
+                                const request = pendingRequests.find(d => d.date === dateStr && d.time === time && d.status === 1);
                                 slotBtn.classList.add('pending');
                             } else {
                                 slotBtn.classList.add('available');
@@ -525,14 +557,16 @@ if (logoutBtn) {
                             slotBtn.classList.remove('available');
                             }
 
-                            slotBtn.onclick = () => {
+                            slotBtn.onclick = () => {                                
                                 if (slotBtn.classList.contains('selected')) {
                                 slotBtn.classList.remove('selected');
+                                deHighlightTableRow(dateStr, time);
                                 } else {
                                 slotBtn.classList.add('selected');
                                 selectedDate = dateStr;
                                 selectedTime = time;
                                 bookingDateHour.value = `${dateStr} ${time}`;
+                                highlightTableRow(dateStr, time);
                                 }
                             };
                             slotsCol.appendChild(slotBtn);
@@ -547,6 +581,9 @@ if (logoutBtn) {
                 if (previouslySelected) {
                     previouslySelected.classList.remove('selected');
                 }
+                // Remove row highlighting
+                const highlightedRows = document.querySelectorAll('table tr.highlighted');
+                highlightedRows.forEach(row => row.classList.remove('highlighted'));
 
                 requestForm.reset(); 
             }

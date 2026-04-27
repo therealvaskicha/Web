@@ -271,6 +271,7 @@ ul {
 table { 
   width: 100%; 
   border-collapse: collapse; 
+  margin-bottom: 0.05rem;
 }
 
 th, td { 
@@ -308,6 +309,14 @@ tr:hover {
 .row-taken {
     background: #ffd699;
     color: #222;
+}
+
+.highlighted {
+    outline: 0.05rem solid #60f000;
+    background-color: #d6f5d6 !important;
+    font-weight: 500;
+    box-shadow: inset 0 0 0.75rem rgba(0, 0, 0, 0.1);
+    transition: 0.125s ease-in-out;  
 }
 
 .row-approved {
@@ -530,6 +539,12 @@ select {
     outline: 0.125rem solid var(--active-color);
     border-radius: 0.25rem;
     z-index:1;
+}
+
+.calendar-day-col.selected{
+    outline: 0.125rem solid #60f000;
+    border-radius: 0.25rem;
+    z-index:10;
 }
 
 .calendar-day-header {

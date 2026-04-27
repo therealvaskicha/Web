@@ -283,7 +283,7 @@ app.post('/api/reject', (req, res) => requestController.rejectRequest(req, res))
 
 app.post('/api/cancel', (req, res) => requestController.cancelRequest(req, res));
 
-app.post('/api/saverequest', (req, res) => requestController.createRequest(req, res));
+app.post('/api/makerequest', (req, res) => requestController.createRequest(req, res));
 
 app.post('/api/book', (req, res) => bookingController.fillBookings(req, res));
 

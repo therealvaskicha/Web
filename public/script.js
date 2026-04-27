@@ -660,7 +660,7 @@ if (calendarEl) {
                     return;
                 }
 
-                const res = await fetch('/api/book', {
+                const res = await fetch('/api/makerequest', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
