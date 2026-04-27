@@ -90,13 +90,22 @@ class APIService {
         });
     }
 
-    // Book an appointment
-    static async book(bookingData) {
-        return this.request('/api/book', {
+    // Request an appointment
+    static async saverequest(requestData) {
+        return this.request('/api/saverequest', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(bookingData)
+            body: JSON.stringify(requestData)
         });
+    }
+
+    // Create bookings
+    static async book() {
+        return this.request('/api/book', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify()
+        })
     }
 
     // Approve a request
@@ -132,7 +141,7 @@ class APIService {
     }
 
     // Get request history
-    static async getBookingHistory() {
+    static async getRequestHistory() {
         return this.request('/api/request-history');
     }
 
@@ -371,12 +380,12 @@ if (logoutBtn) {
 
     if (getCurrentPage() === 'admin') {
         loadPending();
-        loadBookings();
+        loadRequests();
         loadHolidays();
 
-        const bookingModal = new ModalController('bookingModal', '.add-booking-btn', '#cancel-booking');
+        const requestModal = new ModalController('requestModal', '.add-booking-btn', '#cancel-booking');
 
-        bookingModal.onSubmit(handleBookingFormSubmit);
+        requestModal.onSubmit(handleRequestFormSubmit);
 
         // Attach holiday delete event listener once (event delegation)
         const holidaysTable = document.getElementById('holidaysTable');
@@ -403,7 +412,7 @@ if (logoutBtn) {
         // Holidays calendar setup
         const calendarEl = document.getElementById('admin-calendar');
         // const requestServices = document.getElementById('requestServices');
-        const bookingForm = document.getElementById('booking-form');
+        const requestForm = document.getElementById('request-form');
 
         // let selectedDate = null;
         // let selectedTime = null;
@@ -465,7 +474,7 @@ if (logoutBtn) {
                     APIService.getHolidaysC(),
                     APIService.getPendingC(),
                     APIService.getBookingsHistoryApprovedC()
-                ]).then(([bookings, holidays, pendingBookings, historicalBookings]) => {
+                ]).then(([approved, holidays, pendingRequests, bookings]) => { // bookings, holidays, pendingBookings, historicalBookings
                     for (let d = 0; d < 7; d++) {
                         const date = new Date(startDate);
                         date.setDate(startDate.getDate() + d);
@@ -480,9 +489,9 @@ if (logoutBtn) {
                             continue;
                         }
                         times.forEach(time => {
-                            const taken = bookings.some(b => b.date === dateStr && b.time === time) || 
-                                        historicalBookings.some(b => b.date === dateStr && b.time === time);
-                            const pending = pendingBookings.some(d => d.date === dateStr && d.time === time);
+                            const taken = approved.some(b => b.date === dateStr && b.time === time) || 
+                                        bookings.some(b => b.date === dateStr && b.time === time);
+                            const pending = pendingRequests.some(d => d.date === dateStr && d.time === time);
                             const isHoliday = holidays.some(h => h.date === dateStr && (h.time === '00:00' || h.time === time));
 
                             const slotBtn = document.createElement('button');
@@ -496,11 +505,11 @@ if (logoutBtn) {
                                 slotBtn.classList.add('holiday');
                                 slotBtn.title = `${holiday.description || 'Почивен ден'}`
                             } else if (taken) {
-                                const request = bookings.find(b => b.date === dateStr && b.time === time) ||
-                                                historicalBookings.find(b => b.date === dateStr && b.time === time);
+                                const request = approved.find(b => b.date === dateStr && b.time === time) ||
+                                                bookings.find(b => b.date === dateStr && b.time === time);
                                 slotBtn.classList.add('taken');
                             } else if (pending) {
-                                const request = pendingBookings.find(d => d.date === dateStr && d.time === time && d.status === 1);
+                                const request = pending.find(d => d.date === dateStr && d.time === time && d.status === 1);
                                 slotBtn.classList.add('pending');
                             } else {
                                 slotBtn.classList.add('available');
@@ -532,14 +541,14 @@ if (logoutBtn) {
                 });
             }
 
-            if (bookingForm) {
+            if (requestForm) {
                 document.getElementById('cancel-booking').onclick = () => {
                 const previouslySelected = document.querySelector('.slot.selected');
                 if (previouslySelected) {
                     previouslySelected.classList.remove('selected');
                 }
 
-                bookingForm.reset(); 
+                requestForm.reset(); 
             }
 
             // Week navigation
@@ -658,11 +667,10 @@ if (logoutBtn) {
                         headers.forEach(h => h.classList.remove('selected'));
                         slots.forEach(s => s.classList.remove('selected'));
                         renderWeek(weekStart);
-                        // Wait for holidays to reload with fresh data from server
-                        await loadHolidays();
                     } else {
                         alert(result.error || 'Грешка при добавяне на почивка');
                     }
+                    loadHolidays();
                 };
             }
         }
@@ -693,7 +701,7 @@ if (logoutBtn) {
         }
 
         // Handle booking form submission
-        async function handleBookingFormSubmit(e) {
+        async function handleRequestFormSubmit(e) {
             const booking_type = document.getElementById('booking-type').value;
             const firstName = document.getElementById('firstName').value;
             const lastName = document.getElementById('lastName').value;
@@ -720,7 +728,7 @@ if (logoutBtn) {
             const selectedTime = selectedSlot.textContent;
 
             try {
-                const result = await APIService.book({
+                const result = await APIService.requestlog({
                     booking_type, 
                     date: selectedDate, 
                     time: selectedTime,
@@ -736,18 +744,18 @@ if (logoutBtn) {
                 } else {
                     // Construct composite key for the newly created request
                     const compositeKey = `${firstName}|${lastName}|${selectedDate}|${selectedTime}|${booking_type}`;
-                    await updateBooking(compositeKey, 1);
-                    bookingForm.reset();
+                    await updateRequest(compositeKey, 1);
+                    requestForm.reset();
                     selectedSlot.classList.remove('selected');
                     document.getElementById('booking-date-hour').value = '';
-                    bookingModal.close();
+                    requestModal.close();
                     renderWeek(weekStart);
-                    loadPending();
-                    loadBookings();
                 }
             } catch (error) {
                 errorHandler(error, 'Грешка при създаване на резервация');
             }
+            loadPending();
+            loadRequests();
         }
         
 
@@ -812,14 +820,14 @@ if (logoutBtn) {
                 if (e.target.classList.contains('approve-btn')) {
                     if (confirm('Сигурни ли сте, че искате да одобрите този час?')) {
                         const key = e.target.dataset.key;
-                        await updateBooking(key, 1);
+                        await updateRequest(key, 1);
                         document.getElementById('booking-date-hour').value = '';
                     }
                 }
                 if (e.target.classList.contains('reject-btn')) {             
                     if (confirm('Сигурни ли сте, че искате да откажете този час?')) {
                         const key = e.target.dataset.key;
-                        await updateBooking(key, 2);
+                        await updateRequest(key, 2);
                     }   
                 }
             });
@@ -829,7 +837,7 @@ if (logoutBtn) {
         }
 
         // Approve, reject, or cancel request
-        async function updateBooking(compositeKey, action) {
+        async function updateRequest(compositeKey, action) {
             try {
                 // Parse composite key: firstName|lastName|date|time|booking_type
                 const [firstName, lastName, date, time, booking_type] = compositeKey.split('|');
@@ -848,7 +856,7 @@ if (logoutBtn) {
                 
                 alert(result.message || result.error);
                 loadPending();
-                loadBookings();
+                loadRequests();
 
                 const calendarEl = document.getElementById('admin-calendar');
                 if (calendarEl) {
@@ -861,33 +869,33 @@ if (logoutBtn) {
             }
         }
 
-        // Load approved bookings
-        async function loadBookings() {
+        // Load approved requests
+        async function loadRequests() {
             const approvedBookingsTable = document.getElementById('approvedBookingsTable');
             if (!approvedBookingsTable) return;
 
-            const bookings = await APIService.getApprovedRequests();
+            const requests = await APIService.getApprovedRequests();
             const container = approvedBookingsTable.parentElement;
 
-            if (bookings.length < 1) {
+            if (requests.length < 1) {
                 container.innerHTML = '<p class="no-data-message">Няма предстоящи тренировки.</p>';
                 return;
             }
         
-            if (!bookings) {
+            if (!requests) {
                 container.innerHTML = '<p class="no-data-message">Грешка при зареждане на тренировките</p>';
                 return;
             }
         
-            // Initialize pagination controller for approved bookings
+            // Initialize pagination controller for approved requests
             const approvedPagination = new PaginationController('approvedBookingsTable', 'approvedPagination', 5);
         
-            function displayApprovedBookings() {
+            function displayApprovedRequests() {
                 // Clear existing rows
                 while (approvedBookingsTable.rows.length > 1) approvedBookingsTable.deleteRow(1);
             
                 const { start, end } = approvedPagination.getPageRange();
-                const paginatedBookings = bookings.slice(start, end);
+                const paginatedBookings = requests.slice(start, end);
             
                 if (paginatedBookings.length === 0) {
                     container.innerHTML = '<p class="no-data-message">Няма предстоящи тренировки.</p>';
@@ -910,8 +918,8 @@ if (logoutBtn) {
                 });
             
                 // Render pagination with callback
-                approvedPagination.render(bookings.length, () => {
-                    displayApprovedBookings();
+                approvedPagination.render(requests.length, () => {
+                    displayApprovedRequests();
                 });
             }
         
@@ -920,13 +928,13 @@ if (logoutBtn) {
                 if (e.target.classList.contains('cancel-btn')) {
                     if (confirm('Сигурни ли сте, че искате да отмените този час?')) {
                         const key = e.target.dataset.key;
-                        await updateBooking(key, 3);
+                        await updateRequest(key, 3);
                     }
                 }
             });
         
             // Initial display
-            displayApprovedBookings();
+            displayApprovedRequests();
         }
 
         // Load holidays
@@ -985,6 +993,16 @@ if (logoutBtn) {
 
             displayHolidays();
         }
+
+        const refreshBtn = document.querySelector('.refresh-btn');
+
+        refreshBtn.addEventListener('click', async () => {
+            try {
+                await APIService.book();
+            } catch (error) {
+                console.error('Error filling bookings: ', error);
+                alert('Грешка при обновяване на резервациите. Моля, опитайте отново.');
+            }});
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
         try {
@@ -1301,7 +1319,7 @@ if (logoutBtn) {
             }
 
             try {
-                const bookings = await APIService.getBookingHistory();
+                const bookings = await APIService.getRequestHistory();
 
                 let filteredBookings = [...bookings];
                 let selectedClient = null;

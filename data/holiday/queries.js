@@ -31,7 +31,4 @@ module.exports = {
     deactivateHoliday: `
       UPDATE holidays SET is_active = 0 WHERE date = ?
     `,
-    insertHoliday: `
-      INSERT INTO holidays (date, description) VALUES (?, ?)
-    `,
 };

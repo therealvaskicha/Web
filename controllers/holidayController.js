@@ -52,11 +52,11 @@ async function addHoliday(req, res) {
         const { holidays, description } = req.body;
         
         if (!holidays || !Array.isArray(holidays) || holidays.length === 0) {
-            return res.status(400).json({ error: 'Валидна дата е задължителна' });
+            return res.status(400).json({ error: 'Невалидна дата.' });
         }
         
         await holidayDomain.addHoliday(holidays, description);
-        res.json({ message: 'Празници са добавени' });
+        res.json({ message: 'Добавена почивка.' });
     } catch (err) {
         console.error('Add holiday controller error:', err);
         res.status(500).json({ error: err.message });

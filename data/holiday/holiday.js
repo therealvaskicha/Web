@@ -48,7 +48,26 @@ async function addHoliday(holidays, description) {
         await connection.beginTransaction();
 
         for (const date of holidays) {
-            const datetime = `${date} 00:00:00`;
+            // Handle different date formats
+            let dateString;
+            
+            if (date instanceof Date) {
+                dateString = date.toISOString().split('T')[0];
+            } else if (typeof date === 'object' && date !== null) {
+                if (date.date && typeof date.date === 'string') {
+                    dateString = date.date;
+                } else if (date.year && date.month && date.day) {
+                    dateString = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
+                } else {
+                    throw new Error(`Invalid date object: ${JSON.stringify(date)}`);
+                }
+            } else if (typeof date === 'string') {
+                dateString = date;
+            } else {
+                throw new Error(`Unsupported date type: ${typeof date}`);
+            }
+            
+            const datetime = `${dateString} 00:00:00`;
             await connection.query(queries.insertHoliday, [datetime, description]);
         }
 

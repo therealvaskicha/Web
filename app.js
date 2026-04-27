@@ -283,7 +283,9 @@ app.post('/api/reject', (req, res) => requestController.rejectRequest(req, res))
 
 app.post('/api/cancel', (req, res) => requestController.cancelRequest(req, res));
 
-app.post('/api/book', (req, res) => requestController.createRequest(req, res));
+app.post('/api/saverequest', (req, res) => requestController.createRequest(req, res));
+
+app.post('/api/book', (req, res) => bookingController.fillBookings(req, res));
 
 // Approve or decline subscription payment
 app.post('/api/approve-subscription-payment', (req, res) => subscriptionController.approveSubscriptionPayment(req, res));
