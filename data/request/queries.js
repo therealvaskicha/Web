@@ -72,9 +72,10 @@ module.exports = {
         left join contact co on r.contact_id = co.id
       WHERE r.date >= curdate()
       GROUP BY r.order_id
-        HAVING 
-          MAX(r.status IN (2, 3)) = 1
-          AND MIN(r.status NOT IN (7, 9)) = 1;
+      HAVING 
+        MAX(r.status IN (2, 3)) = 1
+        AND MIN(r.status NOT IN (7, 9)) = 1
+      ORDER BY r.date ASC, time ASC;
     `,
 
     getRequestHistory: `

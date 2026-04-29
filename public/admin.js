@@ -409,27 +409,71 @@ if (logoutBtn) {
             });
         }
 
-        function highlightTableRow(dateStr, time) {
-            const allRows = document.querySelectorAll('table tbody tr, table tr.highlighted');
-            const datetimeStr = `${dateStr} ${time}`;
-            const tables = document.querySelectorAll('table');
-            tables.forEach(table => {
-                const rows = table.querySelectorAll('tr');
-                rows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    if (cells.length > 1) {
-                        const cellText = cells[1].textContent.trim();
-                        if (cellText === datetimeStr) {
-                            row.classList.add('highlighted');
+        // Variables to track selected date and time
+        // Array to track multiple selected date/time slots
+        let selectedSlots = []; // Format: [{date: 'YYYY-MM-DD', time: 'HH:MM'}, ...]
+
+        function addSelectedSlot(date, time) {
+            // Check if slot already exists
+            const exists = selectedSlots.some(slot => slot.date === date && slot.time === time);
+            if (!exists) {
+                selectedSlots.push({ date, time });
+            }
+        }
+
+        function removeSelectedSlot(date, time) {
+            selectedSlots = selectedSlots.filter(slot => !(slot.date === date && slot.time === time));
+        }
+
+        function isSlotSelected(date, time) {
+            return selectedSlots.some(slot => slot.date === date && slot.time === time);
+        }
+
+        function getFirstSelectedSlot() {
+            return selectedSlots.length > 0 ? selectedSlots[0] : null;
+        }
+
+        function updateSelectedSlotsDisplay() {
+            const bookingDateHour = document.getElementById('booking-date-hour');
+            if (selectedSlots.length === 0) {
+                bookingDateHour.value = '';
+            } else if (selectedSlots.length === 1) {
+                const slot = selectedSlots[0];
+                bookingDateHour.value = `${slot.date} ${slot.time}`;
+            } else {
+                // Show count of selected slots
+                bookingDateHour.value = `${selectedSlots.length} слота избрани`;
+            }
+        }
+
+        function highlightTableRow() {
+            // Remove all existing selection highlighting
+            const allRows = document.querySelectorAll('table tr.highlighted');
+            allRows.forEach(row => row.classList.remove('highlighted'));
+            
+            if (selectedSlots.length === 0) return;
+            
+            // Highlight all selected slots
+            selectedSlots.forEach(slot => {
+                const datetimeStr = `${slot.date} ${slot.time}`;
+                const tables = document.querySelectorAll('table');
+                tables.forEach(table => {
+                    const rows = table.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length > 1) {
+                            const cellText = cells[1].textContent.trim();
+                            if (cellText === datetimeStr) {
+                                row.classList.add('highlighted');
+                            }
                         }
-                    }
+                    });
                 });
             });
         }
 
-        function deHighlightTableRow(dateStr, time) {
-            const allRows = document.querySelectorAll('table tbody tr, table tr.highlighted');
-            const datetimeStr = `${dateStr} ${time}`;
+        function deHighlightTableRow(date, time) {
+            const datetimeStr = `${date} ${time}`;
             const tables = document.querySelectorAll('table');
             tables.forEach(table => {
                 const rows = table.querySelectorAll('tr');
@@ -444,6 +488,32 @@ if (logoutBtn) {
                 });
             });
         }
+
+        function highlightTodaysRows() {
+            const approvedBookingsTable = document.getElementById('approvedBookingsTable');
+            if (!approvedBookingsTable) return;
+            
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            const rows = approvedBookingsTable.querySelectorAll('tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length > 1) {
+                    // Extract date from datetime string (format: YYYY-MM-DD HH:MM)
+                    const datetimeText = cells[1].textContent.trim();
+                    const dateStr = datetimeText.split(' ')[0];
+                    
+                    if (dateStr === todayStr) {
+                        row.classList.add('today-row');
+                    } else {
+                        row.classList.remove('today-row');
+                    }
+                }
+            });
+        }
+
+        
 
         // Holidays calendar setup
         const calendarEl = document.getElementById('admin-calendar');
@@ -559,15 +629,15 @@ if (logoutBtn) {
 
                             slotBtn.onclick = () => {                                
                                 if (slotBtn.classList.contains('selected')) {
-                                slotBtn.classList.remove('selected');
-                                deHighlightTableRow(dateStr, time);
+                                    slotBtn.classList.remove('selected');
+                                    removeSelectedSlot(dateStr, time);
+                                    deHighlightTableRow(dateStr, time);
                                 } else {
-                                slotBtn.classList.add('selected');
-                                selectedDate = dateStr;
-                                selectedTime = time;
-                                bookingDateHour.value = `${dateStr} ${time}`;
-                                highlightTableRow(dateStr, time);
+                                    slotBtn.classList.add('selected');
+                                    addSelectedSlot(dateStr, time);
+                                    highlightTableRow();
                                 }
+                                updateSelectedSlotsDisplay();
                             };
                             slotsCol.appendChild(slotBtn);
                         });
@@ -577,16 +647,19 @@ if (logoutBtn) {
 
             if (requestForm) {
                 document.getElementById('cancel-booking').onclick = () => {
-                const previouslySelected = document.querySelector('.slot.selected');
-                if (previouslySelected) {
-                    previouslySelected.classList.remove('selected');
-                }
-                // Remove row highlighting
-                const highlightedRows = document.querySelectorAll('table tr.highlighted');
-                highlightedRows.forEach(row => row.classList.remove('highlighted'));
+                    // Remove 'selected' class from all slots
+                    const previouslySelected = document.querySelectorAll('.slot.selected');
+                    previouslySelected.forEach(slot => slot.classList.remove('selected'));
+                    
+                    // Clear all selections
+                    selectedSlots = [];
+                    
+                    // Remove row highlighting
+                    const highlightedRows = document.querySelectorAll('table tr.highlighted');
+                    highlightedRows.forEach(row => row.classList.remove('highlighted'));
 
-                requestForm.reset(); 
-            }
+                    requestForm.reset(); 
+                }
 
             // Week navigation
             let weekStart = new Date();
@@ -747,28 +820,18 @@ if (logoutBtn) {
             const note = document.getElementById('booking-note').value;
             const subscribe_email = document.getElementById('subscribe-email').checked;
 
-            const calendarEl = document.getElementById('admin-calendar');
-            const selectedSlot = calendarEl?.querySelector('.slot.selected');
-
+            // Use first selected slot from array
+            const selectedSlot = getFirstSelectedSlot();
             if (!selectedSlot) {
                 alert('Моля, изберете дата и час от календара.');
                 return;
             }
 
-            const dayCol = selectedSlot.closest('.calendar-day-col');
-            const dayIndex = Array.from(dayCol.parentNode.children).indexOf(dayCol);
-            const weekStart = new Date();
-            weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
-            const date = new Date(weekStart);
-            date.setDate(weekStart.getDate() + dayIndex);
-            const selectedDate = date.toISOString().split('T')[0];
-            const selectedTime = selectedSlot.textContent;
-
             try {
-                const result = await APIService.requestlog({
+                const result = await APIService.makerequest({
                     booking_type, 
-                    date: selectedDate, 
-                    time: selectedTime,
+                    date: selectedSlot.date, 
+                    time: selectedSlot.time,
                     firstName, 
                     lastName, 
                     phone, 
@@ -780,11 +843,15 @@ if (logoutBtn) {
                     alert(result.error);
                 } else {
                     // Construct composite key for the newly created request
-                    const compositeKey = `${firstName}|${lastName}|${selectedDate}|${selectedTime}|${booking_type}`;
+                    const compositeKey = `${firstName}|${lastName}|${selectedSlot.date}|${selectedSlot.time}|${booking_type}`;
                     await updateRequest(compositeKey, 1);
                     requestForm.reset();
-                    selectedSlot.classList.remove('selected');
+                    // Clear all selections and form
+                    selectedSlots = [];
                     document.getElementById('booking-date-hour').value = '';
+                    // Deselect all slots visually
+                    const allSelectedSlots = document.querySelectorAll('.slot.selected');
+                    allSelectedSlots.forEach(slot => slot.classList.remove('selected'));
                     requestModal.close();
                     renderWeek(weekStart);
                 }
@@ -958,6 +1025,9 @@ if (logoutBtn) {
                 approvedPagination.render(requests.length, () => {
                     displayApprovedRequests();
                 });
+                
+                // Highlight today's rows
+                highlightTodaysRows();
             }
         
             // Add event delegation for cancel button

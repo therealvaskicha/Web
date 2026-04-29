@@ -1,6 +1,6 @@
 module.exports = {
     checkSlotAvailability: `
-        SELECT * FROM requestlog WHERE DATE(date) = ? AND TIME(date) = ? AND status IN (2, 3, 11)
+        SELECT * FROM requestlog WHERE DATE(date) = ? AND TIME(date) = ? AND status IN (3, 5)
     `,
 
     selectServiceByName: `

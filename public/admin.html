@@ -38,6 +38,27 @@
 <section class="admin-control">
   <div class="container">
     <div class="calendar-grid">
+      <div class="adminCalendar">
+        <h2>Календар</h2>
+          <div class="calendar-wrap">
+            <div class="calendar-nav">
+              <button class="week-nav-btn" id="prev-week" type="button">Назад</button>
+              <button class="week-nav-btn" id="today-week" type="button">Днес</button>
+              <button class="week-nav-btn" id="next-week" type="button">Напред</button>
+            </div>
+              <div id="admin-calendar">
+            </div>
+            <div class="hint" id="hint">
+              <small>Легенда: </small><br>
+              <button class="slot week">Днес</button>
+              <button class="slot past">Отминал</button>
+              <button class="slot available">Свободен</button>
+              <button class="slot pending">Нов</button>
+              <button class="slot taken">Зает</button>
+              <button class="slot holiday">Неработен</button>
+            </div>
+          </div>
+      </div>
       <div class="pendApprove">
         <h2>Нови заявки</h2>
         <div class="pendingBookings">
@@ -112,27 +133,7 @@
           </div>
         </div>
       </div>
-      <div class="adminCalendar">
-        <h2>Календар</h2>
-          <div class="calendar-wrap">
-            <div class="calendar-nav">
-              <button class="week-nav-btn" id="prev-week" type="button">Назад</button>
-              <button class="week-nav-btn" id="today-week" type="button">Днес</button>
-              <button class="week-nav-btn" id="next-week" type="button">Напред</button>
-            </div>
-              <div id="admin-calendar">
-            </div>
-            <div class="hint" id="hint">
-              <small>Легенда: </small><br>
-              <button class="slot week">Днес</button>
-              <button class="slot past">Отминали</button>
-              <button class="slot available">Свободни</button>
-              <button class="slot pending">Нови</button>
-              <button class="slot taken">Заети</button>
-              <button class="slot holiday">Неработни</button>
-            </div>
-          </div>
-        </div>
+
         <div class="active-holidays">
           <h2>Почивни дни</h2>
             <div class="table-container">

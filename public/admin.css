@@ -319,6 +319,11 @@ tr:hover {
     transition: 0.125s ease-in-out;  
 }
 
+.today-row {
+    background-color: #ffe8cc;
+    transition: background-color 0.2s;
+}
+
 .row-approved {
   background: #d6f5d6;
   color: #222;
@@ -926,7 +931,7 @@ select {
 } */
 
 h1 {
-  font-size:1.5rem;
+  font-size:1.25rem;
 }
 
 h2 {
@@ -1109,7 +1114,7 @@ button:hover {
   position: static;
   transform: none;
   margin-bottom: 0.5rem;
-  padding: 0.33rem;
+  padding: 0.25rem;
 }
 
 .calendar-nav {
