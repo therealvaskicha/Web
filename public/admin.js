@@ -90,6 +90,15 @@ class APIService {
         });
     }
 
+    // Auto-reject stale pending requests
+    static async refreshRequests() {
+        return this.request('/api/refresh-requests', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify()
+        })
+    }
+
     // Request an appointment
     static async makerequest(requestData) {
         return this.request('/api/makerequest', {
@@ -863,6 +872,33 @@ if (logoutBtn) {
         }
         
 
+        // Initialize pending bookings event listener once (prevent duplicate listeners)
+        let pendingBookingsListenerInitialized = false;
+        function initializePendingBookingsListener() {
+            if (pendingBookingsListenerInitialized) return;
+            
+            const pendingBookingsTable = document.getElementById('pendingBookingsTable');
+            if (!pendingBookingsTable) return;
+            
+            pendingBookingsTable.addEventListener('click', async (e) => {
+                if (e.target.classList.contains('approve-btn')) {
+                    if (confirm('Сигурни ли сте, че искате да одобрите този час?')) {
+                        const key = e.target.dataset.key;
+                        await updateRequest(key, 1);
+                        document.getElementById('booking-date-hour').value = '';
+                    }
+                }
+                if (e.target.classList.contains('reject-btn')) {             
+                    if (confirm('Сигурни ли сте, че искате да откажете този час?')) {
+                        const key = e.target.dataset.key;
+                        await updateRequest(key, 2);
+                    }   
+                }
+            });
+            
+            pendingBookingsListenerInitialized = true;
+        }
+
         // Load pending bookings
         async function loadPending() {
             const pendingBookingsTable = document.getElementById('pendingBookingsTable');
@@ -919,22 +955,8 @@ if (logoutBtn) {
                 });
             }
         
-            // Add event delegation for approve/reject buttons
-            pendingBookingsTable.addEventListener('click', async (e) => {
-                if (e.target.classList.contains('approve-btn')) {
-                    if (confirm('Сигурни ли сте, че искате да одобрите този час?')) {
-                        const key = e.target.dataset.key;
-                        await updateRequest(key, 1);
-                        document.getElementById('booking-date-hour').value = '';
-                    }
-                }
-                if (e.target.classList.contains('reject-btn')) {             
-                    if (confirm('Сигурни ли сте, че искате да откажете този час?')) {
-                        const key = e.target.dataset.key;
-                        await updateRequest(key, 2);
-                    }   
-                }
-            });
+            // Initialize event listener only once
+            initializePendingBookingsListener();
         
             // Initial display
             displayPendingBookings();
@@ -1105,11 +1127,12 @@ if (logoutBtn) {
 
         refreshBtn.addEventListener('click', async () => {
             try {
+                await APIService.refreshRequests();
                 await APIService.book();
             } catch (error) {
                 console.error('Error filling bookings: ', error);
                 alert('Грешка при обновяване на резервациите. Моля, опитайте отново.');
-            }});
+            }})
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
         try {

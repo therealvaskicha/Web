@@ -98,7 +98,7 @@ module.exports = {
       JOIN contact co ON l.contact_id = co.id
       JOIN product p ON l.product_id = p.product_id
       WHERE l.rn = 1
-      ORDER BY l.id DESC;
+      ORDER BY l.date DESC;
     `,
     checkSlotAvailable: `
       SELECT * FROM requestlog WHERE DATE(date) = ? AND TIME(date) = ? AND status IN (2, 3)
@@ -161,5 +161,13 @@ module.exports = {
 
     insertSubscription: `
       INSERT INTO subscription (product_id, card_id, start_date, expiration_date, status) VALUES (?, ?, ?, ?, 10)
+    `,
+
+    checkApprovalExists: `
+      SELECT id FROM requestlog WHERE order_id = ? AND status = 2 LIMIT 1
+    `,
+
+    RefreshRequests: `
+    call auto_reject_stale_requests();
     `,
 };

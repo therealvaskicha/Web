@@ -33,6 +33,22 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(cookieParser());
 
+// BigInt serialization middleware - convert BigInt to strings in JSON responses
+app.use((req, res, next) => {
+    const originalJson = res.json;
+    res.json = function(data) {
+        const jsonReplacer = (key, value) => {
+            if (typeof value === 'bigint') {
+                return value.toString();
+            }
+            return value;
+        };
+        arguments[0] = JSON.parse(JSON.stringify(data, jsonReplacer));
+        return originalJson.apply(res, arguments);
+    };
+    next();
+});
+
 // Session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET || 'durjavna_taina11',
@@ -112,12 +128,23 @@ async function recordLoginAttempt(username, ip, success) {
     const now = new Date();
     const lockedUntil = new Date(now.getTime() + lockoutDuration);
     
+    // Format date as YYYY-MM-DD HH:MM:SS for MariaDB TIMESTAMP/DATETIME
+    const formatDateForDB = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    };
+    
     const query = `
         INSERT INTO login_attempts (username, ip_address, success, locked_until)
         VALUES (?, ?, ?, ?)
     `;
     
-    const params = [username, ip, success ? 1 : 0, success ? null : lockedUntil.toISOString()];
+    const params = [username, ip, success ? 1 : 0, success ? null : formatDateForDB(lockedUntil)];
     
     try {
         await db.query(query, params);
@@ -286,6 +313,8 @@ app.post('/api/cancel', (req, res) => requestController.cancelRequest(req, res))
 app.post('/api/makerequest', (req, res) => requestController.createRequest(req, res));
 
 app.post('/api/book', (req, res) => bookingController.fillBookings(req, res));
+
+app.post('/api/refresh-requests', (req, res) => requestController.RefreshRequests(req, res));
 
 // Approve or decline subscription payment
 app.post('/api/approve-subscription-payment', (req, res) => subscriptionController.approveSubscriptionPayment(req, res));

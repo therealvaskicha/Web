@@ -1,13 +1,12 @@
-# Web Project Overview - CooleRM Pilates CRM
+# Web Project Overview - CooleRM
 
 ## Project Summary
-A full-stack CRM application for managing pilates studio operations including bookings, clients, subscriptions, and mailing lists. The system provides:
-- **Client-facing**: Booking interface for pilates classes with email subscription management
+A full-stack CRM application for managing reservation-based small business operations including bookings, clients, subscriptions, and mailing lists. The system provides:
+- **Client-facing**: Booking interface for trainings with email subscription management
 - **Admin panel**: Complete management dashboard for bookings, clients, subscriptions, and holidays
 - **Authentication**: Secure login system with session management, bcrypt hashing, rate limiting, and account lockout
 - **Architecture**: Domain-driven 3-layer design (Routes → Controllers → Domain Modules) for scalability and team collaboration
 
-**Deployment**: Vercel (https://pilates-website-dilona.vercel.app/)
 **Repository**: therealvaskicha/Web (main branch)
 
 ---
@@ -132,7 +131,7 @@ Web/
 
 ### 1. Client Booking System
 - Browse available time slots (with automatic unavailable slot detection)
-- Make pilates class bookings with automatic duplicate prevention
+- Make reservations & bookings with automatic duplicate prevention
 - View booking history
 - Subscribe to mailing list with smart subscription logic
 - Email subscription management (subscribe/resubscribe/unsubscribe)
@@ -394,7 +393,6 @@ Web/
 ## Known Issues & TODOs
 
 ### High Priority - Feature Completeness
-- [ ] **Transaction table & balance tracking** (Part of Option 3 - Next Checkpoint)
 - [ ] **Automatic product forcing for active subscribers** (Part of Option 3 - Next Checkpoint)
 - [ ] Email notifications for booking confirmation
 - [ ] Email reminders before appointments
@@ -580,8 +578,6 @@ ACCOUNT_LOCKOUT_DURATION_MS=1800000
 - Session timeout: 15 minutes
 - Rate limiting active
 
-**Live URL**: https://pilates-website-dilona.vercel.app/
-
 ---
 
 ## File Architecture Summary
@@ -673,7 +669,7 @@ Web/
 
 ### 1. Client Booking System
 - Browse available time slots
-- Make pilates class bookings
+- Make reservations
 - View booking history
 - Subscribe to services
 - Email notifications
@@ -925,9 +921,6 @@ HTTPS: Enabled
 Session timeout: 15 minutes
 ```
 
-**Live URL**: https://pilates-website-dilona.vercel.app/
-**Admin URL**: https://pilates-website-dilona.vercel.app/admin.html
-
 ---
 
 ## Next Steps / Recommendations
@@ -964,7 +957,6 @@ Session timeout: 15 minutes
 
 ## Contact & Links
 - **Repository**: https://github.com/therealvaskicha/Web
-- **Live Site**: https://pilates-website-dilona.vercel.app/
 - **Portfolio**: https://www.vasilapostolov.tech/
 
 ---

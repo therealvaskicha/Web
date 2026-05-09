@@ -38,8 +38,85 @@
 <section class="admin-control">
   <div class="container">
     <div class="calendar-grid">
+      <div class="pendApprove">
+        <div class="container">
+        <h2>Нови резервации за одобрение</h2>
+        <div class="pendingBookings">
+          <div class="table-container">
+            <table id="pendingBookingsTable">
+              <tr>
+                <th>Клиент</th>
+                <th>Дата и час</th>
+                <th>Бележка</th>
+                <th>Действие</th>
+              </tr>
+            </table>
+            <div class="pagination" id="pendingPagination"></div>
+          </div>
+        </div>
+        </div>
+        <div class="container">
+        <h2>Предстоящи тренировки</h2>
+        <div class="approvedBookings">
+          <div class="table-container">
+            <table id="approvedBookingsTable">
+              <th>Клиент</th>
+              <th>Дата и час</th>
+              <th>Бележка</th>
+              <th>Действие </th>
+            </table>
+            <div class="pagination" id="approvedPagination"></div>
+          </div>
+        </div>
+          <div class="manualBookings">
+            <div class="hint">
+              <button class="add-booking-btn">Добави тренировка</button>
+              <button class="refresh-btn">Обнови</button>
+            </div>
+            <div class="modal-overlay" id="modalOverlay"></div>
+            <div class="modal" id="requestModal">
+              <h2>Добави тренировка</h2>
+              <div class="requestServices" id="requestServices">
+                <form id="request-form">
+                  <label for="booking-type">Вид тренировка*</label>
+                  <select id="booking-type" name="booking_type" required>
+                    <option value="">Избери ...</option>
+                    <option value="Solo">Solo</option>
+                    <option value="Private">Private</option>
+                    <option value="Re4Me">Re4Me</option>
+                    <option value="Six">Six</option>
+                    <option value="Reform 8">Reform 8</option>
+                  </select>
+                  <small class="booking-hint"></small>
+                  <label for="firstName">Име*</label>
+                  <input type="text" id="firstName" name="client_firstName" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
+                  <label for="lastName">Фамилия*</label>
+                  <input type="text" id="lastName" name="client_lastName" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
+                  <label for="phone">Телефон*</label>
+                  <input type="text" id="phone" name="client_phone" maxlength="20" pattern="\d+" required>
+                  <label for="booking-date-hour">Дата и час*</label>
+                  <input type="text" id="booking-date-hour" name="booking_date_hour" readonly>
+                  <label for="email">E-mail*</label>
+                  <input type="email" id="email" name="client_email" maxlength="50" required>
+                  <small class="booking-hint">*Задължителни полета.</small>
+                  <label for="booking-note">Бележка</label>
+                  <input type="text" id="booking-note" name="booking-note" maxlength="200" placeholder='"първа тренировка", "бременност" и др.'>
+                  <label>
+                    <input type="checkbox" id="subscribe-email" name="subscribe_email">
+                    Абониране за имейл известия
+                  </label>
+                  <div class="form-buttons" style="align-items:center;">
+                    <button type="submit" id="confirm-booking">Добави</button>
+                    <button type="button" id="cancel-booking">Затвори</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="adminCalendar">
-        <h2>Календар</h2>
+        <h2>График</h2>
           <div class="calendar-wrap">
             <div class="calendar-nav">
               <button class="week-nav-btn" id="prev-week" type="button">Назад</button>
@@ -59,82 +136,7 @@
             </div>
           </div>
       </div>
-      <div class="pendApprove">
-        <h2>Нови заявки</h2>
-        <div class="pendingBookings">
-          <div class="table-container">
-            <table id="pendingBookingsTable">
-              <tr>
-                <th>Клиент</th>
-                <th>Дата и час</th>
-                <th>Бележка</th>
-                <th>Действие</th>
-              </tr>
-            </table>
-            <div class="pagination" id="pendingPagination"></div>
-          </div>
-        </div>
-
-        <h2>Предстоящи тренировки</h2>
-        <div class="approvedBookings">
-          <div class="table-container">
-            <table id="approvedBookingsTable">
-              <th>Клиент</th>
-              <th>Дата и час</th>
-              <th>Бележка</th>
-              <th>Действие </th>
-            </table>
-            <div class="pagination" id="approvedPagination"></div>
-          </div>
-        </div>
-        <div class="manualBookings">
-          <div class="hint">
-            <button class="add-booking-btn">Добави тренировка</button>
-            <button class="refresh-btn">Обнови</button>
-          </div>
-          <div class="modal-overlay" id="modalOverlay"></div>
-          <div class="modal" id="requestModal">
-            <h2>Добави тренировка</h2>
-            <div class="requestServices" id="requestServices">
-              <form id="request-form">
-                <label for="booking-type">Вид тренировка*</label>
-                <select id="booking-type" name="booking_type" required>
-                  <option value="">Избери ...</option>
-                  <option value="Solo">Solo</option>
-                  <option value="Private">Private</option>
-                  <option value="Re4Me">Re4Me</option>
-                  <option value="Six">Six</option>
-                  <option value="Reform 8">Reform 8</option>
-                </select>
-                <small class="booking-hint"></small>
-                <label for="firstName">Име*</label>
-                <input type="text" id="firstName" name="client_firstName" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
-                <label for="lastName">Фамилия*</label>
-                <input type="text" id="lastName" name="client_lastName" maxlength="60" pattern="[А-Яа-яA-Za-z\s]+" required>
-                <label for="phone">Телефон*</label>
-                <input type="text" id="phone" name="client_phone" maxlength="20" pattern="\d+" required>
-                <label for="booking-date-hour">Дата и час*</label>
-                <input type="text" id="booking-date-hour" name="booking_date_hour" readonly>
-                <label for="email">E-mail*</label>
-                <input type="email" id="email" name="client_email" maxlength="50" required>
-                <small class="booking-hint">*Задължителни полета.</small>
-                <label for="booking-note">Бележка</label>
-                <input type="text" id="booking-note" name="booking-note" maxlength="200" placeholder='"първа тренировка", "бременност" и др.'>
-                <label>
-                  <input type="checkbox" id="subscribe-email" name="subscribe_email">
-                  Абониране за имейл известия
-                </label>
-                <div class="form-buttons" style="align-items:center;">
-                  <button type="submit" id="confirm-booking">Добави</button>
-                  <button type="button" id="cancel-booking">Затвори</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-
-        <div class="active-holidays">
+      <div class="active-holidays">
           <h2>Почивни дни</h2>
             <div class="table-container">
               <table id="holidaysTable">
@@ -148,7 +150,7 @@
           <div class="hint">
             <button class="add-holiday-btn">Добави почивка</button>
           </div>
-        </div>
+      </div>
     </div>
     <div class="container">
       <div class="website-signature">
@@ -160,6 +162,7 @@
 
 <div class="hovering">
     <img src="Images/exit-icon.png" alt="Logout" id="logout-btn" class="logout-btn"></img>
+    <img src="Images/settings-icon.svg" alt="Settings" id="settings-btn" class="settings-btn"></img>
 </div>
 
 <script src="admin.js"></script>

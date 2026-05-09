@@ -123,6 +123,15 @@ async function getRequestHistory(req, res) {
     }
 }
 
+async function RefreshRequests(req, res) {
+    try {
+        await requestDomain.RefreshRequests(req, res);
+    } catch (error) {
+        console.error('Refresh requests - controller error:', error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     createRequest,
     approveRequest,
@@ -132,5 +141,6 @@ module.exports = {
     getPendingRequests,
     getPendingRequestsCalendar,
     getApprovedRequests,
-    getRequestHistory
+    getRequestHistory,
+    RefreshRequests
 };

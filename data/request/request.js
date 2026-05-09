@@ -158,21 +158,22 @@ async function approveRequest(req, res) {
             return res.status(400).json({ error: 'Заявката вече е обработена.' });
         }
 
-        // Update request status
-        await connection.query(queries.insertRequestStatus,[
-            request.order_id, 
-            request.contact_id, 
-            request.product_id, 
-            request.client_id, 
-            request.date, 
-            2]); // Approved status
+        // Check if already approved to prevent duplicate inserts
+        const approvalExists = await connection.query(queries.checkApprovalExists, [request.order_id]);
+        if (approvalExists.length > 0) {
+            await connection.rollback();
+            return res.status(400).json({ error: 'Заявката вече е одобрена.' });
+        }
 
-        // Create or get client
-        if (!request.client_id) {
+        // Create or get client BEFORE inserting request status
+        let clientId = request.client_id;
+        if (!clientId) {
             const existingRows = await connection.query(queries.checkExistingClient, 
                 [request.firstName, request.lastName, request.phone]);
             
-            if (!existingRows[0]) {
+            if (existingRows[0]) {
+                clientId = existingRows[0].client_id;
+            } else {
                 const nextClientIdResult = await connection.query(queries.getNextClientId);
                 const nextClientId = nextClientIdResult[0].next_id;
                 
@@ -180,14 +181,22 @@ async function approveRequest(req, res) {
                     queries.insertClient,
                     [request.contact_id, nextClientId]
                 );
+                clientId = nextClientId;
             }
         }
+
+        // Update request status with correct client_id
+        await connection.query(queries.insertRequestStatus,[
+            request.order_id, 
+            request.contact_id, 
+            request.product_id, 
+            clientId, 
+            request.date, 
+            2]); // Approved status
 
         // Handle subscription requests
         if (request.service_type && [10, 11].includes(request.service_type)) {
             // This is a subscription request
-            const clientId = request.client_id || existingRows[0]?.client_id;
-
             // Check for existing card
             const cardRows = await connection.query(queries.checkExistingCard, [clientId]);
             let cardId;
@@ -359,6 +368,16 @@ async function getRequestHistory(req, res) {
     }
 }
 
+async function RefreshRequests(req, res) {
+    try {
+        // Rejects stale pending requests 
+        const rows = await db.query(queries.RefreshRequests);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 module.exports = {
     approveRequest,
     rejectRequest,
@@ -368,5 +387,6 @@ module.exports = {
     getApprovedRequestsCalendar,
     getPendingRequestsCalendar,
     getApprovedRequests,
-    getRequestHistory
+    getRequestHistory,
+    RefreshRequests
 };
