@@ -862,6 +862,8 @@ if (logoutBtn) {
                     const allSelectedSlots = document.querySelectorAll('.slot.selected');
                     allSelectedSlots.forEach(slot => slot.classList.remove('selected'));
                     requestModal.close();
+                    const weekStart = new Date();
+                    weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
                     renderWeek(weekStart);
                 }
             } catch (error) {
@@ -1128,7 +1130,8 @@ if (logoutBtn) {
         refreshBtn.addEventListener('click', async () => {
             try {
                 await APIService.refreshRequests();
-                await APIService.book();
+                // refresh the page
+                window.location.reload();
             } catch (error) {
                 console.error('Error filling bookings: ', error);
                 alert('Грешка при обновяване на резервациите. Моля, опитайте отново.');
@@ -1500,8 +1503,6 @@ if (logoutBtn) {
                             if (button.classList.contains('pending')) {
                                 activeStatusFilter = 1;
                             } else if (button.classList.contains('taken')) {
-                                activeStatusFilter = 2;
-                            } else if (button.classList.contains('approved')) {
                                 activeStatusFilter = 3;
                             } else if (button.classList.contains('past')) {
                                 activeStatusFilter = 5;
@@ -1556,17 +1557,14 @@ if (logoutBtn) {
                             case 7:
                                 row.classList.add('row-rejected');
                                 break;
-                            case 2:
+                            case 3:
                                 row.classList.add('row-taken');
                                 break;
                             case 5:
                                 row.classList.add('row-past');
                                 break;
-                            case 3:
-                                row.classList.add('row-approved');
-                                break;
                             default:
-                                row.classList.add('row-pending');
+                                row.classList.add('row-taken');
                         }
 
                         setTimeout(() => {

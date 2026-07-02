@@ -59,7 +59,7 @@ module.exports = {
     getApprovedRequestsCalendar: `
       SELECT DATE_FORMAT(date, '%Y-%m-%d') as date, DATE_FORMAT(date, '%H:%i') as time
       from requestlog
-      WHERE date >= curdate()
+      WHERE date >= now() - interval 1 hour
       GROUP BY order_id
         HAVING 
           MAX(status IN (2, 3)) = 1
@@ -70,7 +70,7 @@ module.exports = {
       from product p 
         right join requestlog r on p.product_id = r.product_id 
         left join contact co on r.contact_id = co.id
-      WHERE r.date >= curdate()
+      WHERE r.date >= now() - interval 1 hour
       GROUP BY r.order_id
       HAVING 
         MAX(r.status IN (2, 3)) = 1
@@ -109,7 +109,7 @@ module.exports = {
     getScheduledRequests: `
       SELECT order_id, contact_id, product_id, client_id, date 
       FROM requestlog
-      WHERE date <= ? AND date > ? AND status = 2
+      WHERE date <= ? AND date > ? AND status = 3
       LIMIT 100
     `,
 
