@@ -168,6 +168,6 @@ module.exports = {
     `,
 
     RefreshRequests: `
-    call auto_reject_stale_requests();
-    `,
+    call refreshRequests();
+    `
 };
