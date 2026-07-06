@@ -82,14 +82,6 @@ class APIService {
         });
     }
 
-    // Auto-deactivate past holidays
-    static async autoDeactivatePastHolidays() {
-        return this.request('/api/auto-deactivate-past-holidays', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-    }
-
     // Auto-reject stale pending requests
     static async refreshRequests() {
         return this.request('/api/refresh-requests', {
@@ -100,8 +92,8 @@ class APIService {
     }
 
     // Request an appointment
-    static async makerequest(requestData) {
-        return this.request('/api/makerequest', {
+    static async createRequest(requestData) {
+        return this.request('/api/create-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
@@ -614,7 +606,7 @@ if (logoutBtn) {
                             if (isHoliday) {
                                 const holiday = holidays.find(h => h.date === dateStr && (h.time === '00:00' || h.time === time));
                                 slotBtn.classList.add('holiday');
-                                slotBtn.title = `${holiday.description || 'Почивен ден'}`
+                                slotBtn.title = `${holiday.description || 'Неработен'}`
                             } else if (taken) {
                                 const request = approved.find(b => b.date === dateStr && b.time === time) ||
                                                 bookings.find(b => b.date === dateStr && b.time === time);
@@ -837,7 +829,7 @@ if (logoutBtn) {
             }
 
             try {
-                const result = await APIService.makerequest({
+                const result = await APIService.createRequest({
                     booking_type, 
                     date: selectedSlot.date, 
                     time: selectedSlot.time,
@@ -1560,11 +1552,14 @@ if (logoutBtn) {
                             case 3:
                                 row.classList.add('row-taken');
                                 break;
+                            case 2:
+                                row.classList.add('row-taken');
+                                break;
                             case 5:
                                 row.classList.add('row-past');
                                 break;
                             default:
-                                row.classList.add('row-taken');
+                                row.classList.add('row-pending');
                         }
 
                         setTimeout(() => {

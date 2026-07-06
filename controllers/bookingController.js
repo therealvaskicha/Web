@@ -11,17 +11,17 @@ async function getCompletedBookingsCalendar(req, res) {
     }
 }
 
-async function fillBookings(req, res) {
+async function fillBooking(req, res) {
     try {
-        await bookingDomain.fillBookings(req, res);
+        await bookingDomain.fillBooking(req, res);
         
     } catch (error) {
-        console.error('Fill bookings - controller error:', error);
+        console.error('Fill booking - controller error:', error);
         res.status(500).json({ error: error.message });
     }
 }
 
 module.exports = {
     getCompletedBookingsCalendar,
-    fillBookings
+    fillBooking
 };

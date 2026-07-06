@@ -21,16 +21,6 @@ async function getAllHolidays(req, res) {
     }
 }
 
-async function deactivatePastHolidays(req, res) {
-    try {
-        await holidayDomain.deactivatePastHolidays();
-        res.json({ message: 'Миналите празници са деактивирани' });
-    } catch (err) {
-        console.error('Deactivate past holidays controller error:', err);
-        res.status(500).json({ error: err.message });
-    }
-}
-
 async function deactivateHoliday(req, res) {
     try {
         const { date } = req.body;
@@ -66,7 +56,6 @@ async function addHoliday(req, res) {
 module.exports = {
     getHolidaysForCalendar,
     getAllHolidays,
-    deactivatePastHolidays,
     deactivateHoliday,
     addHoliday
 };

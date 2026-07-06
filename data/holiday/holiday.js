@@ -2,10 +2,19 @@
 const db = require('../../database');
 const queries = require('./queries');
 
+function normalizeRows(result) {
+    if (Array.isArray(result) && result.length > 0) {
+        if (Array.isArray(result[0])) {
+            return result[0];
+        }
+    }
+    return result;
+}
+
 async function getAllHolidays() {
     try {
         const rows = await db.query(queries.getAllHolidays);
-        return rows;
+        return normalizeRows(rows);
     } catch (error) {
         console.error('Get all holidays error:', error);
         throw error;
@@ -15,19 +24,9 @@ async function getAllHolidays() {
 async function getHolidaysByStatus() {
     try {
         const rows = await db.query(queries.getHolidaysByStatus);
-        return rows;
+        return normalizeRows(rows);
     } catch (error) {
         console.error('Get holidays by status error:', error);
-        throw error;
-    }
-}
-
-async function deactivatePastHolidays() {
-    try {
-        await db.query(queries.deactivatePastHolidays);
-        return { success: true };
-    } catch (error) {
-        console.error('Deactivate past holidays error:', error);
         throw error;
     }
 }
@@ -46,28 +45,53 @@ async function addHoliday(holidays, description) {
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
+        for (const item of holidays) {
+            // item can be: { date: 'YYYY-MM-DD', time: 'HH:MM' }, a date string, or a Date instance
+            let datetime;
 
-        for (const date of holidays) {
-            // Handle different date formats
-            let dateString;
-            
-            if (date instanceof Date) {
-                dateString = date.toISOString().split('T')[0];
-            } else if (typeof date === 'object' && date !== null) {
-                if (date.date && typeof date.date === 'string') {
-                    dateString = date.date;
-                } else if (date.year && date.month && date.day) {
-                    dateString = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
+            if (item instanceof Date) {
+                const d = item;
+                const pad = (n) => String(n).padStart(2, '0');
+                datetime = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+            } else if (typeof item === 'object' && item !== null) {
+                if (item.date && typeof item.date === 'string') {
+                    const datePart = item.date;
+                    const timePart = (item.time && typeof item.time === 'string') ? item.time : null;
+                    if (timePart) {
+                        // ensure seconds present
+                        const timeWithSeconds = /^\d{2}:\d{2}$/.test(timePart) ? `${timePart}:00` : timePart;
+                        datetime = `${datePart} ${timeWithSeconds}`;
+                    } else if (item.year && item.month && item.day) {
+                        const y = item.year;
+                        const m = String(item.month).padStart(2, '0');
+                        const da = String(item.day).padStart(2, '0');
+                        datetime = `${y}-${m}-${da} 00:00:00`;
+                    } else {
+                        datetime = `${datePart} 00:00:00`;
+                    }
+                } else if (item.year && item.month && item.day) {
+                    const y = item.year;
+                    const m = String(item.month).padStart(2, '0');
+                    const da = String(item.day).padStart(2, '0');
+                    datetime = `${y}-${m}-${da} 00:00:00`;
                 } else {
-                    throw new Error(`Invalid date object: ${JSON.stringify(date)}`);
+                    throw new Error(`Invalid date object: ${JSON.stringify(item)}`);
                 }
-            } else if (typeof date === 'string') {
-                dateString = date;
+            } else if (typeof item === 'string') {
+                let s = item.trim();
+                // convert ISO T separator to space
+                if (s.includes('T')) s = s.replace('T', ' ');
+                // if only date provided, add midnight
+                if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+                    s = `${s} 00:00:00`;
+                } else if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(s)) {
+                    s = `${s}:00`;
+                }
+                datetime = s;
             } else {
-                throw new Error(`Unsupported date type: ${typeof date}`);
+                throw new Error(`Unsupported date type: ${typeof item}`);
             }
-            
-            const datetime = `${dateString} 00:00:00`;
+
             await connection.query(queries.insertHoliday, [datetime, description]);
         }
 
@@ -85,7 +109,6 @@ async function addHoliday(holidays, description) {
 module.exports = {
     getAllHolidays,
     getHolidaysByStatus,
-    deactivatePastHolidays,
     deactivateHoliday,
     addHoliday
 };

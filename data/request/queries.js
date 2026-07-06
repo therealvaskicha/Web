@@ -168,6 +168,6 @@ module.exports = {
     `,
 
     RefreshRequests: `
-    call refreshRequests();
+    call refresh_requests();
     `
 };

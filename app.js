@@ -310,9 +310,9 @@ app.post('/api/reject', (req, res) => requestController.rejectRequest(req, res))
 
 app.post('/api/cancel', (req, res) => requestController.cancelRequest(req, res));
 
-app.post('/api/makerequest', (req, res) => requestController.createRequest(req, res));
+app.post('/api/create-request', (req, res) => requestController.createRequest(req, res));
 
-app.post('/api/book', (req, res) => bookingController.fillBookings(req, res));
+app.post('/api/book', (req, res) => bookingController.fillBooking(req, res));
 
 app.post('/api/refresh-requests', (req, res) => requestController.RefreshRequests(req, res));
 
@@ -327,8 +327,6 @@ app.post('/api/approve-subscription-payment', (req, res) => subscriptionControll
 app.get('/api/c-holidays', (req, res) => holidayController.getHolidaysForCalendar(req, res));
 
 app.get('/api/holidays', (req, res) => holidayController.getAllHolidays(req, res));
-
-app.post('/api/auto-deactivate-past-holidays', (req, res) => holidayController.deactivatePastHolidays(req, res));
 
 app.post('/api/disable-holiday', (req, res) => holidayController.deactivateHoliday(req, res));
 

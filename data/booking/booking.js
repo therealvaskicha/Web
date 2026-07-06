@@ -26,9 +26,9 @@ async function getCompletedBookingsCalendar(req, res) {
     }
 }
 
-async function fillBookings(req, res) {
+async function fillBooking(req, res) {
     try {
-        const rows = await db.query(queries.fillBookings);
+        const rows = await db.query(queries.fillBooking);
         res.json(convertBigIntToString(rows));
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -37,5 +37,5 @@ async function fillBookings(req, res) {
 
 module.exports = {
     getCompletedBookingsCalendar,
-    fillBookings
+    fillBooking
 };

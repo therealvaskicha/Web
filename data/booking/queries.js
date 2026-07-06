@@ -5,7 +5,7 @@ module.exports = {
         from booking
         WHERE date <= curdate()
     `,
-    fillBookings: `
-    call fillBookings();
+    fillBooking: `
+    call insert_booking();
     `
 };
