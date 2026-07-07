@@ -46,9 +46,13 @@
             <div class="container">
               <div class="table-container">
                   <table id="clientsTable">
-                      <tr>
-                          <th>Моите клиенти</th>
-                      </tr>
+                      <thead>
+                          <tr>
+                              <th>Моите клиенти</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                      </tbody>
                   </table>
                   <div class="pagination" id="clientsPagination"></div>
               </div>
@@ -159,11 +163,17 @@
             </div>
           <div class="table-container">
               <table id="bookingHistoryTable">
-                <th>Клиент</th>
-                <th>Тип</th>
-                <th>Дата</th>
-                <th>Час</th>
-                <th>Заявена на</th>
+                <thead>
+                  <tr>
+                    <th>Клиент</th>
+                    <th>Тип</th>
+                    <th>Дата</th>
+                    <th>Час</th>
+                    <th>Заявена на</th>
+                  </tr>
+                </thead>
+                <tbody id="bookingHistoryTableBody">
+                </tbody>
               </table>
               <div class="pagination" id="historyPagination"></div>
           </div>

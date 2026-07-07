@@ -926,21 +926,26 @@ if (logoutBtn) {
                     return;
                 }
             
+                const tbody = document.getElementById('pendingBookingsTableBody');
+
                 paginatedBookings.forEach(request => {
-                    const row = pendingBookingsTable.insertRow();
-                    request.client_name = `${request.firstName} ${request.lastName}`
-                    const noteCell = request.note ? `${request.booking_type}<br>${request.note}` : request.booking_type;
-                    // Use composite key instead of id
+                    const row = tbody.insertRow();
+
+                    row.insertCell(0).textContent = `${request.firstName} ${request.lastName}`;
+                    row.insertCell(1).textContent = `${request.date} ${request.time}`;
+
+                    const noteCell = row.insertCell(2);
+                    noteCell.innerHTML = request.note
+                        ? `${request.booking_type}<br>${request.note}`
+                        : request.booking_type;
+                    
                     const compositeKey = `${request.firstName}|${request.lastName}|${request.date}|${request.time}|${request.booking_type}`;
-                    row.innerHTML = `
-                        <td>${request.client_name}</td>
-                        <td>${request.date} ${request.time}</td>
-                        <td>${noteCell}</td>
-                        <td>
-                            <img src="Images/btn-yes-test.png" title="Одобри" class="approve-btn" data-key="${compositeKey}">
-                            <img src="Images/btn-no-test.png" title="Откажи" class="reject-btn" data-key="${compositeKey}">
-                        </td>
-                    `;
+
+                    const actionCell = row.insertCell(3);
+                    actionCell.innerHTML = `
+                        <img src="Images/btn-yes-test.png" title="Одобри" class="approve-btn" data-key="${compositeKey}">
+                        <img src="Images/btn-no-test.png" title="Откажи" class="reject-btn" data-key="${compositeKey}">
+                    `
                 });
             
                 // Render pagination with callback
@@ -1021,19 +1026,25 @@ if (logoutBtn) {
                     container.innerHTML = '<p class="no-data-message">Няма предстоящи тренировки.</p>';
                     return;
                 }
+
+                const tbody = document.getElementById('approvedBookingsTableBody');
             
                 paginatedBookings.forEach(request => {
-                    const row = approvedBookingsTable.insertRow();
-                    request.client_name = `${request.firstName} ${request.lastName}`
-                    const noteCell = request.note ? `${request.booking_type}<br>${request.note}` : request.booking_type;
+                    const row = tbody.insertRow();
+
+                    row.insertCell(0).textContent = `${request.firstName} ${request.lastName}`;
+                    row.insertCell(1).textContent = `${request.date} ${request.time}`;
+
+                    const noteCell = row.insertCell(2);
+                    noteCell.innerHTML = request.note 
+                        ? `${request.booking_type}<br>${request.note}` 
+                        : request.booking_type;
+
                     const compositeKey = `${request.firstName}|${request.lastName}|${request.date}|${request.time}|${request.booking_type}`;
-                    row.innerHTML = `
-                        <td>${request.client_name}</td>
-                        <td>${request.date} ${request.time}</td>
-                        <td>${noteCell}</td>
-                        <td>
-                            <img src="Images/btn-no-test.png" class="cancel-btn" title="Отмени" data-key="${compositeKey}">
-                        </td>
+                    
+                    const actionCell = row.insertCell(3);
+                    actionCell.innerHTML = `
+                    <img src="Images/btn-no-test.png" class="cancel-btn" title="Отмени" data-key="${compositeKey}">
                     `;
                 });
             
@@ -1092,16 +1103,21 @@ if (logoutBtn) {
                     return;
                 }
 
+                const tbody = document.getElementById('holidaysTableBody');
+
                 paginatedHolidays.forEach(holiday => {
                     if (!holiday.date) {
                         console.warn('Holiday missing date:', holiday);
                         return; // Skip holidays without dates
                     }
-                    const row = holidaysTable.insertRow();
-                    row.innerHTML = `
-                        <td>${holiday.date}</td>
-                        <td>${holiday.time === '00:00' ? 'Цял ден' : holiday.time}</td>
-                        <td>${holiday.description || ''}</td>
+                    const row = tbody.insertRow();
+
+                    row.insertCell(0).textContent = holiday.date;
+                    row.insertCell(1).textContent = holiday.time === '00:00' ? 'Цял ден' : holiday.time;
+                    row.insertCell(2).textContent = holiday.description || '';
+
+                    const actionCell = row.insertCell(3);
+                    actionCell.innerHTML = `
                         <td>
                             <button class="remove-btn" data-id="${holiday.date} ${holiday.time}">Отмени</button>
                         </td>
@@ -1324,10 +1340,12 @@ if (logoutBtn) {
                 }
 
             while (clientsTable.rows.length > 1) clientsTable.deleteRow(1);
+
+            const tbody = clientsTable.querySelector('tbody');
+
             clients.forEach(client => {
-                const row = clientsTable.insertRow();
-                row.innerHTML = `<td>${client.firstName} ${client.lastName}</td>`;
-                row.style.cursor = 'pointer';
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = `${client.firstName} ${client.lastName}`;
 
                 row.addEventListener('click', async () => {
                     await showClientInfo(client.firstName, client.lastName, client.phone); 
@@ -1463,7 +1481,12 @@ if (logoutBtn) {
                     }
 
                     if (activeStatusFilter) {
-                        filteredBookings = filteredBookings.filter(request => request.status === activeStatusFilter);
+                        filteredBookings = filteredBookings.filter(request => {
+                            if (Array.isArray(activeStatusFilter)) {
+                                return activeStatusFilter.includes(request.status);
+                            }
+                            return request.status === activeStatusFilter;
+                        });
                     }
 
                     if (startDateInput.value || endDateInput.value) {
@@ -1495,7 +1518,7 @@ if (logoutBtn) {
                             if (button.classList.contains('pending')) {
                                 activeStatusFilter = 1;
                             } else if (button.classList.contains('taken')) {
-                                activeStatusFilter = (2);
+                                activeStatusFilter = [2, 3];
                             } else if (button.classList.contains('past')) {
                                 activeStatusFilter = 5;
                             } else if (button.classList.contains('rejected')) {
@@ -1530,37 +1553,16 @@ if (logoutBtn) {
                         return;
                     }
 
-                    paginatedBookings.forEach(request => {
-                        const row = bookingHistoryTable.insertRow();
-                        row.classList.add('row-initial');
-                        request.client_name = `${request.firstName} ${request.lastName}`
-                        row.innerHTML = `
-                            <td>${request.client_name}</td>
-                            <td>${request.booking_type}</td>
-                            <td>${request.date}</td>
-                            <td>${request.time}</td>
-                            <td>${request.stamp_created}</td>
-                        `;
+                    const tbody = document.getElementById('bookingHistoryTableBody');
 
-                        switch (request.status) {
-                            case 9:
-                                row.classList.add('row-canceled');
-                                break;
-                            case 7:
-                                row.classList.add('row-rejected');
-                                break;
-                            case 3:
-                                row.classList.add('row-taken');
-                                break;
-                            case 2:
-                                row.classList.add('row-taken');
-                                break;
-                            case 5:
-                                row.classList.add('row-past');
-                                break;
-                            default:
-                                row.classList.add('row-pending');
-                        }
+                    paginatedBookings.forEach(request => {
+                        const row = tbody.insertRow();
+
+                        row.insertCell(0).textContent = `${request.firstName} ${request.lastName}`;
+                        row.insertCell(1).textContent = request.booking_type;
+                        row.insertCell(2).textContent = request.date;
+                        row.insertCell(3).textContent = request.time;
+                        row.insertCell(4).textContent = request.stamp_created;
 
                         setTimeout(() => {
                             row.classList.remove('row-initial');
