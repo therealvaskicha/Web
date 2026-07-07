@@ -2,18 +2,24 @@
 :root {
   /* colors */
     --primary-color: #e7e4bb;
-    --lighter-primary-color: rgba(245, 245, 240, 0.705);
+    --lighter-primary-color: #e7e4bb54;
     --active-color: #f0a500;
-    --lighter-active-color: rgba(240, 164, 0, 0.066);
-    --text-color: #333;
+    --lighter-active-color: rgba(240, 164, 0, 0.154);
+    --text-color: #222;
     --text-secondary-color: #666;
+    --text-color-inverted: #f1f1f1;
     --default-background-color: #f9f9f9;
     --darker-background-color: #ebe7e7;
     --approve-color: #d6f5d6;
-    --rejected-color: #ffcccc;
-    --pending-color: #79dd68;
-    --canceled-color: #c9a0a0;
-    --holiday-color: #f3b3d6;
+    --rejected-color: #8c8b94;
+    --pending-color: #9be88e;
+    --selected-color: #60f000d0;
+    --canceled-color: #f2a090;
+    --past-color: #e0e0e0;
+    --taken-color: #ffd699;
+    --holiday-color: #fcc1faed;
+    --holiday-color-dark: #362b3e;
+    --hover-color: #d4f6ff76;
 
     --default-box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
     --mobile-font-size: 0.8rem;
@@ -23,8 +29,9 @@
     --font-size-large: 1.25rem;
     --default-font-family: 'Lora', sans-serif;
     --standard-border-radius: 1rem;
+    --default-filter: drop-shadow(0 0 0.05rem var(--holiday-color-dark));
+    --default-filter-thick: drop-shadow(0 0 0.125rem var(--holiday-color-dark));
 }
-
 
 /* LOGIN */
 .login-container {
@@ -166,7 +173,7 @@ header {
     left: 50%;
     height: 0.066rem;
     width:0;
-    background: #3d3c33;
+    background: var(--text-color);
     transition: 0.15s;
 }
 
@@ -262,7 +269,7 @@ ul {
 /* TABLES */
 
 .table-container {
-  box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.1);
+  box-shadow: var(--default-box-shadow);
   /* border-radius: var(--standard-border-radius); */
   outline: 0.05rem solid var(--primary-color);
   overflow-x:auto;
@@ -294,49 +301,45 @@ th {
 }
 
 tr:hover {
-  background-color: #d4f6ff;
-  transition: 0.2s;
+  background-color: var(--lighter-primary-color);
+  color: var(--text-color);
 }
 
 .row-rejected {
-  background-color: #ffcccc;
+  background-color: var(--rejected-color);
+  color: var(--text-color-inverted);
 }
 
 .row-canceled {
-  background-color: #c9a0a0;
+  background-color: var(--canceled-color);
 }
 
 .row-taken {
-    background: #ffd699;
-    color: #222;
+    background: var(--taken-color);
 }
 
 .highlighted {
-    outline: 0.05rem solid #60f000;
-    background-color: #d6f5d6 !important;
-    font-weight: 500;
-    box-shadow: inset 0 0 0.75rem rgba(0, 0, 0, 0.1);
+    background-color: var(--approve-color);
     transition: 0.125s ease-in-out;  
 }
 
 .today-row {
-    background-color: #ffe8cc;
+    background-color: var(--lighter-active-color);
+    border: 0.05rem solid var(--active-color); 
     transition: background-color 0.2s;
 }
 
 .row-approved {
-  background: #d6f5d6;
+  background: var(--approved-color);
   color: #222;
 }
 
 .row-pending {
-  background: #79dd68;
-  color: #222;
+  background: var(--pending-color);
 }
 
 .row-past {
-    background: #e0e0e0;
-    color: #666;
+    background: var(--past-color);
 }
 
 button { 
@@ -354,7 +357,7 @@ button {
 
 button:hover { 
   background: var(--active-color);
-  color: var(--default-background-color);
+  filter: var(--default-filter);
 }
 
 .approve-btn, .reject-btn, .cancel-btn {
@@ -366,13 +369,13 @@ button:hover {
 }
 
 .approve-btn:hover {
-  filter:drop-shadow(0 0 0.25rem #79dd68);
-  transition:0.2s
+  filter:var(--default-filter);
+  transition:0.1s
 }
 
 .reject-btn:hover, .cancel-btn:hover {
-  filter:drop-shadow(0 0 0.25rem #db4f4f);
-  transition:0.2s
+  filter: var(--default-filter);
+  transition:0.1s
 }
 
 .remove-btn, .add-holiday-btn, .add-booking-btn {
@@ -400,8 +403,8 @@ button:hover {
 }
 
 .logout-btn:hover {
-  filter: drop-shadow(0 0 0.25rem var(--active-color));
-  transition: 0.1s;
+  filter: var(--default-filter);
+  transition: 0.2s;
 }
 
 .settings-btn {
@@ -414,8 +417,8 @@ button:hover {
 }
 
 .settings-btn:hover {
-  filter: drop-shadow(0 0 0.25rem var(--active-color));
-  transition: 0.1s ease-in-out;
+  filter: var(--default-filter);
+  transition: 0.2s;
 }
 
 /* Manual entry form */
@@ -426,10 +429,10 @@ button:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--lighter-primary-color);
     z-index: 999;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease-in-out;
 }
 
 .modal {
@@ -444,7 +447,7 @@ button:hover {
     border-radius: var(--standard-border-radius);
     box-shadow: var(--default-box-shadow);
     opacity: 0;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease-in-out;
     max-width: 90%;
     width: 500px;
 }
@@ -485,7 +488,7 @@ button:hover {
 }
 
 .history-filters .clear-filter:hover {
-    color: #f0a500;
+    color: var(--active-color);
 }
 
 input,
@@ -499,7 +502,7 @@ select {
 }
 
 .booking-hint {
-  color: #666;
+  color: var(--text-color);
   font-size: var(--mobile-font-size);
   margin-top: 0.5rem;
   display: block;
@@ -555,13 +558,13 @@ select {
 }
 
 .calendar-day-col.today-highlight {
-    outline: 0.125rem solid var(--active-color);
+    border: 0.125rem solid var(--active-color);
     border-radius: 0.25rem;
     z-index:1;
 }
 
 .calendar-day-col.selected{
-    outline: 0.125rem solid #60f000;
+    outline: 0.125rem solid var(--selected-color);
     border-radius: 0.25rem;
     z-index:10;
 }
@@ -569,7 +572,7 @@ select {
 .calendar-day-header {
     font-size: var(--font-size);
     text-align: center;
-    box-shadow: #d6f5d6 0.125rem 0 0.25rem;
+    box-shadow: var(--default-box-shadow);
     border-radius:0.25rem;
     padding:0.125rem;
     cursor:default;
@@ -582,7 +585,7 @@ select {
 }
 
 .calendar-day-header.selected {
-    outline: 0.125rem solid #60f000;
+    outline: 0.125rem solid var(--selected-color);
     transition: 0.05s;
     cursor: pointer;
     z-index:10;
@@ -607,60 +610,47 @@ select {
 }
 
 .slot:hover {
-    opacity:0.7;
-    transition:0.1s;
+    filter: var(--default-filter-thick);
+    transition:0.42s;
 }
 
 .slot.available {
-    background: #d6f5d6;
-    color: #222;
+    background: var(--approve-color);
 }
 .slot.taken {
-    background: #ffd699;
-    color: #222;
-    cursor: pointer;
+    background: var(--taken-color);
 }
 
 .slot.pending {
-    background: #79dd68;
-    color: #222;
-    cursor: pointer;
+    background: var(--pending-color);
 }
 
 .slot.past {
-    background: #e0e0e0; /* Grey out past slots */
-    color: #666;
-    cursor: pointer;
+    background: var(--past-color);
 }
 
 .slot.holiday {
-    background: #f3b3d6; /* Grey out holiday slots */
-    color: #70405a;
-    cursor: pointer;
+    background: var(--holiday-color);
 }
 
 .slot.rejected {
-  background-color: #ffcccc;
-  color: #666;
-  cursor: pointer;
+  background-color: var(--rejected-color);
+  color: var(--text-color-inverted);
 }
 
 .slot.canceled {
-  background-color: #c9a0a0;
-  color: #666;
-  cursor: pointer;
+  background-color: var(--canceled-color);
 }
 
 .slot.week {
-  background:transparent;
-  color: black;
+  background-color: var(--default-background-color);
   outline: 0.125rem solid var(--active-color);
 }
 
 .slot.selected {
-  outline: 0.125rem solid #60f000;
+  outline: 0.125rem solid var(--selected-color);
   z-index:3;
-  transition: 0.05s;
+  transition: 0.1s;
 }
 
 .slot.past.active,
@@ -698,8 +688,7 @@ select {
     transition: background 0.2s, color 0.2s;
 }
 .week-nav-btn:hover {
-  background: var(--active-color);
-  color: var(--default-background-color);
+  filter: var(--default-filter);
 }
 
 /* History filters */
@@ -738,13 +727,8 @@ select {
     position:relative;
     font-family: var(--default-font-family);
     text-decoration: none;
-    color: #18004c;
+    color: var(--holiday-color-dark);
 }
-
-.links:hover {
-    color: #18004c99;
-    transition: 0.15s ease-in-out;
-} 
 
 .pagination {
     display: flex;
@@ -763,8 +747,8 @@ select {
 }
 
 .pagination-btn:hover {
-    transform: translateY(-2px);
-    /* border-radius:0.5rem; */
+    transform: translateY(-1px);
+    filter: var(--default-filter);
 }
 
 .pagination-btn.active {
@@ -861,13 +845,10 @@ select {
 }
 
 .phone-link {
-    color: #333;
+    color:var(--holiday-color-dark);
+    font-weight: 600;
     text-decoration: none;
     transition: color 0.3s ease;
-}
-
-.phone-link:hover {
-    color: #f0a500;
 }
 
 #clientCards {
@@ -1111,11 +1092,11 @@ button:hover {
 }
 
 .approve-btn {
-  filter:drop-shadow(0 0 0.125rem #79dd68);
+  filter:var(--default-filter);
 }
 
 .reject-btn, .cancel-btn {
-  filter:drop-shadow(0 0 0.125rem #db4f4f);
+  filter: var(--default-filter);
 }
 
 .hint { 

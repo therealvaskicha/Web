@@ -1495,7 +1495,7 @@ if (logoutBtn) {
                             if (button.classList.contains('pending')) {
                                 activeStatusFilter = 1;
                             } else if (button.classList.contains('taken')) {
-                                activeStatusFilter = 3;
+                                activeStatusFilter = (2);
                             } else if (button.classList.contains('past')) {
                                 activeStatusFilter = 5;
                             } else if (button.classList.contains('rejected')) {
