@@ -22,8 +22,12 @@
     --hover-color: #d4f6ff76;
 
     --default-box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
-    --mobile-font-size: 0.8rem;
+    --mobile-font-size-small: 0.875rem;
     --mobile-table-font-size: 0.75rem;
+    --mobile-font-size-medium: 1rem;
+    --mobile-font-size-large: 1.125rem;
+    --mobile-font-size-title: 1.25rem;
+    --mobile-btn-font-size: 0.875rem;
     --font-size-small: 0.875rem;
     --font-size: 1rem;
     --font-size-title: 1.5rem;
@@ -405,7 +409,7 @@ button {
     color: var(--text-color);
     border: none;
     border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.4rem 0.6rem;
     font-size: var(--font-size);
     font-family: var(--default-font-family);
     font-weight: 300;
@@ -434,10 +438,6 @@ button:hover {
 .reject-btn:hover, .cancel-btn:hover {
   filter: var(--default-filter);
   transition:0.1s
-}
-
-.remove-btn, .add-holiday-btn, .add-booking-btn {
-  font-size: var(--font-size);
 }
 
 #login-form {
@@ -486,8 +486,8 @@ button:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--lighter-primary-color);
-    z-index: 999;
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 1005;
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
 }
@@ -498,7 +498,7 @@ button:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0.7);
-    z-index: 1000;
+    z-index: 1006;
     background-color: var(--default-background-color);
     padding: 20px;
     border-radius: var(--standard-border-radius);
@@ -563,14 +563,7 @@ button:hover {
 }
 
 .dialog-title {
-    margin: 0;
-    font-size: 1.1rem;
     font-weight: 700;
-}
-
-.dialog-message {
-    margin: 0;
-    line-height: 1.5;
 }
 
 .dialog-input {
@@ -654,7 +647,7 @@ select {
 
 .booking-hint {
   color: var(--text-color);
-  font-size: var(--mobile-font-size);
+  font-size: var(--mobile-font-size-small);
   margin-top: 0.5rem;
   display: block;
 }
@@ -826,8 +819,6 @@ select {
     background: var(--primary-color);
     color: var(--text-color);
     border: none;
-    border-radius: var(--standard-border-radius);
-    font-size: var(--font-size);
     font-family: var(--default-font-family);
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
@@ -863,7 +854,7 @@ select {
     flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
-    font-size: var(--mobile-font-size);
+    font-size: var(--mobile-font-size-small);
     gap: 0.25rem;
     margin-bottom:5em;
 }
@@ -1027,7 +1018,7 @@ select {
 .card-item-detail {
     display: flex;
     justify-content: space-between;
-    font-size: var(--mobile-font-size);
+    font-size: var(--mobile-font-size-small);
     align-items: center;
     padding:0.125rem;
 }
@@ -1035,7 +1026,7 @@ select {
 .card-item-detail label {
     font-weight: 600;
     margin-top:0;
-    font-size: var(--mobile-font-size);
+    font-size: var(--mobile-font-size-small);
 }
 
 .edit-client-btn {
@@ -1079,19 +1070,24 @@ select {
 }
 
 h1 {
-  font-size:1.25rem;
+  font-size: var(--mobile-font-size-title);
 }
 
 h2 {
-  font-size: var(--font-size);
+  font-size: var(--mobile-font-size-large);
+  font-weight: 700;
 }
 
 h3 {
-    font-size:var(--mobile-font-size);
+    font-size:var(--mobile-font-size-medium);
+}
+
+p {
+  font-size: var(--mobile-font-size-medium);
 }
 
 small,label, select, option, .no-data-message {
-  font-size: var(--mobile-font-size);
+  font-size: var(--mobile-font-size-small);
   font-family: var(--default-font-family);
 }
 
@@ -1124,14 +1120,6 @@ section {
 
 .approvedBookings {
   margin-bottom:0.33rem;
-}
-
- .add-holiday-btn, .add-booking-btn {
-  font-size: 0.9rem;
-}
-
-.remove-btn{
-  font-size: 0.65rem;
 }
 
 .login-container {
@@ -1184,6 +1172,21 @@ section {
   padding:0.315rem;
 }
 
+.dialog-content {
+  gap:0.5rem;
+}
+
+.dialog-actions {
+  gap:0.25rem;
+}
+
+.dialog-message {
+  text-align:center;
+}
+
+.dialog-actions button {
+  font-size: var(--mobile-font-size-medium);
+}
 
 /* GRID SECTIONS */
 .pendApprove {
@@ -1212,12 +1215,12 @@ section {
 
 /* Table adjustments */
 table {
-  font-size: var(--mobile-font-size);
+  font-size: var(--mobile-font-size-small);
 }
 
 th {
   padding: 0.125rem;
-  font-size: var(--mobile-table-font-size);
+  font-size: var(--mobile-font-size-small);
 }
 
 td {
@@ -1232,13 +1235,12 @@ th, td {
 th, td:first-child { border-left: none; }
 
 button {
-  font-size: var(--mobile-font-size);
-  padding: 0.25rem 0.4rem;
+  font-size: var(--mobile-font-size-small);
   margin: 0.2rem;
 }
 
 .approve-btn, .reject-btn, .cancel-btn {
-  width:1.7rem;
+  width:1.875rem;
 }
 
 .approve-btn {
@@ -1260,7 +1262,7 @@ button {
 }
 
 #startDate, #endDate {
-  font-size: var(--mobile-font-size);
+  font-size: var(--mobile-font-size-small);
 }
 
 /* Calendar adjustments for mobile */
@@ -1289,12 +1291,6 @@ button {
   margin-bottom: 0.25rem;
 }
 
-.week-nav-btn{
-  font-size: var(--mobile-font-size);
-  padding: 0.33rem 0.66rem;
-  border-radius:0.66rem;
-}
-
 .calendar-slots-col
 {
   margin-top:auto;
@@ -1302,7 +1298,7 @@ button {
 }
 
 .calendar-day-header{
-  font-size: var(--mobile-font-size);
+  font-size: var(--mobile-font-size-small);
 }
 
 .slot {
@@ -1313,7 +1309,7 @@ button {
 
 .pagination-btn {
     padding: 0.3rem 0.7rem;
-    font-size: var(--mobile-font-size);
+    font-size: var(--mobile-font-size-small);
 }
 
 .website-signature {

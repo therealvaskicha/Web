@@ -296,6 +296,7 @@ class ConfirmationDialog {
 
         this.titleEl.textContent = title;
         this.messageEl.textContent = message;
+        this.titleEl.style.whiteSpace = 'pre-wrap';
         this.confirmBtn.textContent = confirmText;
         this.cancelBtn.textContent = cancelText;
 
@@ -527,7 +528,7 @@ if (logoutBtn) {
         function formatRequestTitle(compositeKey) {
             if (!compositeKey) return 'Потвърждение';
             const [firstName, lastName, date, time, booking_type] = compositeKey.split('|');
-            return `${firstName} ${lastName} ${date} ${time} ${booking_type}`;
+            return `${firstName} ${lastName} (${booking_type})\nот ${time} на ${date}`;
         }
 
         function isFullDayTime(time) {
@@ -535,7 +536,7 @@ if (logoutBtn) {
         }
 
         function formatHolidayLabel(date, time) {
-            return isFullDayTime(time) ? `${date} цял ден` : `${date} ${time}`;
+            return isFullDayTime(time) ? `${date} (цял ден)` : `${date} ${time}`;
         }
 
         function normalizeHolidayDateTime(dateTime) {
@@ -586,7 +587,7 @@ if (logoutBtn) {
 
             return Object.entries(grouped).map(([date, times]) => {
                 if (times.some(time => isFullDayTime(time))) {
-                    return `${date} цял ден`;
+                    return `${date} (цял ден)`;
                 }
                 return `${date} ${formatTimeRanges(times)}`;
             }).join('\n');
