@@ -405,7 +405,7 @@ button {
     color: var(--text-color);
     border: none;
     border-radius: 0.5rem;
-    padding: 0.3rem 0.5rem;
+    padding: 0.5rem 0.75rem;
     font-size: var(--font-size);
     font-family: var(--default-font-family);
     font-weight: 300;
@@ -438,7 +438,6 @@ button:hover {
 
 .remove-btn, .add-holiday-btn, .add-booking-btn {
   font-size: var(--font-size);
-  padding: 0.33rem 1rem;
 }
 
 #login-form {
@@ -517,6 +516,100 @@ button:hover {
 }
 
 .modal-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+.dialog-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 1005;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.dialog-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    z-index: 1006;
+    background-color: var(--default-background-color);
+    padding: 1.25rem;
+    border-radius: var(--standard-border-radius);
+    box-shadow: var(--default-box-shadow);
+    opacity: 0;
+    transition: all 0.2s ease-in-out;
+    max-width: 90%;
+    width: 27rem;
+}
+
+.dialog-modal.active {
+    display: block;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.dialog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: center;
+}
+
+.dialog-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.dialog-message {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.dialog-input {
+    padding: 0.75rem;
+}
+
+.dialog-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;    
+}
+
+.dialog-btn {
+    border: none;
+    border-radius: var(--standard-border-radius);
+    background: var(--approve-color);
+    cursor: pointer;
+    transition: filter 0.15s ease-in-out;
+}
+
+.dialog-btn:hover {
+    background: var(--pending-color);
+    transition: 0.1s ease-in;
+}
+
+.dialog-cancel-btn {
+    background: var(--past-color);
+}
+
+.dialog-cancel-btn:hover {
+    background: var(--canceled-color);
+    transition: 0.1s ease-in;
+}
+
+.dialog-overlay.active {
     display: block;
     opacity: 1;
 }
@@ -734,7 +827,6 @@ select {
     color: var(--text-color);
     border: none;
     border-radius: var(--standard-border-radius);
-    padding: 0.33rem 1rem;
     font-size: var(--font-size);
     font-family: var(--default-font-family);
     cursor: pointer;

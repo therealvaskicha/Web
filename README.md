@@ -23,21 +23,25 @@ A full-stack CRM application for managing reservation-based small business opera
 
 ### Frontend
 - **HTML/CSS/JavaScript**: Vanilla (no framework)
-- **Styling**: Custom CSS (admin.css, styles.css)
+- **Styling**: Custom CSS (`admin.css`, `styles.css`)
 - **Calendar**: FullCalendar 6.1.18
-- **Architecture**: Class-based controllers (ModalController, PaginationController, etc.)
+- **Architecture**: Class-based controllers (`ModalController`, `PaginationController`, etc.)
 
 ### Dependencies
 ```json
 {
-  "bcrypt": "^5.1.0",
+  "@fullcalendar/core": "^6.1.18",
+  "@fullcalendar/daygrid": "^6.1.18",
+  "@fullcalendar/timegrid": "^6.1.18",
+  "bcrypt": "^5.1.1",
   "cookie-parser": "^1.4.6",
   "csurf": "^1.11.0",
+  "dotenv": "^16.3.1",
   "express": "^5.1.0",
-  "express-rate-limit": "^6.7.0",
-  "express-session": "^1.17.3",
-  "mysql2": "^3.6.0",
-  "dotenv": "^16.0.3"
+  "express-rate-limit": "^7.1.5",
+  "express-session": "^1.18.2",
+  "mariadb": "^3.5.2",
+  "node-cron": "^4.2.1"
 }
 ```
 
@@ -88,13 +92,11 @@ Web/
 │   ├── clients.html            # Clients management view
 │   ├── subscriptions.html      # Subscriptions management
 │   ├── script.js               # Client-side booking logic
-│   ├── login.js                # Login security (bcrypt verification)
+│   ├── login.js                # Login page logic
 │   ├── admin.js                # Admin panel main logic
 │   ├── styles.css              # Public styles
 │   ├── admin.css               # Admin panel styles
-│   ├── constants.js            # Shared constants
-│   └── Images/                 # Assets
-└── .vercel/                    # Vercel configuration
+│   ├── Images/                 # Assets
 ```
 
 ---
@@ -116,7 +118,7 @@ Web/
 ### Layer 3: Domain Modules (data/[domain]/*)
 - Business logic implementation
 - Database queries via queries.js
-- Transaction handling
+- Booking handling
 - Complex workflows (e.g., approveRequest creates client, card, subscription in one flow)
 
 ### Query Organization (data/[domain]/queries.js)
@@ -322,6 +324,8 @@ Web/
 ✅ Fixed getAllClients - updated query object reference from `queries.getAllClients` to `queries.client.getAllClients`
 ✅ Fixed getClientMailingList - returns array instead of single object
 ✅ Fixed getClientById - properly validates client_id parameter
+✅ Fixed holiday deletion - added server-side datetime normalization and fallback updates to ensure slot-level deletions succeed
+✅ Removed temporary debug logging from `data/holiday/holiday.js`
 
 ### Code Cleanup
 ✅ Removed orphaned async code blocks from partial refactoring
@@ -393,10 +397,12 @@ Web/
 ## Known Issues & TODOs
 
 ### High Priority - Feature Completeness
-- [ ] **Automatic product forcing for active subscribers** (Part of Option 3 - Next Checkpoint)
+- [ ] **Client page**
+- [ ] **Subscriptions page**
 - [ ] Email notifications for booking confirmation
 - [ ] Email reminders before appointments
 - [ ] Monitoring endpoints for status auto-updates
+- [ ] Application-wide logging (info,warning,error)
 
 ### Medium Priority - Code Quality & Polish
 - [ ] Refactor admin.js (1382 lines - extract into modules)
@@ -409,7 +415,6 @@ Web/
 ### Low Priority - Enhancement
 - [ ] Multi-language support (currently Bulgarian/English)
 - [ ] Data export functionality (CSV/PDF)
-- [ ] SMS notifications option
 - [ ] Analytics dashboard
 - [ ] Mobile app or responsive improvements
 - [ ] Client self-service cancellation
@@ -419,44 +424,26 @@ Web/
 
 ## Next Checkpoint Recommendations
 
-### **RECOMMENDED: Option 3 - Complete Transaction Implementation** ⭐
+### **RECOMMENDED: Option 3 - Complete booking Implementation** ⭐
 
 This gives you enterprise-grade subscription management with full balance tracking and product enforcement. Implement in phases:
 
-#### Phase 1: Transaction Table & Balance Tracking (Week 1)
+#### Phase 1: booking Table & Balance Tracking (Week 1)
 **Priority: HIGH - Foundation for Option 2**
 
 **What it does:**
-- Create `transactions` table to log every subscription usage
+- Create `booking` table to log every subscription usage
 - Track client balance per subscription card
 - When approved booking matches subscription product → decrease balance by 1
 - When balance reaches 0 → mark subscription as status=20 (Used)
 - Full audit trail of all subscription usage
 
 **Files to create/modify:**
-- `data/transaction/transaction.js` (new domain module)
-- `data/transaction/queries.js` (new queries module)
+- `data/booking/booking.js` (new domain module)
+- `data/booking/queries.js` (new queries module)
 - `controllers/transactionController.js` (new controller)
 - `data/subscription/subscription.js` (update approveSubscriptionPayment logic)
 - `data/request/request.js` (update approveRequest to deduct balance)
-- Database migration: Create transactions table
-
-**Schema changes:**
-```sql
-CREATE TABLE transactions (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  subscription_id INT,
-  order_id INT,
-  transaction_type ENUM('BOOKING_USED', 'REFUND', 'ADJUSTMENT'),
-  amount INT DEFAULT -1,
-  balance_after INT,
-  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (subscription_id) REFERENCES subscription(id)
-);
-
--- Track current balance per subscription
-ALTER TABLE subscription ADD COLUMN current_balance INT DEFAULT 0;
-```
 
 **Benefits:**
 - Prevent double-booking subscription products
@@ -469,9 +456,7 @@ ALTER TABLE subscription ADD COLUMN current_balance INT DEFAULT 0;
 
 **What it does:**
 - When client with active subscription submits booking → auto-override product_id
-- Force them to use their subscription product
-- Only show other products if subscription balance exhausted
-- Prevent selection of non-subscription products while balance exists
+- Force them to use their subscription product until it expires/used up.
 
 **Files to modify:**
 - `data/booking/booking.js` (add subscription check before requestlog INSERT)
@@ -481,10 +466,13 @@ ALTER TABLE subscription ADD COLUMN current_balance INT DEFAULT 0;
 **Logic flow in approveRequest:**
 ```javascript
 1. Get request details
-2. Check client's active subscriptions
+2. Check if client already has an active subscription and his balance
+the balance is the following way:
+in booking table we need to add a DEFAULT NULL column sub_id (foreign_key) -> this is the id from subscription table, 
+then we count(order_id) from booking table for that client_id and sub_id, determining how many credits he has used from his subscription product (product_id), we call this count -> result
+then finally, from table product we do: size - result = balance 
 3. If active subscription exists AND balance > 0:
-   - If request product != subscription product → REJECT
-   - If request product == subscription product → Deduct balance in transactions table
+   - If request product != subscription product → REJECT ("You already have a subscription for 'Re4Me'")
 4. If active subscription exists AND balance == 0:
    - Mark subscription as status=20 (Used)
    - Allow other products
@@ -501,34 +489,16 @@ ALTER TABLE subscription ADD COLUMN current_balance INT DEFAULT 0;
 
 **Add endpoints:**
 - `GET /api/subscription-stats` - Show active subscriptions, balances, etc.
-- `GET /api/transactions/:clientId` - View transaction history
+- `GET /api/booking/:clientId` - View booking history
 - `GET /api/low-balance-clients` - Clients with <5 sessions remaining
 - Automated "renewal reminder" emails for expiring subscriptions
-
----
-
-### Why Option 3 over Options 1 & 2:
-
-| Aspect | Option 1 Only | Option 2 Only | Option 3 (Both) |
-|--------|---|---|---|
-| **Balance Tracking** | ✅ | ❌ | ✅ |
-| **Product Enforcement** | ❌ | ✅ | ✅ |
-| **Revenue Protection** | ⚠️ | ✅ | ✅ |
-| **Fraud Prevention** | ⚠️ | ✅ | ✅ |
-| **User Experience** | ❌ | ✅ | ✅ |
-| **Audit Trail** | ✅ | ❌ | ✅ |
-| **Implementation Time** | 3-4 days | 2-3 days | 5-7 days |
-| **Business Value** | Medium | High | **Very High** |
-
----
 
 ## Implementation Timeline Suggestion
 
 ```
-Week 1-2 (THIS WEEK): Option 3 Phase 1 (Transaction Table)
-  ├─ Create transaction.js domain module
-  ├─ Add transactions table to database
-  ├─ Update approveSubscriptionPayment to log transactions
+Week 1-2 (THIS WEEK): Option 3 Phase 1 (booking Table)
+  ├─ Create booking.js domain module
+  ├─ Update approveSubscriptionPayment to log booking
   ├─ Update booking approval to deduct balance
   └─ Add subscription balance tracking to card info
 
@@ -542,8 +512,30 @@ Week 4: Polish & Deployment
   ├─ Documentation updates
   └─ Production testing
 ```
+## Logging & Error Handling Agenda
 
----
+Planned improvements to centralize application logging, improve observability, and standardize error handling across services.
+
+- **Short term (now)**
+  - Add structured logging with severity levels (`info`, `warn`, `error`).
+  - Replace inline `console` usage with a logger wrapper.
+  - Add request-scoped correlation IDs for tracing across frontend → API → DB.
+  - Add centralized error handling middleware in `app.js` to format responses and capture stack traces.
+
+- **Medium term**
+  - Integrate a production-grade logger (recommended: `winston` or `pino`) with JSON output.
+  - Configure log rotation, retention, and external transport (file, syslog, or an observability platform).
+  - Add instrumentation for SQL queries (timings, affected rows) and important domain events (add/delete holiday, approve booking).
+
+- **Long term / Ops**
+  - Hook logs into an APM/observability tool (Elastic, Datadog, Sentry) for alerting and performance monitoring.
+  - Implement structured audits for critical actions (booking approvals, subscription changes).
+
+Tasks to track:
+- Replace remaining `console.error`/`console.log` with logger calls across the codebase.
+- Add error middleware and ensure all controllers use it to surface meaningful client messages while logging full details server-side.
+- Add README subsection with logging conventions and examples.
+
 
 ## Deployment & Testing
 
@@ -571,10 +563,10 @@ LOGIN_ATTEMPT_WINDOW_MS=900000
 ACCOUNT_LOCKOUT_DURATION_MS=1800000
 ```
 
-### Production (Vercel)
+### Production
 - NODE_ENV=production
 - Full authentication required
-- HTTPS enabled
+- HTTPS enabled in deployment environment
 - Session timeout: 15 minutes
 - Rate limiting active
 
@@ -597,7 +589,7 @@ ACCOUNT_LOCKOUT_DURATION_MS=1800000
 ---
 
 *Last Updated: April 4, 2026*
-*Next Checkpoint: Option 3 - Transaction Management + Product Forcing*
+*Next Checkpoint: Align subscription management with current booking and holiday flow*
 
 ---
 
@@ -605,15 +597,15 @@ ACCOUNT_LOCKOUT_DURATION_MS=1800000
 
 ### Backend
 - **Framework**: Express.js 5.1.0
-- **Database**: SQLite3
-- **Session Management**: express-session (15-minute idle timeout in production)
-- **Authentication**: Simple username/password with session cookies
+- **Database**: MySQL/MariaDB with `mariadb` connection pooling
+- **Authentication**: bcrypt password hashing and session cookies
+- **Security**: CSRF tokens, rate limiting, account lockout, secure cookies in production
 
 ### Frontend
 - **HTML/CSS/JavaScript**: Vanilla (no framework)
-- **Styling**: Custom CSS (admin.css, styles.css)
+- **Styling**: Custom CSS (`admin.css`, `styles.css`)
 - **Calendar**: FullCalendar 6.1.18
-- **Architecture**: Class-based controllers (ModalController, PaginationController, etc.)
+- **Architecture**: Modular frontend pages with reusable dialog and controller patterns
 
 ### Dependencies
 ```json
@@ -621,9 +613,15 @@ ACCOUNT_LOCKOUT_DURATION_MS=1800000
   "@fullcalendar/core": "^6.1.18",
   "@fullcalendar/daygrid": "^6.1.18",
   "@fullcalendar/timegrid": "^6.1.18",
+  "bcrypt": "^5.1.1",
+  "cookie-parser": "^1.4.6",
+  "csurf": "^1.11.0",
+  "dotenv": "^16.3.1",
   "express": "^5.1.0",
+  "express-rate-limit": "^7.1.5",
   "express-session": "^1.18.2",
-  "sqlite3": "^5.1.7"
+  "mariadb": "^3.5.2",
+  "node-cron": "^4.2.1"
 }
 ```
 
@@ -643,16 +641,10 @@ Web/
 │   ├── clients.html        # Clients management
 │   ├── subscriptions.html  # Subscriptions management
 │   ├── script.js           # Client-side booking logic
-│   ├── login.js            # Login form with CAPTCHA
-│   ├── admin.js            # Admin panel main logic (1382 lines)
+│   ├── login.js            # Login form logic
+│   ├── admin.js            # Admin panel main logic
 │   ├── styles.css          # Public page styles
 │   ├── admin.css           # Admin panel styles
-│   ├── constants.js        # Shared constants
-│   ├── modules/            # Modular components
-│   │   ├── admin-bookings.js
-│   │   ├── admin-calendar.js
-│   │   ├── clients-history.js
-│   │   └── clients-info.js
 │   └── Images/             # Logo, icons, photos
 │       ├── interior1.jfif
 │       ├── interior2.jfif
@@ -660,7 +652,6 @@ Web/
 │       ├── interior4.jfif
 │       ├── loni.jfif
 │       └── text.jfif
-└── .vercel/               # Vercel configuration
 ```
 
 ---
@@ -758,7 +749,7 @@ Web/
 - Protected admin pages (requireAuth middleware)
 - CAPTCHA on login form
 - HTTP-only cookies in production
-- Secure cookies (HTTPS on Vercel)
+- Secure cookies in production
 - Development mode skips auth for testing
 
 ⚠️ **Considerations**
@@ -837,35 +828,6 @@ ACCOUNT_LOCKOUT_DURATION_MS=1800000
 - **CSRF Protection**: Tokens validated on login and form submissions
 - **Session Security**: HttpOnly, SameSite=strict cookies
 
-## Known Issues & TODOs
-
-### Medium Priority
-- [ ] Add email notifications for bookings
-- [ ] Multi-language support (currently Bulgarian/English)
-- [ ] Data export functionality (CSV/PDF)
-- [ ] Email reminders before bookings
-- [ ] SMS notifications option
-- [ ] Mobile app or responsive improvements
-- [ ] Analytics dashboard
-- [ ] Add dbstate table to track major table versions
-
-### Low Priority
-- [ ] Performance optimization (lazy loading, caching)
-- [ ] Add booking cancellation by clients
-- [ ] Subscription renewal reminders
-- [ ] Client waitlist for fully booked slots
-- [ ] Dynamic pricing by slot
-
-### Technical Debt
-- [ ] Refactor admin.js (1382 lines - too large)
-- [ ] Extract modules from main admin.js into separate files
-- [ ] Add unit tests
-- [ ] Add API documentation
-- [ ] Improve CSS organization (consolidate admin.css & styles.css)
-- [ ] Add input validation and sanitization
-- [ ] Replace custom class system with modern patterns
-
----
 
 ## Current Functionality Checklist
 
@@ -913,11 +875,11 @@ npm start
 # Login bypassed in development
 ```
 
-### Production (Vercel)
+### Production
 ```
 NODE_ENV=production
 Auth enabled: Full login required
-HTTPS: Enabled
+HTTPS: Enabled by hosting environment
 Session timeout: 15 minutes
 ```
 

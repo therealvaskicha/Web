@@ -26,11 +26,15 @@ async function deactivateHoliday(req, res) {
         const { date } = req.body;
         
         if (!date) {
-            return res.status(400).json({ error: 'Дата е задължителна' });
+            return res.status(400).json({ error: 'Датата е задължителна' });
         }
         
-        await holidayDomain.deactivateHoliday(date);
-        res.json({ message: 'Празник е деактивиран' });
+        const result = await holidayDomain.deactivateHoliday(date);
+        if (result && result.success) {
+            res.json({ message: 'Празникът е премахнат' });
+        } else {
+            res.status(404).json({ error: result && result.message ? result.message : 'Празникът не е намерен' });
+        }
     } catch (err) {
         console.error('Deactivate holiday controller error:', err);
         res.status(500).json({ error: err.message });

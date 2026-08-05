@@ -187,6 +187,19 @@
   </div>
 </section>
 
+<div class="dialog-overlay" id="dialogOverlay"></div>
+<div class="dialog-modal" id="dialogModal" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+  <div class="dialog-content">
+    <h3 id="dialog-title" class="dialog-title"></h3>
+    <p class="dialog-message"></p>
+    <input type="text" class="dialog-input" id="dialogInput" autocomplete="off" />
+  </div>
+  <div class="dialog-actions">
+    <button type="button" class="dialog-btn dialog-cancel-btn">Отказ</button>
+    <button type="button" class="dialog-btn dialog-confirm-btn">Да</button>
+  </div>
+</div>
+
 <div class="hovering">
     <img src="Images/exit-icon.png" alt="Logout" id="logout-btn" class="logout-btn"></img>
     <img src="Images/settings-icon.svg" alt="Settings" id="settings-btn" class="settings-btn"></img>

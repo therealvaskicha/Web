@@ -226,6 +226,138 @@ class ModalController {
     }
 }
 
+class ConfirmationDialog {
+    constructor() {
+        this.overlay = document.getElementById('dialogOverlay');
+        this.modal = document.getElementById('dialogModal');
+        this.titleEl = this.modal?.querySelector('.dialog-title');
+        this.messageEl = this.modal?.querySelector('.dialog-message');
+        this.input = this.modal?.querySelector('.dialog-input');
+        this.confirmBtn = this.modal?.querySelector('.dialog-confirm-btn');
+        this.cancelBtn = this.modal?.querySelector('.dialog-cancel-btn');
+        this.resolve = null;
+        this._handleKeyDown = this._handleKeyDown.bind(this);
+    }
+
+    open() {
+        if (!this.modal || !this.overlay) return;
+        this.modal.classList.add('active');
+        this.overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        document.addEventListener('keydown', this._handleKeyDown);
+    }
+
+    close() {
+        if (!this.modal || !this.overlay) return;
+        this.modal.classList.remove('active');
+        this.overlay.classList.remove('active');
+        document.body.style.overflow = '';
+        document.removeEventListener('keydown', this._handleKeyDown);
+        this.confirmBtn.onclick = null;
+        this.cancelBtn.onclick = null;
+        this.overlay.onclick = null;
+    }
+
+    _handleKeyDown(e) {
+        if (!this.modal.classList.contains('active')) return;
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            this._resolve(false, null);
+        }
+        if (e.key === 'Enter' && this.input.style.display !== 'none') {
+            e.preventDefault();
+            this._resolve(true, this.input.value);
+        }
+    }
+
+    _resolve(confirmed, value) {
+        if (typeof this.resolve !== 'function') return;
+        const resolve = this.resolve;
+        this.resolve = null;
+        this.close();
+
+        if (value !== undefined) {
+            resolve(value);
+        } else {
+            resolve(confirmed);
+        }
+    }
+
+    show({
+        title = 'Потвърждение',
+        message = '',
+        type = 'confirm',
+        confirmText = 'Да',
+        cancelText = 'Отказ',
+        defaultValue = '',
+        placeholder = ''
+    } = {}) {
+        if (!this.modal) return Promise.resolve(type === 'prompt' ? null : false);
+
+        this.titleEl.textContent = title;
+        this.messageEl.textContent = message;
+        this.confirmBtn.textContent = confirmText;
+        this.cancelBtn.textContent = cancelText;
+
+        if (type === 'prompt') {
+            this.input.style.display = 'block';
+            this.input.value = defaultValue;
+            this.input.placeholder = placeholder;
+            setTimeout(() => this.input.focus(), 20);
+        } else {
+            this.input.style.display = 'none';
+        }
+
+        if (type === 'alert') {
+            this.cancelBtn.style.display = 'none';
+        } else {
+            this.cancelBtn.style.display = '';
+        }
+
+        this.open();
+
+        return new Promise((resolve) => {
+            this.resolve = resolve;
+
+            this.confirmBtn.onclick = () => {
+                if (type === 'prompt') {
+                    this._resolve(true, this.input.value);
+                } else {
+                    this._resolve(true);
+                }
+            };
+
+            this.cancelBtn.onclick = () => {
+                if (type === 'prompt') {
+                    this._resolve(false, null);
+                } else {
+                    this._resolve(false);
+                }
+            };
+
+            this.overlay.onclick = () => {
+                if (type === 'prompt') {
+                    this._resolve(false, null);
+                } else {
+                    this._resolve(false);
+                }
+            };
+        });
+    }
+
+    alert(message, title = 'Информация', confirmText = 'ОК') {
+        return this.show({ type: 'alert', title, message, confirmText, cancelText: '' });
+    }
+
+    confirm(message, title = 'Потвърждение', confirmText = 'Да', cancelText = 'Отказ') {
+        return this.show({ type: 'confirm', title, message, confirmText, cancelText });
+    }
+
+    prompt(message, defaultValue = '', title = 'Потвърждение', placeholder = '') {
+        return this.show({ type: 'prompt', title, message, defaultValue, placeholder, confirmText: 'Запази', cancelText: 'Откажи' });
+    }
+}
+
 class PaginationController {
     constructor(tableId, paginationContainerId, recordsPerPage = 10) {
         this.table = document.getElementById(tableId);
@@ -324,7 +456,11 @@ class PaginationController {
     
     function errorHandler(error, message) {
         console.error(message, error);
-        alert(message);
+        if (confirmationDialog) {
+            confirmationDialog.alert(message, 'Грешка');
+        } else {
+            alert(message);
+        }
     }
     
     function formatClientDate(dateString) {
@@ -360,6 +496,7 @@ class PaginationController {
 
 document.addEventListener('DOMContentLoaded', function() {
 let historyFilterController = null;
+let confirmationDialog = null;
 
 // Logout button handler
 const logoutBtn = document.getElementById('logout-btn');
@@ -370,7 +507,7 @@ if (logoutBtn) {
             window.location.href = '/login.html';
         } catch (error) {
             console.error('Logout error:', error);
-            alert('Error during logout');
+                await confirmationDialog.alert('Грешка при излизане. Опитайте отново.', 'Грешка');
         }
     });
 }
@@ -385,6 +522,88 @@ if (logoutBtn) {
         loadHolidays();
 
         const requestModal = new ModalController('requestModal', '.add-booking-btn', '#cancel-booking');
+        confirmationDialog = new ConfirmationDialog();
+
+        function formatRequestTitle(compositeKey) {
+            if (!compositeKey) return 'Потвърждение';
+            const [firstName, lastName, date, time, booking_type] = compositeKey.split('|');
+            return `${firstName} ${lastName} ${date} ${time} ${booking_type}`;
+        }
+
+        function isFullDayTime(time) {
+            return time === null || time === '00:00' || time === '00:00:00';
+        }
+
+        function formatHolidayLabel(date, time) {
+            return isFullDayTime(time) ? `${date} цял ден` : `${date} ${time}`;
+        }
+
+        function normalizeHolidayDateTime(dateTime) {
+            if (!dateTime || typeof dateTime !== 'string') return dateTime;
+            let normalized = dateTime.trim().replace('T', ' ');
+            if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+                normalized = `${normalized} 00:00:00`;
+            } else if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(normalized)) {
+                normalized = `${normalized}:00`;
+            }
+            return normalized;
+        }
+
+        function formatTimeRanges(times) {
+            const actualTimes = times.filter(time => !isFullDayTime(time));
+            if (!actualTimes || actualTimes.length === 0) return '';
+            const sorted = [...new Set(actualTimes)].sort();
+            const ranges = [];
+            let rangeStart = sorted[0];
+            let previous = sorted[0];
+
+            const nextHour = (time) => {
+                const [h, m] = time.split(':').map(Number);
+                return `${String(h + 1).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            };
+
+            for (let i = 1; i < sorted.length; i++) {
+                const current = sorted[i];
+                if (current === nextHour(previous)) {
+                    previous = current;
+                } else {
+                    ranges.push(rangeStart === previous ? `${rangeStart}-${nextHour(previous)}` : `${rangeStart}-${nextHour(previous)}`);
+                    rangeStart = current;
+                    previous = current;
+                }
+            }
+            ranges.push(rangeStart === previous ? `${rangeStart}-${nextHour(previous)}` : `${rangeStart}-${nextHour(previous)}`);
+            return ranges.join(', ');
+        }
+
+        function buildHolidaySummary(holidays) {
+            const grouped = holidays.reduce((acc, holiday) => {
+                const key = holiday.date;
+                acc[key] = acc[key] || [];
+                acc[key].push(holiday.time);
+                return acc;
+            }, {});
+
+            return Object.entries(grouped).map(([date, times]) => {
+                if (times.some(time => isFullDayTime(time))) {
+                    return `${date} цял ден`;
+                }
+                return `${date} ${formatTimeRanges(times)}`;
+            }).join('\n');
+        }
+
+        function parseHolidayId(id) {
+            if (!id) return { date: '', time: '' };
+            const parts = id.trim().split(' ');
+            const date = parts.slice(0, 1).join(' ');
+            const time = parts.slice(1).join(' ');
+            return { date, time };
+        }
+
+        function formatHolidayTitleFromId(id) {
+            const { date, time } = parseHolidayId(id);
+            return formatHolidayLabel(date, time);
+        }
 
         requestModal.onSubmit(handleRequestFormSubmit);
 
@@ -397,13 +616,14 @@ if (logoutBtn) {
                     
                     // Validate ID exists
                     if (!datetime) {
-                        alert('Грешка: Не намирам празника. Опитайте да обновите страницата.');
+                        await confirmationDialog.alert('Грешка: Не намирам празника. Опитайте да обновите страницата.', 'Грешка');
                         console.error('Невалиден празничен идентификатор:', datetime);
                         return;
                     }
                     
-                    if (confirm('Сигурни ли сте, че искате да премахнете този почивен ден?')) {
-                        await deleteHoliday(datetime);
+                    const holidayLabel = formatHolidayTitleFromId(datetime);
+                    if (await confirmationDialog.confirm('Сигурни ли сте, че искате да премахнете този почивен ден?', holidayLabel)) {
+                        await deleteHoliday(normalizeHolidayDateTime(datetime));
                         await loadHolidays();
                     }
                 }
@@ -584,12 +804,10 @@ if (logoutBtn) {
                         const dateStr = date.toISOString().split('T')[0];
                         const dayCol = weekRow.children[d];
                         const slotsCol = dayCol.querySelector('.calendar-slots-col');
-                        // Check for full-day holiday (time === '00:00:00')
-                        const fullDayHoliday = holidays.find(h => h.date === dateStr && h.time === '00:00:00');
+                        // Check for full-day holiday (time === '00:00' or '00:00:00')
+                        const fullDayHoliday = holidays.some(h => h.date === dateStr && (h.time === '00:00' || h.time === '00:00:00'));
                         if (fullDayHoliday) {
                             dayCol.classList.add('holiday');
-                            slotsCol.innerHTML = '<div class="holiday-label">Почивен ден</div>';
-                            continue;
                         }
                         times.forEach(time => {
                             const taken = approved.some(b => b.date === dateStr && b.time === time) || 
@@ -606,7 +824,8 @@ if (logoutBtn) {
                             if (isHoliday) {
                                 const holiday = holidays.find(h => h.date === dateStr && (h.time === '00:00' || h.time === time));
                                 slotBtn.classList.add('holiday');
-                                slotBtn.title = `${holiday.description || 'Неработен'}`
+                                slotBtn.title = `${holiday.description || 'Неработен'}`;
+                                slotBtn.disabled = true;
                             } else if (taken) {
                                 const request = approved.find(b => b.date === dateStr && b.time === time) ||
                                                 bookings.find(b => b.date === dateStr && b.time === time);
@@ -757,29 +976,34 @@ if (logoutBtn) {
                     });
 
                     if (conflicts.length > 0) {
-                        alert(`Не може да добавите почивка поради следните причини:\n\n${conflicts.join('\n')}`);
+                        await confirmationDialog.alert(`Не може да добавите почивка поради следните причини:\n\n${conflicts.join('\n')}`, 'Грешка');
                         return;
                     }
 
                     if (holidays.length === 0) {
-                        alert('Моля, изберете дни или часове за почивка');
+                        await confirmationDialog.alert('Моля, изберете дни или часове за почивка', 'Няма избрани слотове');
                         return;
                     }
 
-                    // Get description once before processing
-                    const description = prompt('Добавете описание (по желание):');
+                    const summary = buildHolidaySummary(holidays);
+                    const confirmQuestion = 'Сигурни ли сте, че искате да добавите тези почивни дни?';
+                    if (!await confirmationDialog.confirm(confirmQuestion, summary)) {
+                        return;
+                    }
+
+                    const description = await confirmationDialog.prompt('Добавете описание (по желание):');
                     if (description === null) return; // User clicked Cancel
 
                     const result = await APIService.addHoliday(holidays, description);
 
                     if (result && result.message) {
-                        alert(result.message);
+                        await confirmationDialog.alert(result.message, 'Успех');
                         // Clear selections
                         headers.forEach(h => h.classList.remove('selected'));
                         slots.forEach(s => s.classList.remove('selected'));
                         renderWeek(weekStart);
                     } else {
-                        alert(result.error || 'Грешка при добавяне на почивка');
+                        await confirmationDialog.alert(result.error || 'Грешка при добавяне на почивка', 'Грешка');
                     }
                     loadHolidays();
                 };
@@ -794,12 +1018,12 @@ if (logoutBtn) {
                 }
                 const result = await APIService.deleteHoliday(date);
                 if (result && result.message) {
-                    alert(result.message);
+                    await confirmationDialog.alert(result.message, 'Успех');
                     const weekStart = new Date();
                     weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
                     renderWeek(weekStart);
                 } else {
-                    alert(result.error || 'Грешка при изтриване');
+                    await confirmationDialog.alert(result.error || 'Грешка при изтриване', 'Грешка');
                 }
             } catch (error) {
                 // Check if it's a "holiday not found" error
@@ -824,7 +1048,7 @@ if (logoutBtn) {
             // Use first selected slot from array
             const selectedSlot = getFirstSelectedSlot();
             if (!selectedSlot) {
-                alert('Моля, изберете дата и час от календара.');
+                await confirmationDialog.alert('Моля, изберете дата и час от календара.', 'Грешка');
                 return;
             }
 
@@ -841,7 +1065,7 @@ if (logoutBtn) {
                     subscribe_email
                 });
                 if (result.error) {
-                    alert(result.error);
+                    await confirmationDialog.alert(result.error, 'Грешка');
                 } else {
                     // Construct composite key for the newly created request
                     const compositeKey = `${firstName}|${lastName}|${selectedSlot.date}|${selectedSlot.time}|${booking_type}`;
@@ -876,15 +1100,15 @@ if (logoutBtn) {
             
             pendingBookingsTable.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('approve-btn')) {
-                    if (confirm('Сигурни ли сте, че искате да одобрите този час?')) {
-                        const key = e.target.dataset.key;
+                    const key = e.target.dataset.key;
+                    if (await confirmationDialog.confirm('Сигурни ли сте, че искате да одобрите този час?', formatRequestTitle(key))) {
                         await updateRequest(key, 1);
                         document.getElementById('booking-date-hour').value = '';
                     }
                 }
                 if (e.target.classList.contains('reject-btn')) {             
-                    if (confirm('Сигурни ли сте, че искате да откажете този час?')) {
-                        const key = e.target.dataset.key;
+                    const key = e.target.dataset.key;
+                    if (await confirmationDialog.confirm('Сигурни ли сте, че искате да откажете този час?', formatRequestTitle(key))) {
                         await updateRequest(key, 2);
                     }   
                 }
@@ -979,7 +1203,11 @@ if (logoutBtn) {
                     throw new Error('Invalid action: ' + action);
                 }
                 
-                alert(result.message || result.error);
+                    if (confirmationDialog) {
+                        await confirmationDialog.alert(result.message || result.error, result.error ? 'Грешка' : 'Успех');
+                    } else {
+                        alert(result.message || result.error);
+                    }
                 loadPending();
                 loadRequests();
 
@@ -1060,8 +1288,8 @@ if (logoutBtn) {
             // Add event delegation for cancel button
             approvedBookingsTable.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('cancel-btn')) {
-                    if (confirm('Сигурни ли сте, че искате да отмените този час?')) {
-                        const key = e.target.dataset.key;
+                    const key = e.target.dataset.key;
+                    if (await confirmationDialog.confirm('Сигурни ли сте, че искате да отмените този час?', formatRequestTitle(key))) {
                         await updateRequest(key, 3);
                     }
                 }
@@ -1142,7 +1370,7 @@ if (logoutBtn) {
                 window.location.reload();
             } catch (error) {
                 console.error('Error filling bookings: ', error);
-                alert('Грешка при обновяване на резервациите. Моля, опитайте отново.');
+                await confirmationDialog.alert('Грешка при обновяване на резервациите. Моля, опитайте отново.', 'Грешка');
             }})
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
@@ -1151,7 +1379,7 @@ if (logoutBtn) {
             window.location.href = '/login.html';
         } catch (error) {
             console.error('Logout error:', error);
-            alert('Error during logout');
+            await confirmationDialog.alert('Грешка при излизане. Опитайте отново.', 'Грешка');
         }
         });
     }
@@ -1606,7 +1834,11 @@ if (logoutBtn) {
             window.location.href = '/login.html';
         } catch (error) {
             console.error('Logout error:', error);
-            alert('Error during logout');
+            if (confirmationDialog) {
+                await confirmationDialog.alert('Грешка при излизане. Опитайте отново.', 'Грешка');
+            } else {
+                alert('Error during logout');
+            }
         }
         });
     }
@@ -1622,7 +1854,11 @@ if (logoutBtn) {
             window.location.href = '/login.html';
         } catch (error) {
             console.error('Logout error:', error);
-            alert('Error during logout');
+            if (confirmationDialog) {
+                await confirmationDialog.alert('Грешка при излизане. Опитайте отново.', 'Грешка');
+            } else {
+                alert('Error during logout');
+            }
         }
         });
     }
