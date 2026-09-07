@@ -21,20 +21,22 @@
     --holiday-color-dark: #362b3e;
     --hover-color: #d4f6ff76;
 
-    --default-box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
-    --mobile-font-size-small: 0.875rem;
-    --mobile-table-font-size: 0.75rem;
-    --mobile-font-size-medium: 1rem;
-    --mobile-font-size-large: 1.125rem;
-    --mobile-font-size-title: 1.25rem;
-    --mobile-btn-font-size: 0.875rem;
-    --font-size-small: 0.875rem;
-    --font-size: 1rem;
-    --font-size-title: 1.5rem;
-    --font-size-h2: 1.35rem;
-    --font-size-h3: 1.125rem;
-    --default-font-family: 'Lora', sans-serif;
-    --standard-border-radius: 1rem;
+    --box-shdw: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
+    --m-font-xs: 0.75rem;
+    --m-font-s: 0.875rem;
+    --m-font-m: 1rem;
+    --m-font-l: 1.125rem;
+    --m-font-title: 1.25rem;
+    --m-table-font-m: 0.75rem;
+    --m-table-font-s: 0.625rem;
+    --m-btn-font: 0.875rem;
+    --font-s: 0.875rem;
+    --font: 1rem;
+    --font-title: 1.5rem;
+    --font-h2: 1.35rem;
+    --font-h3: 1.125rem;
+    --default-font-fam: 'Lora', sans-serif;
+    --border-radius-m: 1rem;
     --default-filter: drop-shadow(0 0 0.05rem var(--holiday-color-dark));
     --default-filter-thick: drop-shadow(0 0 0.125rem var(--holiday-color-dark));
     --default-filter-banana:drop-shadow(0 0 0.25rem var(--taken-color));
@@ -46,7 +48,7 @@
     margin: 100px auto;
     padding: 2rem;
     background: var(--default-background-color);
-    border-radius: var(--standard-border-radius);
+    border-radius: var(--border-radius-m);
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
 }
 
@@ -64,7 +66,7 @@
 
 #captcha-canvas {
     border: 1px solid #ddd;
-    border-radius: var(--standard-border-radius);
+    border-radius: var(--border-radius-m);
 }
 
 #refresh-captcha {
@@ -72,7 +74,7 @@
     border: none;
     background: #f0f0f0;
     cursor: pointer;
-    border-radius: var(--standard-border-radius);
+    border-radius: var(--border-radius-m);
 }
 
 /* START ADMIN CSS */
@@ -92,7 +94,7 @@ html {
 body {
     /* background: #e7e7e1; */
     background: var(--default-background-color);
-    font-family: var(--default-font-family);
+    font-family: var(--default-font-fam);
     color: var(--text-color);
     cursor: default;
 }
@@ -117,25 +119,31 @@ h1, h2, h3, h4 {
 }
 
 h1 {
-  font-size:var(--font-size-title);
+  font-size:var(--font-title);
   justify-self:center;
 }
 
 h2 {
-    font-size: var(--font-size-h2);
+    font-size: var(--font-h2);
     padding: 0.375rem 0;
 }
 
 h3 {
-    font-size:var(--font-size-h3);
+    font-size:var(--font-h3);
+    width:100%;
 }
 
 h4 {
-    font-size: var(--font-size-small);
+    font-size: var(--font-s);
 }
 
-small,label, select, option, .no-data-message {
-  font-size: var(--font-size);
+label, select, option, .no-data-message {
+  font-size: var(--font);
+}
+
+small {
+  font-size: var(--font-xs);
+  color: var(--text-secondary-color);
 }
 
 a {
@@ -304,7 +312,7 @@ ul {
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: var(--default-box-shadow);
+      box-shadow: var(--box-shdw);
     }
 
   /* Subscriptions page grid */
@@ -333,28 +341,28 @@ table tr th {
   padding: 0.5rem;
 }
 
+tr {
+  border-bottom: 0.05rem solid var(--primary-color);
+}
+
 th, td { 
-  border-left: 0.065rem solid var(--primary-color);
   padding: 0.125rem; 
   text-align: center; 
 }
 
 td {
-  font-size: var(--font-size-small);
+  font-size: var(--font-s);
   padding: 0.375rem;
 }
 
-th, td:first-child { border-left: none; }
-
 th {
-  font-size:var(--font-size);
+  font-size:var(--font);
   margin-bottom:0.125rem;
   font-weight: 300;
 }
 
 tbody {
-  outline: 0.05rem solid var(--primary-color);
-  box-shadow: var(--default-box-shadow);
+  box-shadow: var(--box-shdw);
 }
 
 tbody tr:hover {
@@ -410,8 +418,8 @@ button {
     border: none;
     border-radius: 0.5rem;
     padding: 0.4rem 0.6rem;
-    font-size: var(--font-size);
-    font-family: var(--default-font-family);
+    font-size: var(--font);
+    font-family: var(--default-font-fam);
     font-weight: 300;
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
@@ -501,8 +509,8 @@ button:hover {
     z-index: 1006;
     background-color: var(--default-background-color);
     padding: 20px;
-    border-radius: var(--standard-border-radius);
-    box-shadow: var(--default-box-shadow);
+    border-radius: var(--border-radius-m);
+    box-shadow: var(--box-shdw);
     opacity: 0;
     transition: all 0.3s ease-in-out;
     max-width: 90%;
@@ -539,8 +547,8 @@ button:hover {
     z-index: 1006;
     background-color: var(--default-background-color);
     padding: 1.25rem;
-    border-radius: var(--standard-border-radius);
-    box-shadow: var(--default-box-shadow);
+    border-radius: var(--border-radius-m);
+    box-shadow: var(--box-shdw);
     opacity: 0;
     transition: all 0.2s ease-in-out;
     max-width: 90%;
@@ -582,7 +590,7 @@ button:hover {
 
 .dialog-btn {
     border: none;
-    border-radius: var(--standard-border-radius);
+    border-radius: var(--border-radius-m);
     background: var(--approve-color);
     cursor: pointer;
     transition: filter 0.15s ease-in-out;
@@ -615,10 +623,10 @@ button:hover {
 .history-filters input {
     padding: 0.25rem 0.5rem;
     margin-top: 0.125rem;
-    border-radius: var(--standard-border-radius);
+    border-radius: var(--border-radius-m);
     border: 1px solid var(--primary-color);
-    font-size: var(--font-size);
-    font-family: var(--default-font-family);
+    font-size: var(--font);
+    font-family: var(--default-font-fam);
 }
 
 .history-filters .clear-filter {
@@ -640,14 +648,14 @@ select {
     width: 100%;
     padding: 0.375rem 1rem;
     margin-top: 0.25rem;
-    border-radius: var(--standard-border-radius);
+    border-radius: var(--border-radius-m);
     border: 1px solid var(--primary-color);
-    font-size: var(--font-size)
+    font-size: var(--font)
 }
 
 .booking-hint {
   color: var(--text-color);
-  font-size: var(--mobile-font-size-small);
+  font-size: var(--m-font-s);
   margin-top: 0.5rem;
   display: block;
 }
@@ -670,8 +678,8 @@ select {
 .calendar-wrap{
   padding: 0.5rem;
   background-color: var(--default-background-color);
-  border-radius: var(--standard-border-radius);
-  box-shadow: var(--default-box-shadow);
+  border-radius: var(--border-radius-m);
+  box-shadow: var(--box-shdw);
 }
 
 /* #admin-calendar {
@@ -709,10 +717,10 @@ select {
 }
 
 .calendar-day-header {
-    font-size: var(--font-size);
+    font-size: var(--font);
     background: var(--default-background-color);
     text-align: center;
-    box-shadow: var(--default-box-shadow);
+    box-shadow: var(--box-shdw);
     border-radius:0.25rem;
     padding:0.125rem;
     cursor:default;
@@ -738,13 +746,13 @@ select {
 }
 
 .slot {
-    font-family: var(--default-font-family);
+    font-family: var(--default-font-fam);
     border: none;
     border-radius: 0.25rem;
     padding: 0.25rem 0.5rem;
     margin: 0.125rem 0.05rem 0rem 0.05rem;
     cursor: pointer;
-    font-size: var(--font-size-small);
+    font-size: var(--font-s);
     transition: background 0.2s;
 }
 
@@ -804,7 +812,7 @@ select {
 .hint {
     margin-top:0.5rem;
     text-align:center;
-    font-size: var(--font-size);
+    font-size: var(--font);
     scroll-margin-top:5rem;
 }
 
@@ -819,7 +827,7 @@ select {
     background: var(--primary-color);
     color: var(--text-color);
     border: none;
-    font-family: var(--default-font-family);
+    font-family: var(--default-font-fam);
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
 }
@@ -843,7 +851,7 @@ select {
 
 .no-data-message {
     text-align: center;
-    font-size: var(--font-size);
+    font-size: var(--font);
     padding: 1rem;
     color: var(--text-secondary-color);
 }
@@ -854,14 +862,14 @@ select {
     flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
-    font-size: var(--mobile-font-size-small);
+    font-size: var(--m-font-s);
     gap: 0.25rem;
     margin-bottom:5em;
 }
 
 .links {
     position:relative;
-    font-family: var(--default-font-family);
+    font-family: var(--default-font-fam);
     text-decoration: none;
     color: var(--holiday-color-dark);
 }
@@ -949,7 +957,7 @@ select {
     margin-bottom: 0.5rem;
     padding: 0.5rem;
     background: var(--default-background-color);
-    box-shadow: var(--default-box-shadow);
+    box-shadow: var(--box-shdw);
     border: 0.05rem solid var(--primary-color);
     width:100%;
 }
@@ -966,7 +974,7 @@ select {
     padding: 0.25rem 0;
     border-bottom: 0.05rem solid var(--primary-color);
     align-items: center;
-    font-size: var(--font-size-small);
+    font-size: var(--font-s);
 }
 
 .info-item:hover {
@@ -1001,8 +1009,8 @@ select {
     padding: 1rem;
     background: white;
     border: 1px solid #e0e0e0;
-    border-radius: var(--standard-border-radius);
-    box-shadow: var(--default-box-shadow);
+    border-radius: var(--border-radius-m);
+    box-shadow: var(--box-shdw);
 }
 
 .card-item:hover {
@@ -1018,7 +1026,7 @@ select {
 .card-item-detail {
     display: flex;
     justify-content: space-between;
-    font-size: var(--mobile-font-size-small);
+    font-size: var(--m-font-s);
     align-items: center;
     padding:0.125rem;
 }
@@ -1026,12 +1034,12 @@ select {
 .card-item-detail label {
     font-weight: 600;
     margin-top:0;
-    font-size: var(--mobile-font-size-small);
+    font-size: var(--m-font-s);
 }
 
 .edit-client-btn {
     margin-top: 0.5rem;
-    font-size: var(--font-size);
+    font-size: var(--font);
 }
 
  .bookings-history {
@@ -1070,25 +1078,29 @@ select {
 }
 
 h1 {
-  font-size: var(--mobile-font-size-title);
+  font-size: var(--m-font-title);
 }
 
 h2 {
-  font-size: var(--mobile-font-size-large);
+  font-size: var(--m-font-l);
   font-weight: 700;
 }
 
 h3 {
-    font-size:var(--mobile-font-size-medium);
+    font-size:var(--m-font-m);
 }
 
 p {
-  font-size: var(--mobile-font-size-medium);
+  font-size: var(--m-font-m);
 }
 
-small,label, select, option, .no-data-message {
-  font-size: var(--mobile-font-size-small);
-  font-family: var(--default-font-family);
+label, select, option, .no-data-message {
+  font-size: var(--m-font-s);
+  font-family: var(--default-font-fam);
+}
+
+small {
+  font-size: var(--m-font-xs);
 }
 
 .no-data-message {
@@ -1130,7 +1142,7 @@ section {
 }
 
 #login-form label {
-  font-size:var(--font-size-large);
+  font-size:var(--font-large);
 }
 
 #login-form .logo {
@@ -1139,7 +1151,7 @@ section {
 }
 
 .login-button {
-  font-size: var(--font-size-large);
+  font-size: var(--font-large);
   width:10rem;
 }
 
@@ -1185,7 +1197,7 @@ section {
 }
 
 .dialog-actions button {
-  font-size: var(--mobile-font-size-medium);
+  font-size: var(--m-font-m);
 }
 
 /* GRID SECTIONS */
@@ -1215,27 +1227,23 @@ section {
 
 /* Table adjustments */
 table {
-  font-size: var(--mobile-font-size-small);
+  font-size: var(--m-font-s);
 }
 
 th {
   padding: 0.125rem;
-  font-size: var(--mobile-font-size-small);
+  font-size: var(--m-font-s);
 }
 
 td {
-  font-size: var(--mobile-table-font-size);
+  font-size: var(--m-table-font-m);
   padding:0.05rem;
-}
-
-th, td {
-  border-left: 1px solid var(--primary-color);
 }
 
 th, td:first-child { border-left: none; }
 
 button {
-  font-size: var(--mobile-font-size-small);
+  font-size: var(--m-font-s);
   margin: 0.2rem;
 }
 
@@ -1262,10 +1270,10 @@ button {
 }
 
 #startDate, #endDate {
-  font-size: var(--mobile-font-size-small);
+  font-size: var(--m-font-s);
 }
 
-/* Calendar adjustments for mobile */
+/* Calendar adjustments for mbl */
 /* #admin-calendar {
   min-height:23rem;
 } */
@@ -1298,7 +1306,7 @@ button {
 }
 
 .calendar-day-header{
-  font-size: var(--mobile-font-size-small);
+  font-size: var(--m-font-s);
 }
 
 .slot {
@@ -1309,7 +1317,7 @@ button {
 
 .pagination-btn {
     padding: 0.3rem 0.7rem;
-    font-size: var(--mobile-font-size-small);
+    font-size: var(--m-font-s);
 }
 
 .website-signature {
@@ -1325,17 +1333,17 @@ button {
   /* .client-list {
   } */
 
-    .mobile-only {
+    .m-only {
       display:flex;
       align-items:center;
     }
-      .mobile-only .container {
+      .m-only .container {
         position: fixed;
         top: 50vh;
         right: -40vw;
         padding: 0.5rem;
         background-color: var(--primary-color);
-        box-shadow: var(--default-box-shadow);
+        box-shadow: var(--box-shdw);
         border-radius: 1.5rem;
         border-bottom-right-radius: 0;
         border-top-right-radius: 0;
@@ -1348,11 +1356,11 @@ button {
         touch-action: auto;
       }
 
-      .mobile-only .container:active {
+      .m-only .container:active {
         right: 0;
         pointer-events: auto;
       }
-      .mobile-only .showhide {
+      .m-only .showhide {
         top: 50vh;
         height: 4.2rem;
         width: 2.25rem;
@@ -1371,7 +1379,7 @@ button {
         touch-action: none;
       }
 
-      .mobile-only .showhide:active {
+      .m-only .showhide:active {
         cursor: grabbing;
         background-color: var(--primary-color);
       }

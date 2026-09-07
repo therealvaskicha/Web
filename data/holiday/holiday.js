@@ -40,41 +40,25 @@ async function deactivateHoliday(date) {
             if (/^\d{4}-\d{2}-\d{2}$/.test(dt)) dt = `${dt} 00:00:00`;
             else if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(dt)) dt = `${dt}:00`;
         }
-
-        // debug log removed
-
-        // First try stored procedure (keeps existing DB contract)
-        await db.query(queries.deactivateHoliday, [dt]);
-
-        // Then try a direct UPDATE to ensure row was actually changed (fallback)
+        // Use stored procedure only. Run it on a dedicated connection so
+        // we can immediately check ROW_COUNT() on the same session.
+        const connection = await db.getConnection();
         try {
-            const res = await db.query('UPDATE holidays SET is_active = 0 WHERE is_active = 1 AND date = ?', [dt]);
-            // Some mysql drivers return an object with affectedRows
-            const affected = res && (res.affectedRows || res.affected_rows || res.affected || 0);
-            if (affected > 0) {
-                return { success: true };
+            await connection.query(queries.deactivateHoliday, [dt]);
+
+            const rcRows = await connection.query('SELECT ROW_COUNT() AS rc;');
+            const rcNorm = normalizeRows(rcRows);
+            let rc = 0;
+            if (Array.isArray(rcNorm)) {
+                if (rcNorm.length > 0 && rcNorm[0] && typeof rcNorm[0].rc !== 'undefined') rc = rcNorm[0].rc;
+            } else if (rcNorm && typeof rcNorm.rc !== 'undefined') {
+                rc = rcNorm.rc;
             }
 
-            // Fallback: maybe stored datetimes differ by seconds - try matching by minute precision
-            const dtMinute = (typeof dt === 'string') ? dt.replace(/:\d{2}$/, ':00') : dt;
-            const res2 = await db.query('UPDATE holidays SET is_active = 0 WHERE is_active = 1 AND DATE_FORMAT(date, "%Y-%m-%d %H:%i:00") = ?', [dtMinute]);
-            const affected2 = res2 && (res2.affectedRows || res2.affected_rows || res2.affected || 0);
-            if (affected2 > 0) return { success: true };
-
-            // Final fallback: if the intention was to deactivate an entire day, match by DATE()
-            const dateOnly = (typeof dt === 'string') ? dt.split(' ')[0] : null;
-            if (dateOnly) {
-                const res3 = await db.query('UPDATE holidays SET is_active = 0 WHERE is_active = 1 AND DATE(date) = ?', [dateOnly]);
-                const affected3 = res3 && (res3.affectedRows || res3.affected_rows || res3.affected || 0);
-                if (affected3 > 0) return { success: true };
-            }
-
-            // Nothing changed
+            if (rc > 0) return { success: true };
             return { success: false, message: 'Няма намерени записи за деактивиране' };
-        } catch (innerErr) {
-            console.error('Deactivate fallback UPDATE error:', innerErr);
-            // Even if update fallback fails, the SP might have already done the work
-            return { success: true };
+        } finally {
+            await connection.end();
         }
     } catch (error) {
         console.error('Deactivate holiday error:', error);

@@ -75,10 +75,12 @@ class APIService {
 
     // Delete holiday
     static async deleteHoliday(date) {
+        // Accept either a string `date` or an object payload { date, times }
+        const payload = (typeof date === 'object' && date !== null) ? date : { date };
         return this.request('/api/disable-holiday', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ date })
+            body: JSON.stringify(payload)
         });
     }
 
@@ -455,9 +457,11 @@ class PaginationController {
         return null;
     }
     
+    var confirmationDialog = null;
+
     function errorHandler(error, message) {
         console.error(message, error);
-        if (confirmationDialog) {
+        if (typeof confirmationDialog !== 'undefined' && confirmationDialog) {
             confirmationDialog.alert(message, 'Грешка');
         } else {
             alert(message);
@@ -568,12 +572,12 @@ if (logoutBtn) {
                 if (current === nextHour(previous)) {
                     previous = current;
                 } else {
-                    ranges.push(rangeStart === previous ? `${rangeStart}-${nextHour(previous)}` : `${rangeStart}-${nextHour(previous)}`);
+                    ranges.push(rangeStart === previous ? `${rangeStart}` : `${rangeStart}-${previous}`);
                     rangeStart = current;
                     previous = current;
                 }
             }
-            ranges.push(rangeStart === previous ? `${rangeStart}-${nextHour(previous)}` : `${rangeStart}-${nextHour(previous)}`);
+            ranges.push(rangeStart === previous ? `${rangeStart}` : `${rangeStart}-${previous}`);
             return ranges.join(', ');
         }
 
@@ -610,22 +614,44 @@ if (logoutBtn) {
 
         // Attach holiday delete event listener once (event delegation)
         const holidaysTable = document.getElementById('holidaysTable');
-        if (holidaysTable) {
+            if (holidaysTable) {
             holidaysTable.addEventListener('click', async (e) => {
                 if (e.target.classList.contains('remove-btn')) {
-                    const datetime = e.target.dataset.id;
-                    
+                    const id = e.target.dataset.id; // date-only or "date time"
+                    const timesData = e.target.dataset.times; // comma-separated times for grouped rows
+
                     // Validate ID exists
-                    if (!datetime) {
-                        await confirmationDialog.alert('Грешка: Не намирам празника. Опитайте да обновите страницата.', 'Грешка');
-                        console.error('Невалиден празничен идентификатор:', datetime);
+                    if (!id) {
+                        await confirmationDialog.alert('Грешка: Не намирам празника. Обновете страницата.', 'Грешка');
+                        console.error('Невалиден празничен идентификатор:', id);
                         return;
                     }
-                    
-                    const holidayLabel = formatHolidayTitleFromId(datetime);
+
+                    let holidayLabel;
+                    if (timesData) {
+                        const timesArr = timesData.split(',').map(s => s.trim());
+                        if (timesArr.some(t => t === '00:00' || t === '00:00:00' || t === '' || t === null)) {
+                            holidayLabel = `${id} (Цял ден)`;
+                        } else {
+                            holidayLabel = `${id}\n(${formatTimeRanges(timesArr)})`;
+                        }
+                    } else {
+                        holidayLabel = formatHolidayTitleFromId(id);
+                    }
+
                     if (await confirmationDialog.confirm('Сигурни ли сте, че искате да премахнете този почивен ден?', holidayLabel)) {
-                        await deleteHoliday(normalizeHolidayDateTime(datetime));
-                        await loadHolidays();
+                        // Determine payload: if times provided and not full-day, send times array so server will deactivate those slots only
+                        if (timesData) {
+                            const timesArr = timesData.split(',').map(s => s.trim()).filter(Boolean);
+                            const hasFullDay = timesArr.some(t => t === '00:00' || t === '00:00:00' || t === '' || t === null);
+                            if (hasFullDay) {
+                                await deleteHoliday(normalizeHolidayDateTime(id));
+                            } else {
+                                await deleteHoliday({ date: id, times: timesArr });
+                            }
+                        } else {
+                            await deleteHoliday(normalizeHolidayDateTime(id));
+                        }
                     }
                 }
             });
@@ -1003,12 +1029,101 @@ if (logoutBtn) {
                         headers.forEach(h => h.classList.remove('selected'));
                         slots.forEach(s => s.classList.remove('selected'));
                         renderWeek(weekStart);
+                        loadHolidays();
                     } else {
                         await confirmationDialog.alert(result.error || 'Грешка при добавяне на почивка', 'Грешка');
                     }
-                    loadHolidays();
                 };
             }
+        }
+
+                // Load holidays
+        async function loadHolidays() {
+            const holidaysTable = document.getElementById('holidaysTable');
+            if (!holidaysTable) return; 
+
+            const holidays = await APIService.getHolidays();
+            const container = holidaysTable.parentElement;
+
+                if (holidays.length < 1) {
+                    container.innerHTML = '<p class="no-data-message">Няма предстоящи почивни дни/часове</p>';
+                    return;
+                }
+
+                if (!holidays) {
+                    container.innerHTML = '<p class="no-data-message">Грешка при зареждане на почивните дни</p>';
+                    return;
+                }
+
+            // Group holidays by date so hourly slots appear as a single row with time ranges
+            const grouped = holidays.reduce((acc, h) => {
+                if (!h || !h.date) return acc;
+                acc[h.date] = acc[h.date] || [];
+                acc[h.date].push(h);
+                return acc;
+            }, {});
+
+            const groupedEntries = Object.keys(grouped).sort().map(date => {
+                const items = grouped[date];
+                const times = items.map(i => i.time || '00:00');
+                // prefer the first non-empty description for the whole date
+                let description = '';
+                for (const it of items) {
+                    if (it && it.description) { description = it.description; break; }
+                }
+                description = description || (items[0] && items[0].description) || '';
+                return { date, times, description };
+            });
+
+            // Initialize pagination controller for grouped dates
+            const holidayPagination = new PaginationController('holidaysTable', 'holidayPagination', 5);
+
+            function displayHolidays() {
+                while (holidaysTable.rows.length > 1) holidaysTable.deleteRow(1);
+
+                const { start, end } = holidayPagination.getPageRange();
+                const pageItems = groupedEntries.slice(start, end);
+
+                if (pageItems.length === 0) {
+                    container.innerHTML = '<p class="no-data-message">Няма предстоящи почивни дни/часове</p>';
+                    return;
+                }
+
+                const tbody = document.getElementById('holidaysTableBody');
+
+                pageItems.forEach(entry => {
+                    const row = tbody.insertRow();
+
+                    // Date + times cell (combine into first column)
+                    const dateCell = row.insertCell(0);
+                    let timesDisplay = '';
+                    if (entry.times.some(t => t === '00:00' || t === '00:00:00' || t === null)) {
+                        timesDisplay = 'Цял ден';
+                    } else {
+                        timesDisplay = `${formatTimeRanges(entry.times)}`;
+                    }
+                    dateCell.innerHTML = `${entry.date}<br><small>${timesDisplay}</small>`;
+
+                    // Description cell
+                    const descCell = row.insertCell(1);
+                    descCell.textContent = entry.description || '';
+
+                    // Action cell
+                    const actionCell = row.insertCell(2);
+                    const btn = document.createElement('button');
+                    btn.className = 'remove-btn';
+                    // Use date-only id for grouped entries so server can deactivate the whole day
+                    btn.dataset.id = entry.date;
+                    btn.dataset.times = entry.times.join(',');
+                    btn.textContent = 'Отмени';
+                    actionCell.appendChild(btn);
+                });
+
+                // Render pagination with callback
+                holidayPagination.render(groupedEntries.length, () => displayHolidays());
+            }
+
+            displayHolidays();
         }
 
         // Remove holiday
@@ -1023,6 +1138,7 @@ if (logoutBtn) {
                     const weekStart = new Date();
                     weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
                     renderWeek(weekStart);
+                    loadHolidays();
                 } else {
                     await confirmationDialog.alert(result.error || 'Грешка при изтриване', 'Грешка');
                 }
@@ -1100,7 +1216,7 @@ if (logoutBtn) {
             if (!pendingBookingsTable) return;
             
             pendingBookingsTable.addEventListener('click', async (e) => {
-                if (e.target.classList.contains('approve-btn')) {
+                if (e.target.classLiцдst.contains('approve-btn')) {
                     const key = e.target.dataset.key;
                     if (await confirmationDialog.confirm('Сигурни ли сте, че искате да одобрите този час?', formatRequestTitle(key))) {
                         await updateRequest(key, 1);
@@ -1127,12 +1243,12 @@ if (logoutBtn) {
             const container = pendingBookingsTable.parentElement;
         
             if (bookings.length < 1) {
-                container.innerHTML = '<p class="no-data-message">Няма нови заявки</p>';
+                container.innerHTML = '<p class="no-data-message">Няма нови резервации</p>';
                 return;
             }
         
             if (!bookings) {
-                container.innerHTML = '<p class="no-data-message">Грешка при зареждане на заявките</p>';
+                container.innerHTML = '<p class="no-data-message">Грешка при зареждане на резервациите</p>';
                 return;
             }
         
@@ -1147,7 +1263,7 @@ if (logoutBtn) {
                 const paginatedBookings = bookings.slice(start, end);
             
                 if (paginatedBookings.length === 0) {
-                    container.innerHTML = '<p class="no-data-message">Няма нови заявки</p>';
+                    container.innerHTML = '<p class="no-data-message">Няма нови резервации</p>';
                     return;
                 }
             
@@ -1232,12 +1348,12 @@ if (logoutBtn) {
             const container = approvedBookingsTable.parentElement;
 
             if (requests.length < 1) {
-                container.innerHTML = '<p class="no-data-message">Няма предстоящи тренировки.</p>';
+                container.innerHTML = '<p class="no-data-message">Няма одобрени резервации</p>';
                 return;
             }
         
             if (!requests) {
-                container.innerHTML = '<p class="no-data-message">Грешка при зареждане на тренировките</p>';
+                container.innerHTML = '<p class="no-data-message">Грешка при зареждане на резервациите</p>';
                 return;
             }
         
@@ -1252,7 +1368,7 @@ if (logoutBtn) {
                 const paginatedBookings = requests.slice(start, end);
             
                 if (paginatedBookings.length === 0) {
-                    container.innerHTML = '<p class="no-data-message">Няма предстоящи тренировки.</p>';
+                    container.innerHTML = '<p class="no-data-message">Няма одобрени резервации</p>';
                     return;
                 }
 
@@ -1298,68 +1414,6 @@ if (logoutBtn) {
         
             // Initial display
             displayApprovedRequests();
-        }
-
-        // Load holidays
-        async function loadHolidays() {
-            const holidaysTable = document.getElementById('holidaysTable');
-            if (!holidaysTable) return; 
-
-            const holidays = await APIService.getHolidays();
-            const container = holidaysTable.parentElement;
-
-                if (holidays.length < 1) {
-                    container.innerHTML = '<p class="no-data-message">Няма предстоящи почивни дни/часове</p>';
-                    return;
-                }
-
-                if (!holidays) {
-                    container.innerHTML = '<p class="no-data-message">Грешка при зареждане на почивните дни</p>';
-                    return;
-                }
-
-            // Initialize pagination controller for holidays
-            const holidayPagination = new PaginationController('holidaysTable', 'holidayPagination', 5);
-
-            function displayHolidays() {
-                while (holidaysTable.rows.length > 1) holidaysTable.deleteRow(1);
-
-                const { start, end } = holidayPagination.getPageRange();
-                const paginatedHolidays = holidays.slice(start, end);
-
-                if (paginatedHolidays.length === 0) {
-                    container.innerHTML = '<p class="no-data-message">Няма предстоящи почивни дни/часове</p>';
-                    return;
-                }
-
-                const tbody = document.getElementById('holidaysTableBody');
-
-                paginatedHolidays.forEach(holiday => {
-                    if (!holiday.date) {
-                        console.warn('Holiday missing date:', holiday);
-                        return; // Skip holidays without dates
-                    }
-                    const row = tbody.insertRow();
-
-                    row.insertCell(0).textContent = holiday.date;
-                    row.insertCell(1).textContent = holiday.time === '00:00' ? 'Цял ден' : holiday.time;
-                    row.insertCell(2).textContent = holiday.description || '';
-
-                    const actionCell = row.insertCell(3);
-                    actionCell.innerHTML = `
-                        <td>
-                            <button class="remove-btn" data-id="${holiday.date} ${holiday.time}">Отмени</button>
-                        </td>
-                    `;
-                });
-
-                // Render pagination with callback
-                holidayPagination.render(holidays.length, () => {
-                    displayHolidays();
-                });
-            }
-
-            displayHolidays();
         }
 
         const refreshBtn = document.querySelector('.refresh-btn');
@@ -1747,7 +1801,7 @@ if (logoutBtn) {
                             if (button.classList.contains('pending')) {
                                 activeStatusFilter = 1;
                             } else if (button.classList.contains('taken')) {
-                                activeStatusFilter = [2, 3];
+                                activeStatusFilter = 2;
                             } else if (button.classList.contains('past')) {
                                 activeStatusFilter = 5;
                             } else if (button.classList.contains('rejected')) {

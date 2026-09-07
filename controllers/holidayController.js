@@ -23,12 +23,35 @@ async function getAllHolidays(req, res) {
 
 async function deactivateHoliday(req, res) {
     try {
-        const { date } = req.body;
-        
+        const { date, times } = req.body;
+
         if (!date) {
             return res.status(400).json({ error: 'Датата е задължителна' });
         }
-        
+
+        // If times array provided, call the domain deactivateHoliday for each datetime
+        if (times && Array.isArray(times) && times.length > 0) {
+            let anySuccess = false;
+            let lastMessage = null;
+            for (const t of times) {
+                try {
+                    // normalize time (HH:MM or HH:MM:SS)
+                    let timePart = t || '00:00:00';
+                    if (/^\d{2}:\d{2}$/.test(timePart)) timePart = `${timePart}:00`;
+                    const dt = `${date} ${timePart}`;
+                    const r = await holidayDomain.deactivateHoliday(dt);
+                    if (r && r.success) anySuccess = true;
+                    else if (r && r.message) lastMessage = r.message;
+                } catch (e) {
+                    console.error('Deactivate single slot error:', e);
+                }
+            }
+
+            if (anySuccess) return res.json({ message: 'Празникът е премахнат' });
+            return res.status(404).json({ error: lastMessage || 'Празникът не е намерен' });
+        }
+
+        // Otherwise treat date as full-day or single datetime
         const result = await holidayDomain.deactivateHoliday(date);
         if (result && result.success) {
             res.json({ message: 'Празникът е премахнат' });
